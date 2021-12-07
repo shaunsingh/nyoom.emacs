@@ -7,7 +7,7 @@
 Here you may find my config. There is only one significant file:
 + =config.org=, my configuration file --- see the [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML]] or [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]] export.
 
-[[file:misc/screenshots/splash-screen.png]]
+[[https://media.discordapp.net/attachments/635625917623828520/891803833695621130/image_4.png?width=346&height=1167]]
 
 =config.org= /generates/ the init.el, config.el, and packages.el files, as well as
 about a dozen others.
@@ -19,10 +19,10 @@ Other than that, resources are put in [[file:misc/][misc]], and you may find som
 ** Nix
 
 First install nix, and enable both the =nix command= and =flakes= experimental features
-```bash
+#+begin_src shell
 git clone --depth 1 https://github.com/shaunsingh/Nyoom.emacs.git && cd Nyoom.emacs
 nix develop
-```
+#+end_src
 
 ** Regular installation: 
 
@@ -41,14 +41,11 @@ You can optionally install the following:
 - texlive (for latex exports and editing)
 
 I also use the following latex packages, along with =BasicTex= or =Scheme-Small=:
-```
-dvipng dvisvgm l3packages xcolor soul adjustbox
-collectbox amsmath siunitx cancel mathalpha capt-of chemfig
-wrapfig mhchem fvextra cleveref latexmk tcolorbox environ arev
-amsfonts simplekv alegreya sourcecodepro newpx svg catchfile
-transparent hanging biblatex biblatex-mla;
-```
+#+begin_src shell
+sudo tlmgr install dvipng dvisvgm l3packages xcolor soul adjustbox collectbox amsmath siunitx cancel mathalpha capt-of chemfig wrapfig mhchem fvextra cleveref latexmk tcolorbox environ arev amsfonts simplekv alegreya sourcecodepro newpx svg catchfile transparent hanging biblatex biblatex-mla;
+#+end_src
 
+As for the plugins themselves
 #+begin_src shell
 git clone --depth 1 https://github.com/shaunsingh/Nyoom.emacs.git ~/.config/doom
 emacs --batch --eval "(progn (require 'org) (setq org-confirm-babel-evaluate nil) (org-babel-tangle-file \"~/.config/doom/config.org\"))"
