@@ -38,12 +38,14 @@ mkShell {
     if [ ! -d $HOME/.config/emacs/.git ]; then
       mkdir -p $HOME/.config/emacs
       git -C $HOME/.config/emacs init
+      $HOME/.config/emacs/bin/doom sync || true
+      YES=1 FORCE=1 $HOME/.config/emacs/bin/doom sync -u
     fi
     if [ $(git -C $HOME/.config/emacs rev-parse HEAD) != ${pkgs.doomEmacsRevision} ]; then
       git -C $HOME/.config/emacs fetch https://github.com/hlissner/doom-emacs.git || true
       git -C $HOME/.config/emacs checkout ${pkgs.doomEmacsRevision} || true
       $HOME/.config/emacs/bin/doom sync || true
-      YES=1 FORCE=1 $HOME/.config/emacs/bin/doom sync -u &
+      YES=1 FORCE=1 $HOME/.config/emacs/bin/doom sync -u
     fi
   '';
 }
