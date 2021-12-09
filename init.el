@@ -17,17 +17,17 @@
        ;;deft                       ; notational velocity for Emacs
        doom                         ; what makes DOOM look the way it does
        doom-dashboard               ; a nifty splash screen for Emacs
-       doom-quit                    ; DOOM quit-message prompts when you quit Emacs
+       ;;doom-quit                  ; DOOM quit-message prompts when you quit Emacs
        ;;(emoji +unicode)           ; 🙂
        ;;fill-column                ; a `fill-column' indicator
        hl-todo                      ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;hydra                      ; quick documentation for related commands
        ;;indent-guides              ; highlighted indent columns, notoriously slow
-       (ligatures                   ; ligatures and symbols to make your code pretty again
+       (ligatures                   ; ligatures and symbols to make your code pnoretty again
         +extra)                     ; for those who dislike letters
        minimap                      ; show a map of the code on the side
-       modeline                     ; snazzy, Atom-inspired modeline, plus API
-       ;; +light)                   ; the doom modeline is a bit much, the default is a bit little
+       ;;(modeline                  ; snazzy, Atom-inspired modeline, plus API
+       ;;  +light)                  ; the doom modeline is a bit much, the default is a bit little
        nav-flash                    ; blink the current line after jumping
        ;;neotree                    ; a project drawer, like NERDTree for vim
        ophints                      ; highlight the region an operation acts on
@@ -36,10 +36,10 @@
         +defaults)                  ; default popup rules
        ;;(tabs                      ; an tab bar for Emacs
        ;;  +centaur-tabs)           ; ... with prettier tabs
-       treemacs                     ; a project drawer, like neotree but cooler
+       ;;treemacs                   ; a project drawer, like neotree but cooler
        ;;unicode                    ; extended unicode support for various languages
        vc-gutter                    ; vcs diff in the fringe
-       vi-tilde-fringe              ; fringe tildes to mark beyond EOB
+       ;;vi-tilde-fringe            ; fringe tildes to mark beyond EOB
        ;;(window-select +numbers)   ; visually switch windows
        workspaces                   ; tab emulation, persistence & separate workspaces
        zen                          ; distraction-free coding or writing
@@ -51,6 +51,7 @@
        (format +onsave)             ; automated prettiness
        ;;god                        ; run Emacs commands without modifier keys
        ;;lispy                      ; vim for lisp, for people who don't like vim
+       ;;meow                       ; cats got your tongue?
        ;;multiple-cursors           ; editing in many places at once
        ;;objed                      ; text object editing for the innocent
        ;;parinfer                   ; turn lisp into python, sort of

@@ -3,23 +3,12 @@
 #+latex_header: \let\textls\relax
 #+latex_class: chameleon
 #+startup: fold
-* *Note:* If you want a proper Emacs Config, look here:
-https://tecosaur.github.io/emacs-config/config.html, this is just a compilation
-of different parts of his (and other's) configs, as well as a few parts I wrote
-by my own. I'm slowly working on making my config "mine"
-
-** Credit:
-- Tecosaur - For all his help and the excellent config
-- Dr. Elken - For his EXWM Module and help on the DOOM Server
-- Henrik - For making Doom Emacs in the first place
 
 #+begin_quote
-Includes (snippets) of other software related under the MIT license:
-- Doom Emacs Config, 2021 Tecosaur. https://tecosaur.github.io/emacs-config/config.html
-- .doom.d, 2021 Elken. https://github.com/elken/.doom.d/blob/master/config.org
-
-Includes (snippets) of other software related under the GPLv3 license:
-- .dotfiles, 2021 Daviwil. https://github.com/daviwil/dotfiles
+Let us change our traditional attitude to the construction of programs:
+Instead of imagining that our main task is to instruct a computer what to do,
+let us concentrate rather on explaining to human beings what we want a
+computer to do. @@latex:\mbox{@@--- Donald Knuth@@latex:}@@
 #+end_quote
 
 * Intro
@@ -113,64 +102,6 @@ users the power to bridge this gap.
 ** Notes for the unwary adventurer
 The lovely ~doom doctor~ is good at diagnosing most missing things, but here are a
 few extras.
-
-#+begin_note
-My nix config should handle installing all these dependencies, If you aren't using it, here is the list of packages you may need:
-#+end_note
-
-#+begin_src nix :tangle no
-environment.systemPackages = with pkgs; [
-  # Emacs deps
-  ((emacsPackagesNgGen emacsGcc).emacsWithPackages
-    (epkgs: [ epkgs.vterm epkgs.pdf-tools ]))
-  ## make sure ripgrep supports pcre2 (for vertico)
-  (ripgrep.override { withPCRE2 = true; })
-  sqlite
-  zstd
-  ## Required for plots but not installed by default
-  gnuplot
-  ## Required for dictionaries but not installed by default
-  sdcv
-  # aspell and \latex
-  (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
-  (texlive.combine {
-    inherit (texlive)
-      scheme-small dvipng dvisvgm l3packages xcolor soul adjustbox
-      collectbox amsmath siunitx cancel mathalpha capt-of chemfig
-      wrapfig mhchem fvextra cleveref latexmk tcolorbox environ arev
-      amsfonts simplekv alegreya sourcecodepro newpx svg catchfile
-      transparent hanging;
-  })
-
-  # Language deps
-  tree-sitter
-  python39Packages.grip
-  python39Packages.pyflakes
-  python39Packages.isort
-  python39Packages.pytest
-  nodePackages.pyright
-  pipenv
-  nixfmt
-  black
-  rust-analyzer
-  rust-bin.nightly.latest.default
-  shellcheck
-  # jdk
-
-  # Terminal utils and rust alternatives :tm:
-  fd
-];
-fonts = {
-  enableFontDir = true;
-  fonts = with pkgs; [
-    overpass
-    alegreya
-    alegreya-sans
-    emacs-all-the-icons-fonts
-    sf-mono-liga-bin
-  ];
-};
-#+end_src
 
 + A [[https://www.tug.org/texlive/][LaTeX Compiler]] is required for the mathematics rendering performed in [[https://orgmode.org/][org]],
   and that wonderful pdf/html export we have going. I recommend [[https://github.com/tectonic-typesetting/tectonic][Tectonic]] if you are new, this config uses XeLaTeX.
@@ -347,17 +278,17 @@ I reckon enabling half the modules Doom provides should do it.
 ;;deft                       ; notational velocity for Emacs
 doom                         ; what makes DOOM look the way it does
 doom-dashboard               ; a nifty splash screen for Emacs
-doom-quit                    ; DOOM quit-message prompts when you quit Emacs
+;;doom-quit                  ; DOOM quit-message prompts when you quit Emacs
 ;;(emoji +unicode)           ; 🙂
 ;;fill-column                ; a `fill-column' indicator
 hl-todo                      ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
 ;;hydra                      ; quick documentation for related commands
 ;;indent-guides              ; highlighted indent columns, notoriously slow
-(ligatures                   ; ligatures and symbols to make your code pretty again
+(ligatures                   ; ligatures and symbols to make your code pnoretty again
  +extra)                     ; for those who dislike letters
 minimap                      ; show a map of the code on the side
-modeline                     ; snazzy, Atom-inspired modeline, plus API
-;; +light)                   ; the doom modeline is a bit much, the default is a bit little
+;;(modeline                  ; snazzy, Atom-inspired modeline, plus API
+;;  +light)                  ; the doom modeline is a bit much, the default is a bit little
 nav-flash                    ; blink the current line after jumping
 ;;neotree                    ; a project drawer, like NERDTree for vim
 ophints                      ; highlight the region an operation acts on
@@ -366,10 +297,10 @@ ophints                      ; highlight the region an operation acts on
  +defaults)                  ; default popup rules
 ;;(tabs                      ; an tab bar for Emacs
 ;;  +centaur-tabs)           ; ... with prettier tabs
-treemacs                     ; a project drawer, like neotree but cooler
+;;treemacs                   ; a project drawer, like neotree but cooler
 ;;unicode                    ; extended unicode support for various languages
 vc-gutter                    ; vcs diff in the fringe
-vi-tilde-fringe              ; fringe tildes to mark beyond EOB
+;;vi-tilde-fringe            ; fringe tildes to mark beyond EOB
 ;;(window-select +numbers)   ; visually switch windows
 workspaces                   ; tab emulation, persistence & separate workspaces
 zen                          ; distraction-free coding or writing
@@ -383,6 +314,7 @@ fold                         ; (nigh) universal code folding
 (format +onsave)             ; automated prettiness
 ;;god                        ; run Emacs commands without modifier keys
 ;;lispy                      ; vim for lisp, for people who don't like vim
+;;meow                       ; cats got your tongue?
 ;;multiple-cursors           ; editing in many places at once
 ;;objed                      ; text object editing for the innocent
 ;;parinfer                   ; turn lisp into python, sort of
@@ -638,23 +570,18 @@ because of its refusal to work without requiring org
 Making emacs look good is first priority, actually working in it is second
 #+name: looks
 #+begin_src emacs-lisp
-(unpin! doom-themes)
-(unpin! doom-modeline)
 (package! modus-themes)
 (package! solaire-mode :disable t)
-(package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon")) ;soon :tm:
+(package! ox-chameleon 
+  :recipe (:host github :repo "tecosaur/ox-chameleon"))
 #+end_src
 
 **** Emacs Tweaks:
-Emacs is missing just a few packages that I need to make it my OS. Specifically,
-screenshot capabilities are nice, and using the same dictionaries accross
-+operating systems+ bootloaders would be nice too!
+Emacs is missing just a few packages that I need to make it my OS
 #+name: emacs
 #+begin_src emacs-lisp
 (package! lexic)
-(package! pdf-tools)
 (package! magit-delta)
-(package! screenshot :recipe (:host github :repo "Jimmysit0/screenshot")) ;https://github.com/melpa/melpa/pull/7327
 #+end_src
 
 **** LSP:
@@ -671,7 +598,6 @@ We do a little trolling (and reading)
 #+begin_src emacs-lisp
 (package! nov)
 (package! xkcd)
-(package! keycast)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))
 #+end_src
 
@@ -769,11 +695,11 @@ I like the apple fonts for programming, so I'll go with Liga SFMono Nerd Font. I
 prefer a rounder font for plain text, so I'll go with Overpass for that. I have a retina display as well, so lets keep the fonts light.
 #+begin_src elisp
 ;;fonts
-(setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 14)
+(setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
       doom-variable-pitch-font (font-spec :family "Overpass" :size 16)
       doom-unicode-font (font-spec :family "Liga SFMono Nerd Font")
-      doom-serif-font (font-spec :family "Liga SFMono Nerd Font" :weight 'light))
+      doom-serif-font (font-spec :family "Alegreya Sans" :size 16 :weight 'light))
 #+end_src
 
 For mixed pitch, I would go with something comfier. I like Alegreya Sans for a minimalist feel, so lets go with that
@@ -979,81 +905,6 @@ can correct for this by redefining it with subtlety shifted kerning.
         \\kern-.10em%
         \\TeX}
 \\makeatother\n") t))
-#+end_src
-
-Just in case the fonts aren't there, lets add check to notify the user of the
-issue. Seems like I forget ot install fonts every time I switch between +distros+
-emacs bootloaders
-#+name: detect-missing-fonts
-#+begin_src elisp
-;; (defvar required-fonts '("Overpass" "Liga SFMono Nerd Font" "Alegreya" ))
-;; (defvar available-fonts
-;;   (delete-dups (or (font-family-list)
-;;                    (split-string (shell-command-to-string "fc-list : family")
-;;                                  "[,\n]"))))
-;; (defvar missing-fonts
-;;   (delq nil (mapcar
-;;              (lambda (font)
-;;                (unless (delq nil (mapcar (lambda (f)
-;;                            (string-match-p (format "^%s$" font) f))
-;;                                          available-fonts))
-;;                                          font))
-;;                                          required-fonts)))
-;; (if missing-fonts
-;;     (pp-to-string
-;;      `(unless noninteractive
-;;         (add-hook! 'doom-init-ui-hook
-;;           (run-at-time nil nil
-;;                        (lambda ()
-;;                          (message "%s missing the following fonts: %s"
-;;                                   (propertize "Warning!" 'face '(bold warning))
-;;                                   (mapconcat (lambda (font)
-;;                                                (propertize font 'face 'font-lock-variable-name-face))
-;;                                              ',missing-fonts
-;;                                              ", "))
-;;                          (sleep-for 0.5))))))
-;;  ";; No missing fonts detected")
-#+end_src
-
-#+begin_src emacs-lisp :noweb no-export
-;; <<detect-missing-fonts()>>
-#+end_src
-
-** Themes
-Right now I'm using nord, but I use doom-vibrant sometimes
-#+begin_src elisp
-(setq doom-theme 'doom-vibrant)
-(setq doom-fw-padded-modeline t)
-(setq doom-one-light-padded-modeline t)
-(setq doom-nord-padded-modeline t)
-(setq doom-vibrant-padded-modeline t)
-#+end_src
-
-*** Modus Themes
-Generally I use doom-themes, but I also like the new Modus-themes bundled with emacs28/29
-#+begin_src elisp
-;; (use-package modus-themes
-;;   :init
-;;   ;; Add all your customizations prior to loading the themes
-;;   (setq modus-themes-italic-constructs t
-;;         modus-themes-completions 'opinionated
-;;         modus-themes-variable-pitch-headings t
-;;         modus-themes-scale-headings t
-;;         modus-themes-variable-pitch-ui nil
-;;         modus-themes-org-agenda
-;;         '((header-block . (variable-pitch scale-title))
-;;           (header-date . (grayscale bold-all)))
-;;         modus-themes-org-blocks
-;;         '(grayscale)
-;;         modus-themes-mode-line
-;;         '(borderless)
-;;         modus-themes-region '(bg-only no-extend))
-
-;;   ;; Load the theme files before enabling a theme
-;;   (modus-themes-load-themes)
-;;   :config
-;;   (modus-themes-load-vivendi)
-;;   :bind ("<f5>" . modus-themes-toggle))
 #+end_src
 
 ** Company
@@ -1286,11 +1137,8 @@ I also want to use clippy for linting, and those sweet org-mode docs
 ** Better Defaults
 The defaults for emacs aren't so good nowadays. Lets fix that up a bit
 #+begin_src elisp
-(setq undo-limit 80000000                          ;I mess up too much
-      evil-want-fine-undo t                        ;By default while in insert all changes are one big blob. Be more granular
-      scroll-margin 2                              ;having a little margin is nice
+(setq scroll-margin 4                              ;having a little margin is nice
       auto-save-default t                          ;I dont like to lose work
-      ;; display-line-numbers-type 'relative       ;If I have to use line numbers, at least make them relative
       display-line-numbers-type nil                ;I dislike line numbers
       history-length 25                            ;Slight speedup
       delete-by-moving-to-trash t                  ;delete to system trash instead
@@ -1299,8 +1147,6 @@ The defaults for emacs aren't so good nowadays. Lets fix that up a bit
 
 (fringe-mode 0) ;;disable fringe
 (global-subword-mode 1) ;;navigate through Camel Case words
-(tool-bar-mode +1) ;;re-enable the toolbar
-(global-so-long-mode -1) ;;i almost never want this on
 
 ;; emacs29 fixes
 (general-auto-unbind-keys :off)
@@ -1316,19 +1162,6 @@ fix it
 Instead of fundamental mode, lisp-interaction-mode seems much more useful
 #+begin_src emacs-lisp
 (setq doom-scratch-initial-major-mode 'lisp-interaction-mode)
-#+end_src
-
-Ask where to open splits
-#+begin_src elisp
-(setq evil-vsplit-window-right t
-      evil-split-window-below t)
-#+end_src
-
-...and open a buffer for it
-#+begin_src elisp
-(defadvice! prompt-for-buffer (&rest _)
-  :after '(evil-window-split evil-window-vsplit)
-  (consult-buffer))
 #+end_src
 
 The default bindings of doom are pretty good. I'm not so good with motions though, so lets make life easier with avy
@@ -1356,42 +1189,16 @@ When im doing regexes, its usually with /g anyways, lets make that the default
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 #+end_src
 
-Doom looks much cleaner with the dividers removed. Not sure why it isn't the default honestly
+And just some simple visual tweaks
 #+begin_src elisp
-(custom-set-faces!
-  `(vertical-border :background ,(doom-color 'bg) :foreground ,(doom-color 'bg)))
-#+end_src
+(setq-default window-resize-pixelwise t
+              frame-resize-pixelwise t)
 
-I don't like seeing the cursorline, especially while writing. Lets disable that
-#+begin_src elisp
+(after! frame
+  (setq window-divider-default-bottom-width 0
+        window-divider-default-right-width 0))
+
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
-#+end_src
-
-Doom has a weird bug with emacs-plus where the cursor will just turn white on a light theme. Lets fix that.
-#+begin_src elisp
-(defadvice! fix-+evil-default-cursor-fn ()
-  :override #'+evil-default-cursor-fn
-  (evil-set-cursor-color (face-background 'cursor)))
-(defadvice! fix-+evil-emacs-cursor-fn ()
-  :override #'+evil-emacs-cursor-fn
-  (evil-set-cursor-color (face-foreground 'warning)))
-#+end_src
-
-I like a bit of padding, both inside and outside, and lets make the line spacing comfier
-#+begin_src elisp
-(use-package frame
-  :config
-  (setq-default default-frame-alist
-                (append (list
-                '(internal-border-width . 24)
-                '(left-fringe    . 0)
-                '(right-fringe   . 0)
-                '(tool-bar-lines . 0)
-                '(menu-bar-lines . 0)
-                '(line-spacing . 0.24)
-                '(vertical-scroll-bars . nil))))
-  (setq-default window-resize-pixelwise t)
-  (setq-default frame-resize-pixelwise t))
 #+end_src
 
 ** +Selectric+ NK-Creams mode
@@ -1420,246 +1227,21 @@ Since I use an apple silicon mac, I prefer if nix handles compiling the parsers 
 ;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 #+end_src
 
-** Modeline
-Doom modeline already looks good, but it can be better. Lets add some icons, the battery status, and make sure we don't lose track of time
+** Nano
+I prefer the nano look and feel over the default doom one. Lets integrate it with doom!
 #+begin_src elisp
-(after! doom-modeline
-  (setq evil-normal-state-tag "<λ>"
-        evil-insert-state-tag "<I>"
-        evil-visual-state-tag "<V>"
-        evil-motion-state-tag "<M>"
-        evil-emacs-state-tag "<EMACS>")
-
-  (setq doom-modeline-modal-icon nil
-        doom-modeline-major-mode-icon t
-        doom-modeline-major-mode-color-icon t
-        doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode)
-        doom-modeline-buffer-encoding nil
-        inhibit-compacting-font-caches t
-        find-file-visit-truename t)
-
-  (custom-set-faces!
-    '(doom-modeline-evil-insert-state :inherit doom-modeline-urgent)
-    '(doom-modeline-evil-visual-state :inherit doom-modeline-warning)
-    '(doom-modeline-evil-normal-state :inherit doom-modeline-buffer-path))
-
-  (setq doom-modeline-enable-word-count t))          ;Show word count
+(add-to-list 'load-path "~/.config/doom/lisp/nano-integration")
+(require 'load-nano)
 #+end_src
 
-** Centaur tabs
-There isn't much of a point having tabs when you only have one buffer open. This checks the number of tabs, and hides them if theres only one left
+** Splash
+Gura :emma:
 #+begin_src elisp
-(defun centaur-tabs-get-total-tab-length ()
-  (length (centaur-tabs-tabs (centaur-tabs-current-tabset))))
-
-(defun centaur-tabs-hide-on-window-change ()
-  (run-at-time nil nil
-               (lambda ()
-                 (centaur-tabs-hide-check (centaur-tabs-get-total-tab-length)))))
-
-(defun centaur-tabs-hide-check (len)
-  (shut-up
-    (cond
-     ((and (= len 1) (not (centaur-tabs-local-mode))) (call-interactively #'centaur-tabs-local-mode))
-     ((and (>= len 2) (centaur-tabs-local-mode)) (call-interactively #'centaur-tabs-local-mode)))))
+(setq fancy-splash-image "~/.config/doom/misc/gura.png")
+(setq +doom-dashboard-banner-padding '(0 . 1))
 #+end_src
 
-I also like to have icons with my tabs.
-#+begin_src elisp
-(after! centaur-tabs
-  (centaur-tabs-mode -1)
-  (centaur-tabs-headline-match)
-  (centaur-tabs-change-fonts "Liga SFMono Nerd Font" 150)
-
-  (setq centaur-tabs-style "wave"
-        centaur-tabs-set-icons t
-        centaur-tabs-set-bar 'nil
-        centaur-tabs-gray-out-icons 'buffer
-        centaur-tabs-height  30
-        centaur-tabs-close-button ""
-        centaur-tabs-modified-marker nil
-        centaur-tabs-show-navigation-buttons nil
-        centaur-tabs-show-new-tab-button nil
-        centaur-tabs-down-tab-text " ✦"
-        centaur-tabs-backward-tab-text " ⏴ "
-        centaur-tabs-forward-tab-text " ⏵ ")
-
-  (custom-set-faces!
-    `(tab-line :background ,(doom-color 'base1) :foreground ,(doom-color 'base1))
-    `(centaur-tabs-default :background ,(doom-color 'base1) :foreground ,(doom-color 'base1))
-    `(centaur-tabs-active-bar-face :background ,(doom-color 'base1) :foreground ,(doom-color 'base1))
-    `(centaur-tabs-unselected-modified :background ,(doom-color 'base1) :foreground ,(doom-color 'fg))
-    `(centaur-tabs-unselected :background ,(doom-color 'base1) :foreground ,(doom-color 'base4))
-    `(centaur-tabs-selected-modified :background ,(doom-color 'bg) :foreground ,(doom-color 'fg))
-    `(centaur-tabs-selected :background ,(doom-color 'bg) :foreground ,(doom-color 'blue)))
-
-  (add-hook 'window-configuration-change-hook 'centaur-tabs-hide-on-window-change))
-#+end_src
-
-** Vertico
-For marginalia (vertico), lets use relative time, along with some other things
-#+begin_src elisp
-(after! marginalia
-  (setq marginalia-censor-variables nil)
-
-  (defadvice! +marginalia--anotate-local-file-colorful (cand)
-    "Just a more colourful version of `marginalia--anotate-local-file'."
-    :override #'marginalia--annotate-local-file
-    (when-let (attrs (file-attributes (substitute-in-file-name
-                                       (marginalia--full-candidate cand))
-                                      'integer))
-      (marginalia--fields
-       ((marginalia--file-owner attrs)
-        :width 12 :face 'marginalia-file-owner)
-       ((marginalia--file-modes attrs))
-       ((+marginalia-file-size-colorful (file-attribute-size attrs))
-        :width 7)
-       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
-        :width 12))))
-
-  (defun +marginalia--time-colorful (time)
-    (let* ((seconds (float-time (time-subtract (current-time) time)))
-           (color (doom-blend
-                   (face-attribute 'marginalia-date :foreground nil t)
-                   (face-attribute 'marginalia-documentation :foreground nil t)
-                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
-      ;; 1 - log(3 + 1/(days + 1)) % grey
-      (propertize (marginalia--time time) 'face (list :foreground color))))
-
-  (defun +marginalia-file-size-colorful (size)
-    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
-           (color (if (< size-index 10000000) ; 10m
-                      (doom-blend 'orange 'green size-index)
-                    (doom-blend 'red 'orange (- size-index 1)))))
-      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
-  #+end_src
-
-** Treemacs
-Lets theme treemacs while we're at it
-#+begin_src elisp
-(setq treemacs-width 25)
-(setq doom-themes-treemacs-theme "doom-colors")
-#+end_src
-
-** Emojis
-Disable some annoying emojis
-#+begin_src elisp
-(defvar emojify-disabled-emojis
-  '(;; Org
-    "◼" "☑" "☸" "⚙" "⏩" "⏪" "⬆" "⬇" "❓"
-    ;; Terminal powerline
-    "✔"
-    ;; Box drawing
-    "▶" "◀")
-  "Characters that should never be affected by `emojify-mode'.")
-
-(defadvice! emojify-delete-from-data ()
-  "Ensure `emojify-disabled-emojis' don't appear in `emojify-emojis'."
-  :after #'emojify-set-emoji-data
-  (dolist (emoji emojify-disabled-emojis)
-    (remhash emoji emojify-emojis)))
-
-(add-hook! '(mu4e-compose-mode org-msg-edit-mode) (emoticon-to-emoji 1))
-#+end_src
-
-** Splash screen
-Emacs can render an image as the splash screen, and the emacs logo looks pretty cool
-Now we just make it theme-appropriate, and resize with the frame.
-#+begin_src emacs-lisp
-(defvar fancy-splash-image-template
-  (expand-file-name "misc/splash-images/emacs-e-template.svg" doom-private-dir)
-  "Default template svg used for the splash image, with substitutions from ")
-
-(defvar fancy-splash-sizes
-  `((:height 300 :min-height 50 :padding (0 . 2))
-    (:height 250 :min-height 42 :padding (2 . 4))
-    (:height 200 :min-height 35 :padding (3 . 3))
-    (:height 150 :min-height 28 :padding (3 . 3))
-    (:height 100 :min-height 20 :padding (2 . 2))
-    (:height 75  :min-height 15 :padding (2 . 1))
-    (:height 50  :min-height 10 :padding (1 . 0))
-    (:height 1   :min-height 0  :padding (0 . 0)))
-  "list of plists with the following properties
-  :height the height of the image
-  :min-height minimum `frame-height' for image
-  :padding `+doom-dashboard-banner-padding' (top . bottom) to apply
-  :template non-default template file
-  :file file to use instead of template")
-
-(defvar fancy-splash-template-colours
-  '(("$colour1" . keywords) ("$colour2" . type) ("$colour3" . base5) ("$colour4" . base8))
-  "list of colour-replacement alists of the form (\"$placeholder\" . 'theme-colour) which applied the template")
-
-(unless (file-exists-p (expand-file-name "theme-splashes" doom-cache-dir))
-  (make-directory (expand-file-name "theme-splashes" doom-cache-dir) t))
-
-(defun fancy-splash-filename (theme-name height)
-  (expand-file-name (concat (file-name-as-directory "theme-splashes")
-                            theme-name
-                            "-" (number-to-string height) ".svg")
-                    doom-cache-dir))
-
-(defun fancy-splash-clear-cache ()
-  "Delete all cached fancy splash images"
-  (interactive)
-  (delete-directory (expand-file-name "theme-splashes" doom-cache-dir) t)
-  (message "Cache cleared!"))
-
-(defun fancy-splash-generate-image (template height)
-  "Read TEMPLATE and create an image if HEIGHT with colour substitutions as
-   described by `fancy-splash-template-colours' for the current theme"
-  (with-temp-buffer
-    (insert-file-contents template)
-    (re-search-forward "$height" nil t)
-    (replace-match (number-to-string height) nil nil)
-    (dolist (substitution fancy-splash-template-colours)
-      (goto-char (point-min))
-      (while (re-search-forward (car substitution) nil t)
-        (replace-match (doom-color (cdr substitution)) nil nil)))
-    (write-region nil nil
-                  (fancy-splash-filename (symbol-name doom-theme) height) nil nil)))
-
-(defun fancy-splash-generate-images ()
-  "Perform `fancy-splash-generate-image' in bulk"
-  (dolist (size fancy-splash-sizes)
-    (unless (plist-get size :file)
-      (fancy-splash-generate-image (or (plist-get size :template)
-                                       fancy-splash-image-template)
-                                   (plist-get size :height)))))
-
-(defun ensure-theme-splash-images-exist (&optional height)
-  (unless (file-exists-p (fancy-splash-filename
-                          (symbol-name doom-theme)
-                          (or height
-                              (plist-get (car fancy-splash-sizes) :height))))
-    (fancy-splash-generate-images)))
-
-(defun get-appropriate-splash ()
-  (let ((height (frame-height)))
-    (cl-some (lambda (size) (when (>= height (plist-get size :min-height)) size))
-             fancy-splash-sizes)))
-
-(setq fancy-splash-last-size nil)
-(setq fancy-splash-last-theme nil)
-(defun set-appropriate-splash (&rest _)
-  (let ((appropriate-image (get-appropriate-splash)))
-    (unless (and (equal appropriate-image fancy-splash-last-size)
-                 (equal doom-theme fancy-splash-last-theme)))
-    (unless (plist-get appropriate-image :file)
-      (ensure-theme-splash-images-exist (plist-get appropriate-image :height)))
-    (setq fancy-splash-image
-          (or (plist-get appropriate-image :file)
-              (fancy-splash-filename (symbol-name doom-theme) (plist-get appropriate-image :height))))
-    (setq +doom-dashboard-banner-padding (plist-get appropriate-image :padding))
-    (setq fancy-splash-last-size appropriate-image)
-    (setq fancy-splash-last-theme doom-theme)
-    (+doom-dashboard-reload)))
-
-(add-hook 'window-size-change-functions #'set-appropriate-splash)
-(add-hook 'doom-load-theme-hook #'set-appropriate-splash)
-#+end_src
-
-Lets add a little phrase in there as well
+Add random quotes to the splash screen
 #+begin_src elisp
 (defvar splash-phrase-source-folder
   (expand-file-name "misc/splash-phrases" doom-private-dir)
@@ -1752,12 +1334,50 @@ Lets add a little phrase in there as well
    "\n"))
 #+end_src
 
-Lastly, the doom dashboard "useful commands" are no longer useful to me. So, we'll disable them and then for a particularly /clean/ look disable the modeline, then also hide the cursor.
-#+begin_src emacs-lisp
+And lets disable all the unessecary stuff
+#+begin_src elisp
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 #+end_src
+
+** Vertico
+For marginalia (vertico), lets use relative time, along with some other things
+#+begin_src elisp
+(after! marginalia
+  (setq marginalia-censor-variables nil)
+
+  (defadvice! +marginalia--anotate-local-file-colorful (cand)
+    "Just a more colourful version of `marginalia--anotate-local-file'."
+    :override #'marginalia--annotate-local-file
+    (when-let (attrs (file-attributes (substitute-in-file-name
+                                       (marginalia--full-candidate cand))
+                                      'integer))
+      (marginalia--fields
+       ((marginalia--file-owner attrs)
+        :width 12 :face 'marginalia-file-owner)
+       ((marginalia--file-modes attrs))
+       ((+marginalia-file-size-colorful (file-attribute-size attrs))
+        :width 7)
+       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
+        :width 12))))
+
+  (defun +marginalia--time-colorful (time)
+    (let* ((seconds (float-time (time-subtract (current-time) time)))
+           (color (doom-blend
+                   (face-attribute 'marginalia-date :foreground nil t)
+                   (face-attribute 'marginalia-documentation :foreground nil t)
+                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
+      ;; 1 - log(3 + 1/(days + 1)) % grey
+      (propertize (marginalia--time time) 'face (list :foreground color))))
+
+  (defun +marginalia-file-size-colorful (size)
+    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
+           (color (if (< size-index 10000000) ; 10m
+                      (doom-blend 'orange 'green size-index)
+                    (doom-blend 'red 'orange (- size-index 1)))))
+      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
+  #+end_src
 
 ** Writeroom
 For starters, I think Doom is a bit over-zealous when zooming in
@@ -1773,7 +1393,6 @@ tweaks. Namely:
 + Hiding line numbers
 + Removing outline indentation
 + Centering the text
-+ Disabling ~doom-modeline~
 
 #+begin_src elisp
 (defvar +zen-serif-p t
@@ -1821,331 +1440,6 @@ tweaks. Namely:
                 (when (featurep 'org-superstar)
                   (org-superstar-restart))
                 (when +zen--original-org-indent-mode-p (org-indent-mode 1))))))
-#+end_src
-
-** Font Display
-Mixed pitch is great. As is ~+org-pretty-mode~, let's use them.
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook #'+org-pretty-mode)
-#+end_src
-
-However, the subscripts (and superscripts) are confusing with latex fragments,
-so lets turn those off
-#+begin_src emacs-lisp
-(setq org-pretty-entities-include-sub-superscripts nil)
-#+end_src
-
-Let's make headings a bit bigger
-#+begin_src emacs-lisp
-(custom-set-faces!
-  '(org-document-title :height 1.2)
-  '(outline-1 :weight extra-bold :height 1.25)
-  '(outline-2 :weight bold :height 1.15)
-  '(outline-3 :weight bold :height 1.12)
-  '(outline-4 :weight semi-bold :height 1.09)
-  '(outline-5 :weight semi-bold :height 1.06)
-  '(outline-6 :weight semi-bold :height 1.03)
-  '(outline-8 :weight semi-bold)
-  '(outline-9 :weight semi-bold))
-#+end_src
-
-It seems reasonable to have deadlines in the error face when they're passed.
-#+begin_src emacs-lisp
-(setq org-agenda-deadline-faces
-      '((1.0 . error)
-        (1.0 . org-warning)
-        (0.5 . org-upcoming-deadline)
-        (0.0 . org-upcoming-distant-deadline)))
-#+end_src
-
-We can then have quote blocks stand out a bit more by making them /italic/.
-#+begin_src emacs-lisp
-(setq org-fontify-quote-and-verse-blocks t)
-#+end_src
-
-#+begin_src emacs-lisp
-(use-package! org-appear
-  :hook (org-mode . org-appear-mode)
-  :config
-  (setq org-appear-autoemphasis t
-        org-appear-autosubmarkers t
-        org-appear-autolinks nil)
-  (run-at-time nil nil #'org-appear--set-elements))
-#+end_src
-
-Org files can be rather nice to look at, particularly with some of the
-customizations here. This comes at a cost however, expensive font-lock.
-Feeling like you're typing through molasses in large files is no fun, but there
-is a way I can defer font-locking when typing to make the experience more
-responsive.
-#+begin_src emacs-lisp
-(defun locally-defer-font-lock ()
-  "Set jit-lock defer and stealth, when buffer is over a certain size."
-  (when (> (buffer-size) 50000)
-    (setq-local jit-lock-defer-time 0.05
-                jit-lock-stealth-time 1)))
-
-(add-hook 'org-mode-hook #'locally-defer-font-lock)
-#+end_src
-
-*** Fontifying inline src blocks
-Org does lovely things with =#+begin_src= blocks, like using font-lock for
-language's major-mode behind the scenes and pulling out the lovely colourful
-results. By contrast, inline =src_= blocks are somewhat neglected.
-
-I am not the first person to feel this way, thankfully others have [[https://stackoverflow.com/questions/20309842/how-to-syntax-highlight-for-org-mode-inline-source-code-src-lang/28059832][taken to
-stackexchange]] to voice their desire for inline src fontification. I was going to
-steal their work, but unfortunately they didn't perform /true/ source code
-fontification, but simply applied the =org-code= face to the content.
-
-We can do better than that, and we shall! Using ~org-src-font-lock-fontify-block~
-we can apply language-appropriate syntax highlighting. Then, continuing on to
-={{{results(...)}}}= , it can have the =org-block= face applied to match, and then
-the value-surrounding constructs hidden by mimicking the behaviour of
-~prettify-symbols-mode~.
-
-#+begin_src emacs-lisp
-(defvar org-prettify-inline-results t
-  "Whether to use (ab)use prettify-symbols-mode on {{{results(...)}}}.
-Either t or a cons cell of strings which are used as substitutions
-for the start and end of inline results, respectively.")
-
-(defvar org-fontify-inline-src-blocks-max-length 200
-  "Maximum content length of an inline src block that will be fontified.")
-
-(defun org-fontify-inline-src-blocks (limit)
-  "Try to apply `org-fontify-inline-src-blocks-1'."
-  (condition-case nil
-      (org-fontify-inline-src-blocks-1 limit)
-    (error (message "Org mode fontification error in %S at %d"
-                    (current-buffer)
-                    (line-number-at-pos)))))
-
-(defun org-fontify-inline-src-blocks-1 (limit)
-  "Fontify inline src_LANG blocks, from `point' up to LIMIT."
-  (let ((case-fold-search t)
-        (initial-point (point)))
-    (while (re-search-forward "\\_<src_\\([^ \t\n[{]+\\)[{[]?" limit t) ; stolen from `org-element-inline-src-block-parser'
-      (let ((beg (match-beginning 0))
-            pt
-            (lang-beg (match-beginning 1))
-            (lang-end (match-end 1)))
-        (remove-text-properties beg lang-end '(face nil))
-        (font-lock-append-text-property lang-beg lang-end 'face 'org-meta-line)
-        (font-lock-append-text-property beg lang-beg 'face 'shadow)
-        (font-lock-append-text-property beg lang-end 'face 'org-block)
-        (setq pt (goto-char lang-end))
-        ;; `org-element--parse-paired-brackets' doesn't take a limit, so to
-        ;; prevent it searching the entire rest of the buffer we temporarily
-        ;; narrow the active region.
-        (save-restriction
-          (narrow-to-region beg (min (point-max) limit (+ lang-end org-fontify-inline-src-blocks-max-length)))
-          (when (ignore-errors (org-element--parse-paired-brackets ?\[))
-            (remove-text-properties pt (point) '(face nil))
-            (font-lock-append-text-property pt (point) 'face 'org-block)
-            (setq pt (point)))
-          (when (ignore-errors (org-element--parse-paired-brackets ?\{))
-            (remove-text-properties pt (point) '(face nil))
-            (font-lock-append-text-property pt (1+ pt) 'face '(org-block shadow))
-            (unless (= (1+ pt) (1- (point)))
-              (if org-src-fontify-natively
-                  (org-src-font-lock-fontify-block (buffer-substring-no-properties lang-beg lang-end) (1+ pt) (1- (point)))
-                (font-lock-append-text-property (1+ pt) (1- (point)) 'face 'org-block)))
-            (font-lock-append-text-property (1- (point)) (point) 'face '(org-block shadow))
-            (setq pt (point))))
-        (when (and org-prettify-inline-results (re-search-forward "\\= {{{results(" limit t))
-          (font-lock-append-text-property pt (1+ pt) 'face 'org-block)
-          (goto-char pt))))
-    (when org-prettify-inline-results
-      (goto-char initial-point)
-      (org-fontify-inline-src-results limit))))
-
-(defun org-fontify-inline-src-results (limit)
-  (while (re-search-forward "{{{results(\\(.+?\\))}}}" limit t)
-    (remove-list-of-text-properties (match-beginning 0) (point)
-                                    '(composition
-                                      prettify-symbols-start
-                                      prettify-symbols-end))
-    (font-lock-append-text-property (match-beginning 0) (match-end 0) 'face 'org-block)
-    (let ((start (match-beginning 0)) (end (match-beginning 1)))
-      (with-silent-modifications
-        (compose-region start end (if (eq org-prettify-inline-results t) "⟨" (car org-prettify-inline-results)))
-        (add-text-properties start end `(prettify-symbols-start ,start prettify-symbols-end ,end))))
-    (let ((start (match-end 1)) (end (point)))
-      (with-silent-modifications
-        (compose-region start end (if (eq org-prettify-inline-results t) "⟩" (cdr org-prettify-inline-results)))
-        (add-text-properties start end `(prettify-symbols-start ,start prettify-symbols-end ,end))))))
-
-(defun org-fontify-inline-src-blocks-enable ()
-  "Add inline src fontification to font-lock in Org.
-Must be run as part of `org-font-lock-set-keywords-hook'."
-  (setq org-font-lock-extra-keywords
-        (append org-font-lock-extra-keywords '((org-fontify-inline-src-blocks)))))
-
-(add-hook 'org-font-lock-set-keywords-hook #'org-fontify-inline-src-blocks-enable)
-#+end_src
-
-** Symbols
-Firstly, I dislike the default stars for org-mode, so lets improve that
-#+begin_src emacs-lisp
-;;make bullets look better
-(after! org-superstar
-  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
-        org-superstar-prettify-item-bullets t ))
-#+end_src
-
-I also want to hide leading stars, since they feel redundant
-#+begin_src elisp
-(setq org-ellipsis " ▾ "
-      org-hide-leading-stars t
-      org-priority-highest ?A
-      org-priority-lowest ?E
-      org-priority-faces
-      '((?A . 'all-the-icons-red)
-        (?B . 'all-the-icons-orange)
-        (?C . 'all-the-icons-yellow)
-        (?D . 'all-the-icons-green)
-        (?E . 'all-the-icons-blue)))
-#+end_src
-
-Lastly, lets add some ligatures for some org mode stuff
-#+begin_src elisp
-(appendq! +ligatures-extra-symbols
-          `(:checkbox      "☐"
-            :pending       "◼"
-            :checkedbox    "☑"
-            :list_property "∷"
-            :em_dash       "—"
-            :ellipses      "…"
-            :arrow_right   "→"
-            :arrow_left    "←"
-            :property      "☸"
-            :options       "⌥"
-            :startup       "⏻"
-            :html_head     "🅷"
-            :html          "🅗"
-            :latex_class   "🄻"
-            :latex_header  "🅻"
-            :beamer_header "🅑"
-            :latex         "🅛"
-            :attr_latex    "🄛"
-            :attr_html     "🄗"
-            :attr_org      "⒪"
-            :begin_quote   "❝"
-            :end_quote     "❞"
-            :caption       "☰"
-            :header        "›"
-            :begin_export  "⏩"
-            :end_export    "⏪"
-            :properties    "⚙"
-            :end           "∎"
-            :priority_a   ,(propertize "⚑" 'face 'all-the-icons-red)
-            :priority_b   ,(propertize "⬆" 'face 'all-the-icons-orange)
-            :priority_c   ,(propertize "■" 'face 'all-the-icons-yellow)
-            :priority_d   ,(propertize "⬇" 'face 'all-the-icons-green)
-            :priority_e   ,(propertize "❓" 'face 'all-the-icons-blue)))
-(set-ligatures! 'org-mode
-  :merge t
-  :checkbox      "[ ]"
-  :pending       "[-]"
-  :checkedbox    "[X]"
-  :list_property "::"
-  :em_dash       "---"
-  :ellipsis      "..."
-  :arrow_right   "->"
-  :arrow_left    "<-"
-  :title         "#+title:"
-  :subtitle      "#+subtitle:"
-  :author        "#+author:"
-  :date          "#+date:"
-  :property      "#+property:"
-  :options       "#+options:"
-  :startup       "#+startup:"
-  :macro         "#+macro:"
-  :html_head     "#+html_head:"
-  :html          "#+html:"
-  :latex_class   "#+latex_class:"
-  :latex_header  "#+latex_header:"
-  :beamer_header "#+beamer_header:"
-  :latex         "#+latex:"
-  :attr_latex    "#+attr_latex:"
-  :attr_html     "#+attr_html:"
-  :attr_org      "#+attr_org:"
-  :begin_quote   "#+begin_quote"
-  :end_quote     "#+end_quote"
-  :caption       "#+caption:"
-  :header        "#+header:"
-  :begin_export  "#+begin_export"
-  :end_export    "#+end_export"
-  :results       "#+RESULTS:"
-  :property      ":PROPERTIES:"
-  :end           ":END:"
-  :priority_a    "[#A]"
-  :priority_b    "[#B]"
-  :priority_c    "[#C]"
-  :priority_d    "[#D]"
-  :priority_e    "[#E]")
-(plist-put +ligatures-extra-symbols :name "⁍")
-#+end_src
-
-Lets also add a function that makes it easy to convert from upper to lowercase,
-since the ligatures don't work with Uppercase (I can make them work, but
-lowercase looks better anyways)
-#+begin_src elisp
-(defun org-syntax-convert-keyword-case-to-lower ()
-  "Convert all #+KEYWORDS to #+keywords."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (let ((count 0)
-          (case-fold-search nil))
-      (while (re-search-forward "^[ \t]*#\\+[A-Z_]+" nil t)
-        (unless (s-matches-p "RESULTS" (match-string 0))
-          (replace-match (downcase (match-string 0)) t)
-          (setq count (1+ count))))
-      (message "Replaced %d occurances" count))))
-#+end_src
-
-** Keycast
-Its nice for demonstrations
-#+begin_src elisp
-(use-package! keycast
-  :commands keycast-mode
-  :config
-  (define-minor-mode keycast-mode
-    "Show current command and its key binding in the mode line."
-    :global t
-    (if keycast-mode
-        (progn
-          (add-hook 'pre-command-hook 'keycast--update t)
-          (add-to-list 'global-mode-string '("" mode-line-keycast " ")))
-      (remove-hook 'pre-command-hook 'keycast--update)
-      (setq global-mode-string (remove '("" mode-line-keycast " ") global-mode-string))))
-  (custom-set-faces!
-    '(keycast-command :inherit doom-modeline-debug
-                      :height 1.0)
-    '(keycast-key :inherit custom-modified
-                  :height 1.0
-                  :weight bold)))
-#+end_src
-
-** Transparency
-I'm not too big of a fan of transparency, but some people like it. You can use
-this little function to toggle it now. On =C-c t= inactive windows will dim (85%
-transparency)  and focused windows remain opaque
-#+begin_src elisp
- (defun toggle-transparency ()
-   (interactive)
-   (let ((alpha (frame-parameter nil 'alpha)))
-     (set-frame-parameter
-      nil 'alpha
-      (if (eql (cond ((numberp alpha) alpha)
-                     ((numberp (cdr alpha)) (cdr alpha))
-                     ;; Also handle undocumented (<active> <inactive>) form.
-                     ((numberp (cadr alpha)) (cadr alpha)))
-               100)
-          '(100 . 85) '(100 . 100)))))
- (global-set-key (kbd "C-c t") 'toggle-transparency)
 #+end_src
 
 ** RSS
@@ -2378,25 +1672,10 @@ To actually read the ebooks we use =nov=.
     (add-hook 'nov-mode-hook #'+nov-mode-setup)))
 #+end_src
 
-** Screenshot
-Testing
-#+begin_src emacs-lisp
-(use-package! screenshot
-  :defer t)
-#+end_src
-
 * Org
 ** Org-Mode
 Org mode is the best writing format, no contest. The defaults are more
 terminal-oriented, so lets make it look a little better
-
-Some hooks are a bit annoying, so lets make them shut up
-#+begin_src elisp
-(defadvice! shut-up-org-problematic-hooks (orig-fn &rest args)
-  :around #'org-fancy-priorities-mode
-  :around #'org-superstar-mode
-  (ignore-errors (apply orig-fn args)))
-#+end_src
 
 Sadly I can't always work in org, but I can import stuff into it!
 #+begin_src emacs-lisp
@@ -2406,12 +1685,12 @@ Sadly I can't always work in org, but I can import stuff into it!
 
 I prefer /org as my directory. Lets change some other defaults too
 #+begin_src elisp
-(setq org-directory "~/org"                      ; let's put files here
+(setq org-directory "~/org"                       ; let's put files here
       org-use-property-inheritance t              ; it's convenient to have properties inherited
       org-log-done 'time                          ; having the time a item is done sounds convenient
       org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
       org-export-in-background t                  ; run export processes in external emacs process
-      org-catch-invisible-edits 'smart)            ; try not to accidently do weird stuff in invisible regions
+      org-catch-invisible-edits 'smart)           ; try not to accidently do weird stuff in invisible regions
 #+end_src
 
 I want to slightly change the default args for babel
@@ -3056,19 +2335,6 @@ Lets set up the org-roam-ui as well
             org-roam-ui-open-on-start t))
 #+end_src
 
-The doom-modeline is a bit messy with roam, lets adjust that
-#+begin_src elisp
-(defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
-  :around #'doom-modeline-buffer-file-name ; takes no args
-  (if (s-contains-p org-roam-directory (or buffer-file-name ""))
-      (replace-regexp-in-string
-       "\\(?:^\\|.*/\\)\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)[0-9]*-"
-       "🢔(\\1-\\2-\\3) "
-       (subst-char-in-string ?_ ?  buffer-file-name))
-    (funcall orig-fun)))
-#+end_src
-
-
 Now, I want to replace the org-roam buffer with org-roam-ui, to do that, we need
 to disable the regular buffer
 #+begin_src elisp
@@ -3372,6 +2638,220 @@ Sprinkle in some =doct= utility functions
                            :keyword "%U"
                            :file +org-capture-project-notes-file)))
               )))
+#+end_src
+
+** Symbols
+Firstly, I dislike the default stars for org-mode, so lets improve that
+#+begin_src emacs-lisp
+;;make bullets look better
+(after! org-superstar
+  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
+        org-superstar-prettify-item-bullets t ))
+#+end_src
+
+I also want to hide leading stars, since they feel redundant
+#+begin_src elisp
+(setq org-ellipsis " ▾ "
+      org-hide-leading-stars t
+      org-priority-highest ?A
+      org-priority-lowest ?E
+      org-priority-faces
+      '((?A . 'all-the-icons-red)
+        (?B . 'all-the-icons-orange)
+        (?C . 'all-the-icons-yellow)
+        (?D . 'all-the-icons-green)
+        (?E . 'all-the-icons-blue)))
+#+end_src
+
+Lastly, lets add some ligatures for some org mode stuff
+#+begin_src elisp
+(appendq! +ligatures-extra-symbols
+          `(:checkbox      "☐"
+            :pending       "◼"
+            :checkedbox    "☑"
+            :list_property "∷"
+            :em_dash       "—"
+            :ellipses      "…"
+            :arrow_right   "→"
+            :arrow_left    "←"
+            :property      "☸"
+            :options       "⌥"
+            :startup       "⏻"
+            :html_head     "🅷"
+            :html          "🅗"
+            :latex_class   "🄻"
+            :latex_header  "🅻"
+            :beamer_header "🅑"
+            :latex         "🅛"
+            :attr_latex    "🄛"
+            :attr_html     "🄗"
+            :attr_org      "⒪"
+            :begin_quote   "❝"
+            :end_quote     "❞"
+            :caption       "☰"
+            :header        "›"
+            :begin_export  "⏩"
+            :end_export    "⏪"
+            :properties    "⚙"
+            :end           "∎"
+            :priority_a   ,(propertize "⚑" 'face 'all-the-icons-red)
+            :priority_b   ,(propertize "⬆" 'face 'all-the-icons-orange)
+            :priority_c   ,(propertize "■" 'face 'all-the-icons-yellow)
+            :priority_d   ,(propertize "⬇" 'face 'all-the-icons-green)
+            :priority_e   ,(propertize "❓" 'face 'all-the-icons-blue)))
+(set-ligatures! 'org-mode
+  :merge t
+  :checkbox      "[ ]"
+  :pending       "[-]"
+  :checkedbox    "[X]"
+  :list_property "::"
+  :em_dash       "---"
+  :ellipsis      "..."
+  :arrow_right   "->"
+  :arrow_left    "<-"
+  :title         "#+title:"
+  :subtitle      "#+subtitle:"
+  :author        "#+author:"
+  :date          "#+date:"
+  :property      "#+property:"
+  :options       "#+options:"
+  :startup       "#+startup:"
+  :macro         "#+macro:"
+  :html_head     "#+html_head:"
+  :html          "#+html:"
+  :latex_class   "#+latex_class:"
+  :latex_header  "#+latex_header:"
+  :beamer_header "#+beamer_header:"
+  :latex         "#+latex:"
+  :attr_latex    "#+attr_latex:"
+  :attr_html     "#+attr_html:"
+  :attr_org      "#+attr_org:"
+  :begin_quote   "#+begin_quote"
+  :end_quote     "#+end_quote"
+  :caption       "#+caption:"
+  :header        "#+header:"
+  :begin_export  "#+begin_export"
+  :end_export    "#+end_export"
+  :results       "#+RESULTS:"
+  :property      ":PROPERTIES:"
+  :end           ":END:"
+  :priority_a    "[#A]"
+  :priority_b    "[#B]"
+  :priority_c    "[#C]"
+  :priority_d    "[#D]"
+  :priority_e    "[#E]")
+(plist-put +ligatures-extra-symbols :name "⁍")
+#+end_src
+
+Lets also add a function that makes it easy to convert from upper to lowercase,
+since the ligatures don't work with Uppercase (I can make them work, but
+lowercase looks better anyways)
+#+begin_src elisp
+(defun org-syntax-convert-keyword-case-to-lower ()
+  "Convert all #+KEYWORDS to #+keywords."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((count 0)
+          (case-fold-search nil))
+      (while (re-search-forward "^[ \t]*#\\+[A-Z_]+" nil t)
+        (unless (s-matches-p "RESULTS" (match-string 0))
+          (replace-match (downcase (match-string 0)) t)
+          (setq count (1+ count))))
+      (message "Replaced %d occurances" count))))
+#+end_src
+
+** Font Display
+Mixed pitch is great. As is ~+org-pretty-mode~, let's use them.
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook #'+org-pretty-mode)
+#+end_src
+
+However, the subscripts (and superscripts) are confusing with latex fragments,
+so lets turn those off
+#+begin_src emacs-lisp
+(setq org-pretty-entities-include-sub-superscripts nil)
+#+end_src
+
+Lets adjust the the keyword faces a bit
+#+begin_src emacs-lisp
+(after! hl-todo
+(setq hl-todo-keyword-faces
+      `(;; Use TODO to note missing features or functionality that should be
+        ;; added at a later date.
+        ("TODO" nano-face-salient)
+        ;; Use FIXME to note broken code that needs to be fixed.
+        ("FIXME" nano-face-critical)
+        ;; Use OPTIMIZE to note slow or inefficient code that may cause
+        ;; performance problems.
+        ("OPTIMIZE" nano-face-salient)
+        ;; Use HACK to note "code smells" where questionable coding practices
+        ;; were used and should be refactored away.
+        ("HACK" nano-face-salient)
+        ;; Use REVIEW to note anything that should be looked at to confirm it is
+        ;; working as intended. For example: REVIEW: Are we sure this is how the
+        ;; client does X currently?
+        ("REVIEW" nano-face-salient)
+
+        ;; Here are keywords I don't use but are added for compatibility with
+        ;; other's codebases
+        ("NOTE" nano-face-salient)
+        ("DEPRECATED" nano-face-salient)
+        ("BUG" nano-face-critical)
+        ("XXX" nano-face-salient))))
+#+end_src
+
+Let's make headings a bit bigger
+#+begin_src emacs-lisp
+(custom-set-faces!
+  '(org-document-title :height 1.2)
+  '(outline-1 :weight extra-bold :height 1.25)
+  '(outline-2 :weight bold :height 1.15)
+  '(outline-3 :weight bold :height 1.12)
+  '(outline-4 :weight semi-bold :height 1.09)
+  '(outline-5 :weight semi-bold :height 1.06)
+  '(outline-6 :weight semi-bold :height 1.03)
+  '(outline-8 :weight semi-bold)
+  '(outline-9 :weight semi-bold))
+#+end_src
+
+It seems reasonable to have deadlines in the error face when they're passed.
+#+begin_src emacs-lisp
+(setq org-agenda-deadline-faces
+      '((1.0 . error)
+        (1.0 . org-warning)
+        (0.5 . org-upcoming-deadline)
+        (0.0 . org-upcoming-distant-deadline)))
+#+end_src
+
+We can then have quote blocks stand out a bit more by making them /italic/.
+#+begin_src emacs-lisp
+(setq org-fontify-quote-and-verse-blocks t)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t
+        org-appear-autosubmarkers t
+        org-appear-autolinks nil)
+  (run-at-time nil nil #'org-appear--set-elements))
+#+end_src
+
+Org files can be rather nice to look at, particularly with some of the
+customizations here. This comes at a cost however, expensive font-lock.
+Feeling like you're typing through molasses in large files is no fun, but there
+is a way I can defer font-locking when typing to make the experience more
+responsive.
+#+begin_src emacs-lisp
+(defun locally-defer-font-lock ()
+  "Set jit-lock defer and stealth, when buffer is over a certain size."
+  (when (> (buffer-size) 50000)
+    (setq-local jit-lock-defer-time 0.05
+                jit-lock-stealth-time 1)))
+
+(add-hook 'org-mode-hook #'locally-defer-font-lock)
 #+end_src
 
 ** Org-Plot
@@ -3823,7 +3303,7 @@ I have to export files pretty often, lets setup some keybindings to make it easi
 #+end_src
 
 ** Dictionaries
-Lets use lexic instead of the default dictionary
+On every system I use (I have a lot of systems) the dictionary results in doom/emacs are different, and that gets annoying. Lets use lexic + stardict, instead of the default dictionaries.
 #+begin_src elisp
 (use-package! lexic
   :commands lexic-search lexic-list-dictionary
@@ -4247,7 +3727,6 @@ Looks crisp!
 
 *** Classes
 Now for some class setup
-
 #+begin_src emacs-lisp
 (after! ox-latex
   (add-to-list 'org-latex-classes
@@ -4490,12 +3969,6 @@ Nice little package to color stuff for us.
   (setq ox-chameleon-snap-fgbg-to-bw nil))
 #+end_src
 
-*** Async
-Run export processes in a background ... process
-#+begin_src emacs-lisp
-(setq org-export-in-background t)
-#+end_src
-
 *** (sub|super)script characters
 Annoying having to gate these, so let's fix that
 #+begin_src emacs-lisp
@@ -4621,47 +4094,10 @@ We can also send messages using msmtp
 
 Notifications are quite nifty, especially if I'm as lazy as I am
 #+begin_src emacs-lisp
-;;(setq alert-default-style 'osx-notifier)
+(setq alert-default-style 'osx-notifier)
 #+end_src
 
 * Browsing
-** Webkit
-Eventually I want to use emacs for everything. Instead of using xwidgets, which
-requires a custom (non-cached) build of emacs. Emacs-webkit is a good
-alternative, but is quite buggy right now. Once its stable, I'll fix this config
-#+begin_src emacs-lisp
-;;(use-package org
-;;  :demand t)
-
-;; (use-package webkit
-;;   :defer t
-;;   :commands webkit
-;;   :init
-;;   (setq webkit-search-prefix "https://google.com/search?q="
-;;         webkit-history-file nil
-;;         webkit-cookie-file nil
-;;         browse-url-browser-function 'webkit-browse-url
-;;         webkit-browse-url-force-new t
-;;         webkit-download-action-alist '(("\\.pdf\\'" . webkit-download-open)
-;;                                        ("\\.png\\'" . webkit-download-save)
-;;                                        (".*" . webkit-download-default)))
-
-;;   (defun webkit--display-progress (progress)
-;;     (setq webkit--progress-formatted
-;;           (if (equal progress 100.0)
-;;               ""
-;;             (format "%s%.0f%%  " (all-the-icons-faicon "spinner") progress)))
-;;    (force-mode-line-update)))
-#+end_src
-
-I also want to use evil bindings with this. It's not upstreamed yet, so I'll steal the ones from the repo
-#+begin_src elisp
-;; (use-package evil-collection-webkit
-;;    :defer t
-;;    :config
-;;    (evil-collection-xwidget-setup))
-#+end_src
-
 ** IRC
 [[xkcd:1782]]
 
@@ -4673,8 +4109,7 @@ To make this easier, I
 1. Have everything (serverinfo and passwords) in an authinfo.gpg file
 2. Tell circe to use it
 3. Use org syntax for formatting
-4. Add emoji support
-5. Set it up with discord
+4. Set it up with discord
 
 #+name: irc-authinfo-reader
 #+begin_src emacs-lisp :tangle no
@@ -4728,9 +4163,6 @@ configuration tweaks.
 
   <<org-emph-to-irc>>
 
-  <<circe-emojis>>
-  <<circe-emoji-alists>>
-
   (defun named-circe-prompt ()
     (lui-set-prompt
      (concat (propertize (format "%13s > " (circe-nick))
@@ -4768,169 +4200,16 @@ Let's do our *bold*, /italic/, and _underline_ in org-syntax, using IRC control 
 (add-hook 'lui-pre-input-hook #'lui-org-to-irc)
 #+end_src
 
-Let's setup Circe to use some emojis
-#+name: circe-emojis
-#+begin_src emacs-lisp :tangle no
-(defun lui-ascii-to-emoji ()
-  (goto-char (point-min))
-  (while (re-search-forward "\\( \\)?::?\\([^[:space:]:]+\\):\\( \\)?" nil t)
-    (replace-match
-     (concat
-      (match-string 1)
-      (or (cdr (assoc (match-string 2) lui-emojis-alist))
-          (concat ":" (match-string 2) ":"))
-      (match-string 3))
-     nil nil)))
+* Credits
+- Tecosaur - For all his help and the excellent Org, \LaTeX, and HTML export configs
+- Dr. Elken - For his EXWM Module and help on the DOOM Server
+- Henrik - For making Doom Emacs in the first place
 
-(defun lui-emoticon-to-emoji ()
-  (dolist (emoticon lui-emoticons-alist)
-    (goto-char (point-min))
-    (while (re-search-forward (concat " " (car emoticon) "\\( \\)?") nil t)
-      (replace-match (concat " "
-                             (cdr (assoc (cdr emoticon) lui-emojis-alist))
-                             (match-string 1))))))
+#+begin_quote
+Includes (snippets) of other software related under the MIT license:
+- Doom Emacs Config, 2021 Tecosaur. https://tecosaur.github.io/emacs-config/config.html
+- .doom.d, 2021 Elken. https://github.com/elken/.doom.d/blob/master/config.org
 
-(define-minor-mode lui-emojify
-  "Replace :emojis: and ;) emoticons with unicode emoji chars."
-  :global t
-  :init-value t
-  (if lui-emojify
-      (add-hook! lui-pre-input #'lui-ascii-to-emoji #'lui-emoticon-to-emoji)
-    (remove-hook! lui-pre-input #'lui-ascii-to-emoji #'lui-emoticon-to-emoji)))
-#+end_src
-
-Now, some actual emojis to use.
-#+name: circe-emoji-alists
-#+begin_src emacs-lisp :tangle no
-(defvar lui-emojis-alist
-  '(("grinning"                      . "😀")
-    ("smiley"                        . "😃")
-    ("smile"                         . "😄")
-    ("grin"                          . "😁")
-    ("laughing"                      . "😆")
-    ("sweat_smile"                   . "😅")
-    ("joy"                           . "😂")
-    ("rofl"                          . "🤣")
-    ("relaxed"                       . "☺️")
-    ("blush"                         . "😊")
-    ("innocent"                      . "😇")
-    ("slight_smile"                  . "🙂")
-    ("upside_down"                   . "🙃")
-    ("wink"                          . "😉")
-    ("relieved"                      . "😌")
-    ("heart_eyes"                    . "😍")
-    ("yum"                           . "😋")
-    ("stuck_out_tongue"              . "😛")
-    ("stuck_out_tongue_closed_eyes"  . "😝")
-    ("stuck_out_tongue_wink"         . "😜")
-    ("zanzy"                         . "🤪")
-    ("raised_eyebrow"                . "🤨")
-    ("monocle"                       . "🧐")
-    ("nerd"                          . "🤓")
-    ("cool"                          . "😎")
-    ("star_struck"                   . "🤩")
-    ("party"                         . "🥳")
-    ("smirk"                         . "😏")
-    ("unamused"                      . "😒")
-    ("disapointed"                   . "😞")
-    ("pensive"                       . "😔")
-    ("worried"                       . "😟")
-    ("confused"                      . "😕")
-    ("slight_frown"                  . "🙁")
-    ("frown"                         . "☹️")
-    ("persevere"                     . "😣")
-    ("confounded"                    . "😖")
-    ("tired"                         . "😫")
-    ("weary"                         . "😩")
-    ("pleading"                      . "🥺")
-    ("tear"                          . "😢")
-    ("cry"                           . "😢")
-    ("sob"                           . "😭")
-    ("triumph"                       . "😤")
-    ("angry"                         . "😠")
-    ("rage"                          . "😡")
-    ("exploding_head"                . "🤯")
-    ("flushed"                       . "😳")
-    ("hot"                           . "🥵")
-    ("cold"                          . "🥶")
-    ("scream"                        . "😱")
-    ("fearful"                       . "😨")
-    ("disapointed"                   . "😰")
-    ("relieved"                      . "😥")
-    ("sweat"                         . "😓")
-    ("thinking"                      . "🤔")
-    ("shush"                         . "🤫")
-    ("liar"                          . "🤥")
-    ("blank_face"                    . "😶")
-    ("neutral"                       . "😐")
-    ("expressionless"                . "😑")
-    ("grimace"                       . "😬")
-    ("rolling_eyes"                  . "🙄")
-    ("hushed"                        . "😯")
-    ("frowning"                      . "😦")
-    ("anguished"                     . "😧")
-    ("wow"                           . "😮")
-    ("astonished"                    . "😲")
-    ("sleeping"                      . "😴")
-    ("drooling"                      . "🤤")
-    ("sleepy"                        . "😪")
-    ("dizzy"                         . "😵")
-    ("zipper_mouth"                  . "🤐")
-    ("woozy"                         . "🥴")
-    ("sick"                          . "🤢")
-    ("vomiting"                      . "🤮")
-    ("sneeze"                        . "🤧")
-    ("mask"                          . "😷")
-    ("bandaged_head"                 . "🤕")
-    ("money_face"                    . "🤑")
-    ("cowboy"                        . "🤠")
-    ("imp"                           . "😈")
-    ("ghost"                         . "👻")
-    ("alien"                         . "👽")
-    ("robot"                         . "🤖")
-    ("clap"                          . "👏")
-    ("thumpup"                       . "👍")
-    ("+1"                            . "👍")
-    ("thumbdown"                     . "👎")
-    ("-1"                            . "👎")
-    ("ok"                            . "👌")
-    ("pinch"                         . "🤏")
-    ("left"                          . "👈")
-    ("right"                         . "👉")
-    ("down"                          . "👇")
-    ("wave"                          . "👋")
-    ("pray"                          . "🙏")
-    ("eyes"                          . "👀")
-    ("brain"                         . "🧠")
-    ("facepalm"                      . "🤦")
-    ("tada"                          . "🎉")
-    ("fire"                          . "🔥")
-    ("flying_money"                  . "💸")
-    ("lighbulb"                      . "💡")
-    ("heart"                         . "❤️")
-    ("sparkling_heart"               . "💖")
-    ("heartbreak"                    . "💔")
-    ("100"                           . "💯")))
-
-(defvar lui-emoticons-alist
-  '((":)"   . "slight_smile")
-    (";)"   . "wink")
-    (":D"   . "smile")
-    ("=D"   . "grin")
-    ("xD"   . "laughing")
-    (";("   . "joy")
-    (":P"   . "stuck_out_tongue")
-    (";D"   . "stuck_out_tongue_wink")
-    ("xP"   . "stuck_out_tongue_closed_eyes")
-    (":("   . "slight_frown")
-    (";("   . "cry")
-    (";'("  . "sob")
-    (">:("  . "angry")
-    (">>:(" . "rage")
-    (":o"   . "wow")
-    (":O"   . "astonished")
-    (":/"   . "confused")
-    (":-/"  . "thinking")
-    (":|"   . "neutral")
-    (":-|"  . "expressionless")))
-#+end_src
+Includes (snippets) of other software related under the GPLv3 license:
+- .dotfiles, 2021 Daviwil. https://github.com/daviwil/dotfiles
+#+end_quote

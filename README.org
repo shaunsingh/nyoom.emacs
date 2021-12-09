@@ -7,7 +7,9 @@
 Here you may find my config. There is only one significant file:
 + =config.org=, my configuration file --- see the [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML]] or [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]] export.
 
-[[https://media.discordapp.net/attachments/635625917623828520/891803833695621130/image_4.png?width=346&height=1167]]
+[[./misc/assets/dash.png]]
+[[./misc/assets/org.png]]
+[[./misc/assets/vertico.png]]
 
 =config.org= /generates/ the init.el, config.el, and packages.el files, as well as
 about a dozen others.

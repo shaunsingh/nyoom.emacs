@@ -32,17 +32,14 @@
 ;;                   :pre-build (("nix-shell" "shell.nix" "--command make"))))
 
 ;;looks
-(unpin! doom-themes)
-(unpin! doom-modeline)
 (package! modus-themes)
 (package! solaire-mode :disable t)
-(package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon")) ;soon :tm:
+(package! ox-chameleon 
+  :recipe (:host github :repo "tecosaur/ox-chameleon"))
 
 ;;emacs additions
 (package! lexic)
-(package! pdf-tools)
 (package! magit-delta)
-(package! screenshot :recipe (:host github :repo "Jimmysit0/screenshot")) ;https://github.com/melpa/melpa/pull/7327
 
 ;;lsp
 (unpin! lsp-ui)
@@ -51,5 +48,4 @@
 ;;fun
 (package! nov)
 (package! xkcd)
-(package! keycast)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))

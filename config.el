@@ -62,11 +62,11 @@
 
 ;; [[file:config.org::*Fonts][Fonts:1]]
 ;;fonts
-(setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 14)
+(setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
       doom-variable-pitch-font (font-spec :family "Overpass" :size 16)
       doom-unicode-font (font-spec :family "Liga SFMono Nerd Font")
-      doom-serif-font (font-spec :family "Liga SFMono Nerd Font" :weight 'light))
+      doom-serif-font (font-spec :family "Alegreya Sans" :size 16 :weight 'light))
 ;; Fonts:1 ends here
 
 ;; [[file:config.org::*Fonts][Fonts:2]]
@@ -242,73 +242,6 @@ A key's value is a LaTeX snippet which loads such a font."))
         \\TeX}
 \\makeatother\n") t))
 ;; Font collections:6 ends here
-
-;; [[file:config.org::detect-missing-fonts][detect-missing-fonts]]
-;; (defvar required-fonts '("Overpass" "Liga SFMono Nerd Font" "Alegreya" ))
-;; (defvar available-fonts
-;;   (delete-dups (or (font-family-list)
-;;                    (split-string (shell-command-to-string "fc-list : family")
-;;                                  "[,\n]"))))
-;; (defvar missing-fonts
-;;   (delq nil (mapcar
-;;              (lambda (font)
-;;                (unless (delq nil (mapcar (lambda (f)
-;;                            (string-match-p (format "^%s$" font) f))
-;;                                          available-fonts))
-;;                                          font))
-;;                                          required-fonts)))
-;; (if missing-fonts
-;;     (pp-to-string
-;;      `(unless noninteractive
-;;         (add-hook! 'doom-init-ui-hook
-;;           (run-at-time nil nil
-;;                        (lambda ()
-;;                          (message "%s missing the following fonts: %s"
-;;                                   (propertize "Warning!" 'face '(bold warning))
-;;                                   (mapconcat (lambda (font)
-;;                                                (propertize font 'face 'font-lock-variable-name-face))
-;;                                              ',missing-fonts
-;;                                              ", "))
-;;                          (sleep-for 0.5))))))
-;;  ";; No missing fonts detected")
-;; detect-missing-fonts ends here
-
-;; [[file:config.org::*Font collections][Font collections:8]]
-;; nil
-;; Font collections:8 ends here
-
-;; [[file:config.org::*Themes][Themes:1]]
-(setq doom-theme 'doom-vibrant)
-(setq doom-fw-padded-modeline t)
-(setq doom-one-light-padded-modeline t)
-(setq doom-nord-padded-modeline t)
-(setq doom-vibrant-padded-modeline t)
-;; Themes:1 ends here
-
-;; [[file:config.org::*Modus Themes][Modus Themes:1]]
-;; (use-package modus-themes
-;;   :init
-;;   ;; Add all your customizations prior to loading the themes
-;;   (setq modus-themes-italic-constructs t
-;;         modus-themes-completions 'opinionated
-;;         modus-themes-variable-pitch-headings t
-;;         modus-themes-scale-headings t
-;;         modus-themes-variable-pitch-ui nil
-;;         modus-themes-org-agenda
-;;         '((header-block . (variable-pitch scale-title))
-;;           (header-date . (grayscale bold-all)))
-;;         modus-themes-org-blocks
-;;         '(grayscale)
-;;         modus-themes-mode-line
-;;         '(borderless)
-;;         modus-themes-region '(bg-only no-extend))
-
-;;   ;; Load the theme files before enabling a theme
-;;   (modus-themes-load-themes)
-;;   :config
-;;   (modus-themes-load-vivendi)
-;;   :bind ("<f5>" . modus-themes-toggle))
-;; Modus Themes:1 ends here
 
 ;; [[file:config.org::*Company][Company:1]]
 (after! company
@@ -516,11 +449,8 @@ Return nil otherwise."
 ;; LSP:3 ends here
 
 ;; [[file:config.org::*Better Defaults][Better Defaults:1]]
-(setq undo-limit 80000000                          ;I mess up too much
-      evil-want-fine-undo t                        ;By default while in insert all changes are one big blob. Be more granular
-      scroll-margin 2                              ;having a little margin is nice
+(setq scroll-margin 4                              ;having a little margin is nice
       auto-save-default t                          ;I dont like to lose work
-      ;; display-line-numbers-type 'relative       ;If I have to use line numbers, at least make them relative
       display-line-numbers-type nil                ;I dislike line numbers
       history-length 25                            ;Slight speedup
       delete-by-moving-to-trash t                  ;delete to system trash instead
@@ -529,8 +459,6 @@ Return nil otherwise."
 
 (fringe-mode 0) ;;disable fringe
 (global-subword-mode 1) ;;navigate through Camel Case words
-(tool-bar-mode +1) ;;re-enable the toolbar
-(global-so-long-mode -1) ;;i almost never want this on
 
 ;; emacs29 fixes
 (general-auto-unbind-keys :off)
@@ -546,17 +474,6 @@ Return nil otherwise."
 ;; Better Defaults:3 ends here
 
 ;; [[file:config.org::*Better Defaults][Better Defaults:4]]
-(setq evil-vsplit-window-right t
-      evil-split-window-below t)
-;; Better Defaults:4 ends here
-
-;; [[file:config.org::*Better Defaults][Better Defaults:5]]
-(defadvice! prompt-for-buffer (&rest _)
-  :after '(evil-window-split evil-window-vsplit)
-  (consult-buffer))
-;; Better Defaults:5 ends here
-
-;; [[file:config.org::*Better Defaults][Better Defaults:6]]
 (map! :leader
       :desc "hop to word" "w w" #'avy-goto-word-or-subword-1)
 (map! :leader
@@ -564,53 +481,30 @@ Return nil otherwise."
 (map! :leader
       :desc "hop to line"
       "l" #'avy-goto-line)
-;; Better Defaults:6 ends here
+;; Better Defaults:4 ends here
 
-;; [[file:config.org::*Better Defaults][Better Defaults:7]]
+;; [[file:config.org::*Better Defaults][Better Defaults:5]]
 (after! evil
   (map! :nmv ";" #'evil-ex))
-;; Better Defaults:7 ends here
+;; Better Defaults:5 ends here
 
-;; [[file:config.org::*Better Defaults][Better Defaults:8]]
+;; [[file:config.org::*Better Defaults][Better Defaults:6]]
 (after! evil
   (setq evil-ex-substitute-global t     ; I like my s/../.. to by global by default
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
-;; Better Defaults:8 ends here
+;; Better Defaults:6 ends here
 
-;; [[file:config.org::*Better Defaults][Better Defaults:9]]
-(custom-set-faces!
-  `(vertical-border :background ,(doom-color 'bg) :foreground ,(doom-color 'bg)))
-;; Better Defaults:9 ends here
+;; [[file:config.org::*Better Defaults][Better Defaults:7]]
+(setq-default window-resize-pixelwise t
+              frame-resize-pixelwise t)
 
-;; [[file:config.org::*Better Defaults][Better Defaults:10]]
+(after! frame
+  (setq window-divider-default-bottom-width 0
+        window-divider-default-right-width 0))
+
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
-;; Better Defaults:10 ends here
-
-;; [[file:config.org::*Better Defaults][Better Defaults:11]]
-(defadvice! fix-+evil-default-cursor-fn ()
-  :override #'+evil-default-cursor-fn
-  (evil-set-cursor-color (face-background 'cursor)))
-(defadvice! fix-+evil-emacs-cursor-fn ()
-  :override #'+evil-emacs-cursor-fn
-  (evil-set-cursor-color (face-foreground 'warning)))
-;; Better Defaults:11 ends here
-
-;; [[file:config.org::*Better Defaults][Better Defaults:12]]
-(use-package frame
-  :config
-  (setq-default default-frame-alist
-                (append (list
-                '(internal-border-width . 24)
-                '(left-fringe    . 0)
-                '(right-fringe   . 0)
-                '(tool-bar-lines . 0)
-                '(menu-bar-lines . 0)
-                '(line-spacing . 0.24)
-                '(vertical-scroll-bars . nil))))
-  (setq-default window-resize-pixelwise t)
-  (setq-default frame-resize-pixelwise t))
-;; Better Defaults:12 ends here
+;; Better Defaults:7 ends here
 
 ;; [[file:config.org::*+Selectric+ NK-Creams mode][+Selectric+ NK-Creams mode:1]]
 (use-package! selectric-mode
@@ -626,232 +520,17 @@ Return nil otherwise."
 ;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 ;; Treesitter:1 ends here
 
-;; [[file:config.org::*Modeline][Modeline:1]]
-(after! doom-modeline
-  (setq evil-normal-state-tag "<λ>"
-        evil-insert-state-tag "<I>"
-        evil-visual-state-tag "<V>"
-        evil-motion-state-tag "<M>"
-        evil-emacs-state-tag "<EMACS>")
+;; [[file:config.org::*Nano][Nano:1]]
+(add-to-list 'load-path "~/.config/doom/lisp/nano-integration")
+(require 'load-nano)
+;; Nano:1 ends here
 
-  (setq doom-modeline-modal-icon nil
-        doom-modeline-major-mode-icon t
-        doom-modeline-major-mode-color-icon t
-        doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode)
-        doom-modeline-buffer-encoding nil
-        inhibit-compacting-font-caches t
-        find-file-visit-truename t)
+;; [[file:config.org::*Splash][Splash:1]]
+(setq fancy-splash-image "~/.config/doom/misc/gura.png")
+(setq +doom-dashboard-banner-padding '(0 . 1))
+;; Splash:1 ends here
 
-  (custom-set-faces!
-    '(doom-modeline-evil-insert-state :inherit doom-modeline-urgent)
-    '(doom-modeline-evil-visual-state :inherit doom-modeline-warning)
-    '(doom-modeline-evil-normal-state :inherit doom-modeline-buffer-path))
-
-  (setq doom-modeline-enable-word-count t))          ;Show word count
-;; Modeline:1 ends here
-
-;; [[file:config.org::*Centaur tabs][Centaur tabs:1]]
-(defun centaur-tabs-get-total-tab-length ()
-  (length (centaur-tabs-tabs (centaur-tabs-current-tabset))))
-
-(defun centaur-tabs-hide-on-window-change ()
-  (run-at-time nil nil
-               (lambda ()
-                 (centaur-tabs-hide-check (centaur-tabs-get-total-tab-length)))))
-
-(defun centaur-tabs-hide-check (len)
-  (shut-up
-    (cond
-     ((and (= len 1) (not (centaur-tabs-local-mode))) (call-interactively #'centaur-tabs-local-mode))
-     ((and (>= len 2) (centaur-tabs-local-mode)) (call-interactively #'centaur-tabs-local-mode)))))
-;; Centaur tabs:1 ends here
-
-;; [[file:config.org::*Centaur tabs][Centaur tabs:2]]
-(after! centaur-tabs
-  (centaur-tabs-mode -1)
-  (centaur-tabs-headline-match)
-  (centaur-tabs-change-fonts "Liga SFMono Nerd Font" 150)
-
-  (setq centaur-tabs-style "wave"
-        centaur-tabs-set-icons t
-        centaur-tabs-set-bar 'nil
-        centaur-tabs-gray-out-icons 'buffer
-        centaur-tabs-height  30
-        centaur-tabs-close-button ""
-        centaur-tabs-modified-marker nil
-        centaur-tabs-show-navigation-buttons nil
-        centaur-tabs-show-new-tab-button nil
-        centaur-tabs-down-tab-text " ✦"
-        centaur-tabs-backward-tab-text " ⏴ "
-        centaur-tabs-forward-tab-text " ⏵ ")
-
-  (custom-set-faces!
-    `(tab-line :background ,(doom-color 'base1) :foreground ,(doom-color 'base1))
-    `(centaur-tabs-default :background ,(doom-color 'base1) :foreground ,(doom-color 'base1))
-    `(centaur-tabs-active-bar-face :background ,(doom-color 'base1) :foreground ,(doom-color 'base1))
-    `(centaur-tabs-unselected-modified :background ,(doom-color 'base1) :foreground ,(doom-color 'fg))
-    `(centaur-tabs-unselected :background ,(doom-color 'base1) :foreground ,(doom-color 'base4))
-    `(centaur-tabs-selected-modified :background ,(doom-color 'bg) :foreground ,(doom-color 'fg))
-    `(centaur-tabs-selected :background ,(doom-color 'bg) :foreground ,(doom-color 'blue)))
-
-  (add-hook 'window-configuration-change-hook 'centaur-tabs-hide-on-window-change))
-;; Centaur tabs:2 ends here
-
-;; [[file:config.org::*Vertico][Vertico:1]]
-(after! marginalia
-  (setq marginalia-censor-variables nil)
-
-  (defadvice! +marginalia--anotate-local-file-colorful (cand)
-    "Just a more colourful version of `marginalia--anotate-local-file'."
-    :override #'marginalia--annotate-local-file
-    (when-let (attrs (file-attributes (substitute-in-file-name
-                                       (marginalia--full-candidate cand))
-                                      'integer))
-      (marginalia--fields
-       ((marginalia--file-owner attrs)
-        :width 12 :face 'marginalia-file-owner)
-       ((marginalia--file-modes attrs))
-       ((+marginalia-file-size-colorful (file-attribute-size attrs))
-        :width 7)
-       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
-        :width 12))))
-
-  (defun +marginalia--time-colorful (time)
-    (let* ((seconds (float-time (time-subtract (current-time) time)))
-           (color (doom-blend
-                   (face-attribute 'marginalia-date :foreground nil t)
-                   (face-attribute 'marginalia-documentation :foreground nil t)
-                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
-      ;; 1 - log(3 + 1/(days + 1)) % grey
-      (propertize (marginalia--time time) 'face (list :foreground color))))
-
-  (defun +marginalia-file-size-colorful (size)
-    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
-           (color (if (< size-index 10000000) ; 10m
-                      (doom-blend 'orange 'green size-index)
-                    (doom-blend 'red 'orange (- size-index 1)))))
-      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
-;; Vertico:1 ends here
-
-;; [[file:config.org::*Treemacs][Treemacs:1]]
-(setq treemacs-width 25)
-(setq doom-themes-treemacs-theme "doom-colors")
-;; Treemacs:1 ends here
-
-;; [[file:config.org::*Emojis][Emojis:1]]
-(defvar emojify-disabled-emojis
-  '(;; Org
-    "◼" "☑" "☸" "⚙" "⏩" "⏪" "⬆" "⬇" "❓"
-    ;; Terminal powerline
-    "✔"
-    ;; Box drawing
-    "▶" "◀")
-  "Characters that should never be affected by `emojify-mode'.")
-
-(defadvice! emojify-delete-from-data ()
-  "Ensure `emojify-disabled-emojis' don't appear in `emojify-emojis'."
-  :after #'emojify-set-emoji-data
-  (dolist (emoji emojify-disabled-emojis)
-    (remhash emoji emojify-emojis)))
-
-(add-hook! '(mu4e-compose-mode org-msg-edit-mode) (emoticon-to-emoji 1))
-;; Emojis:1 ends here
-
-;; [[file:config.org::*Splash screen][Splash screen:1]]
-(defvar fancy-splash-image-template
-  (expand-file-name "misc/splash-images/emacs-e-template.svg" doom-private-dir)
-  "Default template svg used for the splash image, with substitutions from ")
-
-(defvar fancy-splash-sizes
-  `((:height 300 :min-height 50 :padding (0 . 2))
-    (:height 250 :min-height 42 :padding (2 . 4))
-    (:height 200 :min-height 35 :padding (3 . 3))
-    (:height 150 :min-height 28 :padding (3 . 3))
-    (:height 100 :min-height 20 :padding (2 . 2))
-    (:height 75  :min-height 15 :padding (2 . 1))
-    (:height 50  :min-height 10 :padding (1 . 0))
-    (:height 1   :min-height 0  :padding (0 . 0)))
-  "list of plists with the following properties
-  :height the height of the image
-  :min-height minimum `frame-height' for image
-  :padding `+doom-dashboard-banner-padding' (top . bottom) to apply
-  :template non-default template file
-  :file file to use instead of template")
-
-(defvar fancy-splash-template-colours
-  '(("$colour1" . keywords) ("$colour2" . type) ("$colour3" . base5) ("$colour4" . base8))
-  "list of colour-replacement alists of the form (\"$placeholder\" . 'theme-colour) which applied the template")
-
-(unless (file-exists-p (expand-file-name "theme-splashes" doom-cache-dir))
-  (make-directory (expand-file-name "theme-splashes" doom-cache-dir) t))
-
-(defun fancy-splash-filename (theme-name height)
-  (expand-file-name (concat (file-name-as-directory "theme-splashes")
-                            theme-name
-                            "-" (number-to-string height) ".svg")
-                    doom-cache-dir))
-
-(defun fancy-splash-clear-cache ()
-  "Delete all cached fancy splash images"
-  (interactive)
-  (delete-directory (expand-file-name "theme-splashes" doom-cache-dir) t)
-  (message "Cache cleared!"))
-
-(defun fancy-splash-generate-image (template height)
-  "Read TEMPLATE and create an image if HEIGHT with colour substitutions as
-   described by `fancy-splash-template-colours' for the current theme"
-  (with-temp-buffer
-    (insert-file-contents template)
-    (re-search-forward "$height" nil t)
-    (replace-match (number-to-string height) nil nil)
-    (dolist (substitution fancy-splash-template-colours)
-      (goto-char (point-min))
-      (while (re-search-forward (car substitution) nil t)
-        (replace-match (doom-color (cdr substitution)) nil nil)))
-    (write-region nil nil
-                  (fancy-splash-filename (symbol-name doom-theme) height) nil nil)))
-
-(defun fancy-splash-generate-images ()
-  "Perform `fancy-splash-generate-image' in bulk"
-  (dolist (size fancy-splash-sizes)
-    (unless (plist-get size :file)
-      (fancy-splash-generate-image (or (plist-get size :template)
-                                       fancy-splash-image-template)
-                                   (plist-get size :height)))))
-
-(defun ensure-theme-splash-images-exist (&optional height)
-  (unless (file-exists-p (fancy-splash-filename
-                          (symbol-name doom-theme)
-                          (or height
-                              (plist-get (car fancy-splash-sizes) :height))))
-    (fancy-splash-generate-images)))
-
-(defun get-appropriate-splash ()
-  (let ((height (frame-height)))
-    (cl-some (lambda (size) (when (>= height (plist-get size :min-height)) size))
-             fancy-splash-sizes)))
-
-(setq fancy-splash-last-size nil)
-(setq fancy-splash-last-theme nil)
-(defun set-appropriate-splash (&rest _)
-  (let ((appropriate-image (get-appropriate-splash)))
-    (unless (and (equal appropriate-image fancy-splash-last-size)
-                 (equal doom-theme fancy-splash-last-theme)))
-    (unless (plist-get appropriate-image :file)
-      (ensure-theme-splash-images-exist (plist-get appropriate-image :height)))
-    (setq fancy-splash-image
-          (or (plist-get appropriate-image :file)
-              (fancy-splash-filename (symbol-name doom-theme) (plist-get appropriate-image :height))))
-    (setq +doom-dashboard-banner-padding (plist-get appropriate-image :padding))
-    (setq fancy-splash-last-size appropriate-image)
-    (setq fancy-splash-last-theme doom-theme)
-    (+doom-dashboard-reload)))
-
-(add-hook 'window-size-change-functions #'set-appropriate-splash)
-(add-hook 'doom-load-theme-hook #'set-appropriate-splash)
-;; Splash screen:1 ends here
-
-;; [[file:config.org::*Splash screen][Splash screen:2]]
+;; [[file:config.org::*Splash][Splash:2]]
 (defvar splash-phrase-source-folder
   (expand-file-name "misc/splash-phrases" doom-private-dir)
   "A folder of text files with a fun phrase on each line.")
@@ -941,13 +620,49 @@ Return nil otherwise."
    "\n"
    (doom-dashboard-phrase)
    "\n"))
-;; Splash screen:2 ends here
+;; Splash:2 ends here
 
-;; [[file:config.org::*Splash screen][Splash screen:3]]
+;; [[file:config.org::*Splash][Splash:3]]
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
-;; Splash screen:3 ends here
+;; Splash:3 ends here
+
+;; [[file:config.org::*Vertico][Vertico:1]]
+(after! marginalia
+  (setq marginalia-censor-variables nil)
+
+  (defadvice! +marginalia--anotate-local-file-colorful (cand)
+    "Just a more colourful version of `marginalia--anotate-local-file'."
+    :override #'marginalia--annotate-local-file
+    (when-let (attrs (file-attributes (substitute-in-file-name
+                                       (marginalia--full-candidate cand))
+                                      'integer))
+      (marginalia--fields
+       ((marginalia--file-owner attrs)
+        :width 12 :face 'marginalia-file-owner)
+       ((marginalia--file-modes attrs))
+       ((+marginalia-file-size-colorful (file-attribute-size attrs))
+        :width 7)
+       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
+        :width 12))))
+
+  (defun +marginalia--time-colorful (time)
+    (let* ((seconds (float-time (time-subtract (current-time) time)))
+           (color (doom-blend
+                   (face-attribute 'marginalia-date :foreground nil t)
+                   (face-attribute 'marginalia-documentation :foreground nil t)
+                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
+      ;; 1 - log(3 + 1/(days + 1)) % grey
+      (propertize (marginalia--time time) 'face (list :foreground color))))
+
+  (defun +marginalia-file-size-colorful (size)
+    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
+           (color (if (< size-index 10000000) ; 10m
+                      (doom-blend 'orange 'green size-index)
+                    (doom-blend 'red 'orange (- size-index 1)))))
+      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
+;; Vertico:1 ends here
 
 ;; [[file:config.org::*Writeroom][Writeroom:1]]
 (setq +zen-text-scale 0.8)
@@ -1000,290 +715,6 @@ Return nil otherwise."
                   (org-superstar-restart))
                 (when +zen--original-org-indent-mode-p (org-indent-mode 1))))))
 ;; Writeroom:2 ends here
-
-;; [[file:config.org::*Font Display][Font Display:1]]
-(add-hook 'org-mode-hook #'+org-pretty-mode)
-;; Font Display:1 ends here
-
-;; [[file:config.org::*Font Display][Font Display:2]]
-(setq org-pretty-entities-include-sub-superscripts nil)
-;; Font Display:2 ends here
-
-;; [[file:config.org::*Font Display][Font Display:3]]
-(custom-set-faces!
-  '(org-document-title :height 1.2)
-  '(outline-1 :weight extra-bold :height 1.25)
-  '(outline-2 :weight bold :height 1.15)
-  '(outline-3 :weight bold :height 1.12)
-  '(outline-4 :weight semi-bold :height 1.09)
-  '(outline-5 :weight semi-bold :height 1.06)
-  '(outline-6 :weight semi-bold :height 1.03)
-  '(outline-8 :weight semi-bold)
-  '(outline-9 :weight semi-bold))
-;; Font Display:3 ends here
-
-;; [[file:config.org::*Font Display][Font Display:4]]
-(setq org-agenda-deadline-faces
-      '((1.0 . error)
-        (1.0 . org-warning)
-        (0.5 . org-upcoming-deadline)
-        (0.0 . org-upcoming-distant-deadline)))
-;; Font Display:4 ends here
-
-;; [[file:config.org::*Font Display][Font Display:5]]
-(setq org-fontify-quote-and-verse-blocks t)
-;; Font Display:5 ends here
-
-;; [[file:config.org::*Font Display][Font Display:6]]
-(use-package! org-appear
-  :hook (org-mode . org-appear-mode)
-  :config
-  (setq org-appear-autoemphasis t
-        org-appear-autosubmarkers t
-        org-appear-autolinks nil)
-  (run-at-time nil nil #'org-appear--set-elements))
-;; Font Display:6 ends here
-
-;; [[file:config.org::*Font Display][Font Display:7]]
-(defun locally-defer-font-lock ()
-  "Set jit-lock defer and stealth, when buffer is over a certain size."
-  (when (> (buffer-size) 50000)
-    (setq-local jit-lock-defer-time 0.05
-                jit-lock-stealth-time 1)))
-
-(add-hook 'org-mode-hook #'locally-defer-font-lock)
-;; Font Display:7 ends here
-
-;; [[file:config.org::*Fontifying inline src blocks][Fontifying inline src blocks:1]]
-(defvar org-prettify-inline-results t
-  "Whether to use (ab)use prettify-symbols-mode on {{{results(...)}}}.
-Either t or a cons cell of strings which are used as substitutions
-for the start and end of inline results, respectively.")
-
-(defvar org-fontify-inline-src-blocks-max-length 200
-  "Maximum content length of an inline src block that will be fontified.")
-
-(defun org-fontify-inline-src-blocks (limit)
-  "Try to apply `org-fontify-inline-src-blocks-1'."
-  (condition-case nil
-      (org-fontify-inline-src-blocks-1 limit)
-    (error (message "Org mode fontification error in %S at %d"
-                    (current-buffer)
-                    (line-number-at-pos)))))
-
-(defun org-fontify-inline-src-blocks-1 (limit)
-  "Fontify inline src_LANG blocks, from `point' up to LIMIT."
-  (let ((case-fold-search t)
-        (initial-point (point)))
-    (while (re-search-forward "\\_<src_\\([^ \t\n[{]+\\)[{[]?" limit t) ; stolen from `org-element-inline-src-block-parser'
-      (let ((beg (match-beginning 0))
-            pt
-            (lang-beg (match-beginning 1))
-            (lang-end (match-end 1)))
-        (remove-text-properties beg lang-end '(face nil))
-        (font-lock-append-text-property lang-beg lang-end 'face 'org-meta-line)
-        (font-lock-append-text-property beg lang-beg 'face 'shadow)
-        (font-lock-append-text-property beg lang-end 'face 'org-block)
-        (setq pt (goto-char lang-end))
-        ;; `org-element--parse-paired-brackets' doesn't take a limit, so to
-        ;; prevent it searching the entire rest of the buffer we temporarily
-        ;; narrow the active region.
-        (save-restriction
-          (narrow-to-region beg (min (point-max) limit (+ lang-end org-fontify-inline-src-blocks-max-length)))
-          (when (ignore-errors (org-element--parse-paired-brackets ?\[))
-            (remove-text-properties pt (point) '(face nil))
-            (font-lock-append-text-property pt (point) 'face 'org-block)
-            (setq pt (point)))
-          (when (ignore-errors (org-element--parse-paired-brackets ?\{))
-            (remove-text-properties pt (point) '(face nil))
-            (font-lock-append-text-property pt (1+ pt) 'face '(org-block shadow))
-            (unless (= (1+ pt) (1- (point)))
-              (if org-src-fontify-natively
-                  (org-src-font-lock-fontify-block (buffer-substring-no-properties lang-beg lang-end) (1+ pt) (1- (point)))
-                (font-lock-append-text-property (1+ pt) (1- (point)) 'face 'org-block)))
-            (font-lock-append-text-property (1- (point)) (point) 'face '(org-block shadow))
-            (setq pt (point))))
-        (when (and org-prettify-inline-results (re-search-forward "\\= {{{results(" limit t))
-          (font-lock-append-text-property pt (1+ pt) 'face 'org-block)
-          (goto-char pt))))
-    (when org-prettify-inline-results
-      (goto-char initial-point)
-      (org-fontify-inline-src-results limit))))
-
-(defun org-fontify-inline-src-results (limit)
-  (while (re-search-forward "{{{results(\\(.+?\\))}}}" limit t)
-    (remove-list-of-text-properties (match-beginning 0) (point)
-                                    '(composition
-                                      prettify-symbols-start
-                                      prettify-symbols-end))
-    (font-lock-append-text-property (match-beginning 0) (match-end 0) 'face 'org-block)
-    (let ((start (match-beginning 0)) (end (match-beginning 1)))
-      (with-silent-modifications
-        (compose-region start end (if (eq org-prettify-inline-results t) "⟨" (car org-prettify-inline-results)))
-        (add-text-properties start end `(prettify-symbols-start ,start prettify-symbols-end ,end))))
-    (let ((start (match-end 1)) (end (point)))
-      (with-silent-modifications
-        (compose-region start end (if (eq org-prettify-inline-results t) "⟩" (cdr org-prettify-inline-results)))
-        (add-text-properties start end `(prettify-symbols-start ,start prettify-symbols-end ,end))))))
-
-(defun org-fontify-inline-src-blocks-enable ()
-  "Add inline src fontification to font-lock in Org.
-Must be run as part of `org-font-lock-set-keywords-hook'."
-  (setq org-font-lock-extra-keywords
-        (append org-font-lock-extra-keywords '((org-fontify-inline-src-blocks)))))
-
-(add-hook 'org-font-lock-set-keywords-hook #'org-fontify-inline-src-blocks-enable)
-;; Fontifying inline src blocks:1 ends here
-
-;; [[file:config.org::*Symbols][Symbols:1]]
-;;make bullets look better
-(after! org-superstar
-  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
-        org-superstar-prettify-item-bullets t ))
-;; Symbols:1 ends here
-
-;; [[file:config.org::*Symbols][Symbols:2]]
-(setq org-ellipsis " ▾ "
-      org-hide-leading-stars t
-      org-priority-highest ?A
-      org-priority-lowest ?E
-      org-priority-faces
-      '((?A . 'all-the-icons-red)
-        (?B . 'all-the-icons-orange)
-        (?C . 'all-the-icons-yellow)
-        (?D . 'all-the-icons-green)
-        (?E . 'all-the-icons-blue)))
-;; Symbols:2 ends here
-
-;; [[file:config.org::*Symbols][Symbols:3]]
-(appendq! +ligatures-extra-symbols
-          `(:checkbox      "☐"
-            :pending       "◼"
-            :checkedbox    "☑"
-            :list_property "∷"
-            :em_dash       "—"
-            :ellipses      "…"
-            :arrow_right   "→"
-            :arrow_left    "←"
-            :property      "☸"
-            :options       "⌥"
-            :startup       "⏻"
-            :html_head     "🅷"
-            :html          "🅗"
-            :latex_class   "🄻"
-            :latex_header  "🅻"
-            :beamer_header "🅑"
-            :latex         "🅛"
-            :attr_latex    "🄛"
-            :attr_html     "🄗"
-            :attr_org      "⒪"
-            :begin_quote   "❝"
-            :end_quote     "❞"
-            :caption       "☰"
-            :header        "›"
-            :begin_export  "⏩"
-            :end_export    "⏪"
-            :properties    "⚙"
-            :end           "∎"
-            :priority_a   ,(propertize "⚑" 'face 'all-the-icons-red)
-            :priority_b   ,(propertize "⬆" 'face 'all-the-icons-orange)
-            :priority_c   ,(propertize "■" 'face 'all-the-icons-yellow)
-            :priority_d   ,(propertize "⬇" 'face 'all-the-icons-green)
-            :priority_e   ,(propertize "❓" 'face 'all-the-icons-blue)))
-(set-ligatures! 'org-mode
-  :merge t
-  :checkbox      "[ ]"
-  :pending       "[-]"
-  :checkedbox    "[X]"
-  :list_property "::"
-  :em_dash       "---"
-  :ellipsis      "..."
-  :arrow_right   "->"
-  :arrow_left    "<-"
-  :title         "#+title:"
-  :subtitle      "#+subtitle:"
-  :author        "#+author:"
-  :date          "#+date:"
-  :property      "#+property:"
-  :options       "#+options:"
-  :startup       "#+startup:"
-  :macro         "#+macro:"
-  :html_head     "#+html_head:"
-  :html          "#+html:"
-  :latex_class   "#+latex_class:"
-  :latex_header  "#+latex_header:"
-  :beamer_header "#+beamer_header:"
-  :latex         "#+latex:"
-  :attr_latex    "#+attr_latex:"
-  :attr_html     "#+attr_html:"
-  :attr_org      "#+attr_org:"
-  :begin_quote   "#+begin_quote"
-  :end_quote     "#+end_quote"
-  :caption       "#+caption:"
-  :header        "#+header:"
-  :begin_export  "#+begin_export"
-  :end_export    "#+end_export"
-  :results       "#+RESULTS:"
-  :property      ":PROPERTIES:"
-  :end           ":END:"
-  :priority_a    "[#A]"
-  :priority_b    "[#B]"
-  :priority_c    "[#C]"
-  :priority_d    "[#D]"
-  :priority_e    "[#E]")
-(plist-put +ligatures-extra-symbols :name "⁍")
-;; Symbols:3 ends here
-
-;; [[file:config.org::*Symbols][Symbols:4]]
-(defun org-syntax-convert-keyword-case-to-lower ()
-  "Convert all #+KEYWORDS to #+keywords."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (let ((count 0)
-          (case-fold-search nil))
-      (while (re-search-forward "^[ \t]*#\\+[A-Z_]+" nil t)
-        (unless (s-matches-p "RESULTS" (match-string 0))
-          (replace-match (downcase (match-string 0)) t)
-          (setq count (1+ count))))
-      (message "Replaced %d occurances" count))))
-;; Symbols:4 ends here
-
-;; [[file:config.org::*Keycast][Keycast:1]]
-(use-package! keycast
-  :commands keycast-mode
-  :config
-  (define-minor-mode keycast-mode
-    "Show current command and its key binding in the mode line."
-    :global t
-    (if keycast-mode
-        (progn
-          (add-hook 'pre-command-hook 'keycast--update t)
-          (add-to-list 'global-mode-string '("" mode-line-keycast " ")))
-      (remove-hook 'pre-command-hook 'keycast--update)
-      (setq global-mode-string (remove '("" mode-line-keycast " ") global-mode-string))))
-  (custom-set-faces!
-    '(keycast-command :inherit doom-modeline-debug
-                      :height 1.0)
-    '(keycast-key :inherit custom-modified
-                  :height 1.0
-                  :weight bold)))
-;; Keycast:1 ends here
-
-;; [[file:config.org::*Transparency][Transparency:1]]
- (defun toggle-transparency ()
-   (interactive)
-   (let ((alpha (frame-parameter nil 'alpha)))
-     (set-frame-parameter
-      nil 'alpha
-      (if (eql (cond ((numberp alpha) alpha)
-                     ((numberp (cdr alpha)) (cdr alpha))
-                     ;; Also handle undocumented (<active> <inactive>) form.
-                     ((numberp (cadr alpha)) (cadr alpha)))
-               100)
-          '(100 . 85) '(100 . 100)))))
- (global-set-key (kbd "C-c t") 'toggle-transparency)
-;; Transparency:1 ends here
 
 ;; [[file:config.org::*RSS][RSS:1]]
 (map! :map elfeed-search-mode-map
@@ -1510,33 +941,21 @@ Must be run as part of `org-font-lock-set-keywords-hook'."
     (add-hook 'nov-mode-hook #'+nov-mode-setup)))
 ;; Ebooks:1 ends here
 
-;; [[file:config.org::*Screenshot][Screenshot:1]]
-(use-package! screenshot
-  :defer t)
-;; Screenshot:1 ends here
-
 ;; [[file:config.org::*Org-Mode][Org-Mode:1]]
-(defadvice! shut-up-org-problematic-hooks (orig-fn &rest args)
-  :around #'org-fancy-priorities-mode
-  :around #'org-superstar-mode
-  (ignore-errors (apply orig-fn args)))
+(use-package! org-pandoc-import
+  :after org)
 ;; Org-Mode:1 ends here
 
 ;; [[file:config.org::*Org-Mode][Org-Mode:2]]
-(use-package! org-pandoc-import
-  :after org)
-;; Org-Mode:2 ends here
-
-;; [[file:config.org::*Org-Mode][Org-Mode:3]]
-(setq org-directory "~/org"                      ; let's put files here
+(setq org-directory "~/org"                       ; let's put files here
       org-use-property-inheritance t              ; it's convenient to have properties inherited
       org-log-done 'time                          ; having the time a item is done sounds convenient
       org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
       org-export-in-background t                  ; run export processes in external emacs process
-      org-catch-invisible-edits 'smart)            ; try not to accidently do weird stuff in invisible regions
-;; Org-Mode:3 ends here
+      org-catch-invisible-edits 'smart)           ; try not to accidently do weird stuff in invisible regions
+;; Org-Mode:2 ends here
 
-;; [[file:config.org::*Org-Mode][Org-Mode:4]]
+;; [[file:config.org::*Org-Mode][Org-Mode:3]]
 (setq org-babel-default-header-args
       '((:session . "none")
         (:results . "replace")
@@ -1546,13 +965,13 @@ Must be run as part of `org-font-lock-set-keywords-hook'."
         (:hlines . "no")
         (:tangle . "no")
         (:comments . "link")))
+;; Org-Mode:3 ends here
+
+;; [[file:config.org::*Org-Mode][Org-Mode:4]]
+(setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
 ;; Org-Mode:4 ends here
 
 ;; [[file:config.org::*Org-Mode][Org-Mode:5]]
-(setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
-;; Org-Mode:5 ends here
-
-;; [[file:config.org::*Org-Mode][Org-Mode:6]]
 (after! ox
 (org-link-set-parameters "yt" :export #'+org-export-yt)
 (defun +org-export-yt (path desc backend _com)
@@ -1565,7 +984,7 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
         ((org-export-derived-backend-p backend 'latex)
          (format "\\href{https://youtu.be/%s}{%s}" path (or desc "youtube")))
         (t (format "https://youtu.be/%s" path)))))
-;; Org-Mode:6 ends here
+;; Org-Mode:5 ends here
 
 ;; [[file:config.org::*HTML][HTML:1]]
 (use-package! ox-gfm
@@ -2155,20 +1574,9 @@ MathJax = {
 ;; Org-Roam:2 ends here
 
 ;; [[file:config.org::*Org-Roam][Org-Roam:3]]
-(defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
-  :around #'doom-modeline-buffer-file-name ; takes no args
-  (if (s-contains-p org-roam-directory (or buffer-file-name ""))
-      (replace-regexp-in-string
-       "\\(?:^\\|.*/\\)\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)[0-9]*-"
-       "🢔(\\1-\\2-\\3) "
-       (subst-char-in-string ?_ ?  buffer-file-name))
-    (funcall orig-fun)))
-;; Org-Roam:3 ends here
-
-;; [[file:config.org::*Org-Roam][Org-Roam:4]]
 (after! org-roam
    (setq +org-roam-open-buffer-on-find-file nil))
-;; Org-Roam:4 ends here
+;; Org-Roam:3 ends here
 
 ;; [[file:config.org::*Org-Agenda][Org-Agenda:1]]
 (setq org-agenda-files (list "~/org/school.org"
@@ -2455,6 +1863,200 @@ is selected, only the bare key is returned."
                            :file +org-capture-project-notes-file)))
               )))
 ;; Templates:1 ends here
+
+;; [[file:config.org::*Symbols][Symbols:1]]
+;;make bullets look better
+(after! org-superstar
+  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
+        org-superstar-prettify-item-bullets t ))
+;; Symbols:1 ends here
+
+;; [[file:config.org::*Symbols][Symbols:2]]
+(setq org-ellipsis " ▾ "
+      org-hide-leading-stars t
+      org-priority-highest ?A
+      org-priority-lowest ?E
+      org-priority-faces
+      '((?A . 'all-the-icons-red)
+        (?B . 'all-the-icons-orange)
+        (?C . 'all-the-icons-yellow)
+        (?D . 'all-the-icons-green)
+        (?E . 'all-the-icons-blue)))
+;; Symbols:2 ends here
+
+;; [[file:config.org::*Symbols][Symbols:3]]
+(appendq! +ligatures-extra-symbols
+          `(:checkbox      "☐"
+            :pending       "◼"
+            :checkedbox    "☑"
+            :list_property "∷"
+            :em_dash       "—"
+            :ellipses      "…"
+            :arrow_right   "→"
+            :arrow_left    "←"
+            :property      "☸"
+            :options       "⌥"
+            :startup       "⏻"
+            :html_head     "🅷"
+            :html          "🅗"
+            :latex_class   "🄻"
+            :latex_header  "🅻"
+            :beamer_header "🅑"
+            :latex         "🅛"
+            :attr_latex    "🄛"
+            :attr_html     "🄗"
+            :attr_org      "⒪"
+            :begin_quote   "❝"
+            :end_quote     "❞"
+            :caption       "☰"
+            :header        "›"
+            :begin_export  "⏩"
+            :end_export    "⏪"
+            :properties    "⚙"
+            :end           "∎"
+            :priority_a   ,(propertize "⚑" 'face 'all-the-icons-red)
+            :priority_b   ,(propertize "⬆" 'face 'all-the-icons-orange)
+            :priority_c   ,(propertize "■" 'face 'all-the-icons-yellow)
+            :priority_d   ,(propertize "⬇" 'face 'all-the-icons-green)
+            :priority_e   ,(propertize "❓" 'face 'all-the-icons-blue)))
+(set-ligatures! 'org-mode
+  :merge t
+  :checkbox      "[ ]"
+  :pending       "[-]"
+  :checkedbox    "[X]"
+  :list_property "::"
+  :em_dash       "---"
+  :ellipsis      "..."
+  :arrow_right   "->"
+  :arrow_left    "<-"
+  :title         "#+title:"
+  :subtitle      "#+subtitle:"
+  :author        "#+author:"
+  :date          "#+date:"
+  :property      "#+property:"
+  :options       "#+options:"
+  :startup       "#+startup:"
+  :macro         "#+macro:"
+  :html_head     "#+html_head:"
+  :html          "#+html:"
+  :latex_class   "#+latex_class:"
+  :latex_header  "#+latex_header:"
+  :beamer_header "#+beamer_header:"
+  :latex         "#+latex:"
+  :attr_latex    "#+attr_latex:"
+  :attr_html     "#+attr_html:"
+  :attr_org      "#+attr_org:"
+  :begin_quote   "#+begin_quote"
+  :end_quote     "#+end_quote"
+  :caption       "#+caption:"
+  :header        "#+header:"
+  :begin_export  "#+begin_export"
+  :end_export    "#+end_export"
+  :results       "#+RESULTS:"
+  :property      ":PROPERTIES:"
+  :end           ":END:"
+  :priority_a    "[#A]"
+  :priority_b    "[#B]"
+  :priority_c    "[#C]"
+  :priority_d    "[#D]"
+  :priority_e    "[#E]")
+(plist-put +ligatures-extra-symbols :name "⁍")
+;; Symbols:3 ends here
+
+;; [[file:config.org::*Symbols][Symbols:4]]
+(defun org-syntax-convert-keyword-case-to-lower ()
+  "Convert all #+KEYWORDS to #+keywords."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((count 0)
+          (case-fold-search nil))
+      (while (re-search-forward "^[ \t]*#\\+[A-Z_]+" nil t)
+        (unless (s-matches-p "RESULTS" (match-string 0))
+          (replace-match (downcase (match-string 0)) t)
+          (setq count (1+ count))))
+      (message "Replaced %d occurances" count))))
+;; Symbols:4 ends here
+
+;; [[file:config.org::*Font Display][Font Display:1]]
+(add-hook 'org-mode-hook #'+org-pretty-mode)
+;; Font Display:1 ends here
+
+;; [[file:config.org::*Font Display][Font Display:2]]
+(setq org-pretty-entities-include-sub-superscripts nil)
+;; Font Display:2 ends here
+
+;; [[file:config.org::*Font Display][Font Display:3]]
+(after! hl-todo
+(setq hl-todo-keyword-faces
+      `(;; Use TODO to note missing features or functionality that should be
+        ;; added at a later date.
+        ("TODO" nano-face-salient)
+        ;; Use FIXME to note broken code that needs to be fixed.
+        ("FIXME" nano-face-critical)
+        ;; Use OPTIMIZE to note slow or inefficient code that may cause
+        ;; performance problems.
+        ("OPTIMIZE" nano-face-salient)
+        ;; Use HACK to note "code smells" where questionable coding practices
+        ;; were used and should be refactored away.
+        ("HACK" nano-face-salient)
+        ;; Use REVIEW to note anything that should be looked at to confirm it is
+        ;; working as intended. For example: REVIEW: Are we sure this is how the
+        ;; client does X currently?
+        ("REVIEW" nano-face-salient)
+
+        ;; Here are keywords I don't use but are added for compatibility with
+        ;; other's codebases
+        ("NOTE" nano-face-salient)
+        ("DEPRECATED" nano-face-salient)
+        ("BUG" nano-face-critical)
+        ("XXX" nano-face-salient))))
+;; Font Display:3 ends here
+
+;; [[file:config.org::*Font Display][Font Display:4]]
+(custom-set-faces!
+  '(org-document-title :height 1.2)
+  '(outline-1 :weight extra-bold :height 1.25)
+  '(outline-2 :weight bold :height 1.15)
+  '(outline-3 :weight bold :height 1.12)
+  '(outline-4 :weight semi-bold :height 1.09)
+  '(outline-5 :weight semi-bold :height 1.06)
+  '(outline-6 :weight semi-bold :height 1.03)
+  '(outline-8 :weight semi-bold)
+  '(outline-9 :weight semi-bold))
+;; Font Display:4 ends here
+
+;; [[file:config.org::*Font Display][Font Display:5]]
+(setq org-agenda-deadline-faces
+      '((1.0 . error)
+        (1.0 . org-warning)
+        (0.5 . org-upcoming-deadline)
+        (0.0 . org-upcoming-distant-deadline)))
+;; Font Display:5 ends here
+
+;; [[file:config.org::*Font Display][Font Display:6]]
+(setq org-fontify-quote-and-verse-blocks t)
+;; Font Display:6 ends here
+
+;; [[file:config.org::*Font Display][Font Display:7]]
+(use-package! org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t
+        org-appear-autosubmarkers t
+        org-appear-autolinks nil)
+  (run-at-time nil nil #'org-appear--set-elements))
+;; Font Display:7 ends here
+
+;; [[file:config.org::*Font Display][Font Display:8]]
+(defun locally-defer-font-lock ()
+  "Set jit-lock defer and stealth, when buffer is over a certain size."
+  (when (> (buffer-size) 50000)
+    (setq-local jit-lock-defer-time 0.05
+                jit-lock-stealth-time 1)))
+
+(add-hook 'org-mode-hook #'locally-defer-font-lock)
+;; Font Display:8 ends here
 
 ;; [[file:config.org::*Org-Plot][Org-Plot:1]]
 (after! org-plot
@@ -3504,10 +3106,6 @@ This is done according to `org-latex-feature-implementations'"
   (setq ox-chameleon-snap-fgbg-to-bw nil))
 ;; ox-chameleon:1 ends here
 
-;; [[file:config.org::*Async][Async:1]]
-(setq org-export-in-background t)
-;; Async:1 ends here
-
 ;; [[file:config.org::*(sub|super)script characters][(sub|super)script characters:1]]
 (setq org-export-with-sub-superscripts '{})
 ;; (sub|super)script characters:1 ends here
@@ -3614,40 +3212,8 @@ This is done according to `org-latex-feature-implementations'"
 ;; Mu4e:3 ends here
 
 ;; [[file:config.org::*Mu4e][Mu4e:4]]
-;;(setq alert-default-style 'osx-notifier)
+(setq alert-default-style 'osx-notifier)
 ;; Mu4e:4 ends here
-
-;; [[file:config.org::*Webkit][Webkit:1]]
-;;(use-package org
-;;  :demand t)
-
-;; (use-package webkit
-;;   :defer t
-;;   :commands webkit
-;;   :init
-;;   (setq webkit-search-prefix "https://google.com/search?q="
-;;         webkit-history-file nil
-;;         webkit-cookie-file nil
-;;         browse-url-browser-function 'webkit-browse-url
-;;         webkit-browse-url-force-new t
-;;         webkit-download-action-alist '(("\\.pdf\\'" . webkit-download-open)
-;;                                        ("\\.png\\'" . webkit-download-save)
-;;                                        (".*" . webkit-download-default)))
-
-;;   (defun webkit--display-progress (progress)
-;;     (setq webkit--progress-formatted
-;;           (if (equal progress 100.0)
-;;               ""
-;;             (format "%s%.0f%%  " (all-the-icons-faicon "spinner") progress)))
-;;    (force-mode-line-update)))
-;; Webkit:1 ends here
-
-;; [[file:config.org::*Webkit][Webkit:2]]
-;; (use-package evil-collection-webkit
-;;    :defer t
-;;    :config
-;;    (evil-collection-xwidget-setup))
-;; Webkit:2 ends here
 
 ;; [[file:config.org::*IRC][IRC:2]]
 (after! circe
@@ -3679,164 +3245,6 @@ This is done according to `org-latex-feature-implementations'"
                "") nil nil)))
   
   (add-hook 'lui-pre-input-hook #'lui-org-to-irc)
-
-  (defun lui-ascii-to-emoji ()
-    (goto-char (point-min))
-    (while (re-search-forward "\\( \\)?::?\\([^[:space:]:]+\\):\\( \\)?" nil t)
-      (replace-match
-       (concat
-        (match-string 1)
-        (or (cdr (assoc (match-string 2) lui-emojis-alist))
-            (concat ":" (match-string 2) ":"))
-        (match-string 3))
-       nil nil)))
-  
-  (defun lui-emoticon-to-emoji ()
-    (dolist (emoticon lui-emoticons-alist)
-      (goto-char (point-min))
-      (while (re-search-forward (concat " " (car emoticon) "\\( \\)?") nil t)
-        (replace-match (concat " "
-                               (cdr (assoc (cdr emoticon) lui-emojis-alist))
-                               (match-string 1))))))
-  
-  (define-minor-mode lui-emojify
-    "Replace :emojis: and ;) emoticons with unicode emoji chars."
-    :global t
-    :init-value t
-    (if lui-emojify
-        (add-hook! lui-pre-input #'lui-ascii-to-emoji #'lui-emoticon-to-emoji)
-      (remove-hook! lui-pre-input #'lui-ascii-to-emoji #'lui-emoticon-to-emoji)))
-  (defvar lui-emojis-alist
-    '(("grinning"                      . "😀")
-      ("smiley"                        . "😃")
-      ("smile"                         . "😄")
-      ("grin"                          . "😁")
-      ("laughing"                      . "😆")
-      ("sweat_smile"                   . "😅")
-      ("joy"                           . "😂")
-      ("rofl"                          . "🤣")
-      ("relaxed"                       . "☺️")
-      ("blush"                         . "😊")
-      ("innocent"                      . "😇")
-      ("slight_smile"                  . "🙂")
-      ("upside_down"                   . "🙃")
-      ("wink"                          . "😉")
-      ("relieved"                      . "😌")
-      ("heart_eyes"                    . "😍")
-      ("yum"                           . "😋")
-      ("stuck_out_tongue"              . "😛")
-      ("stuck_out_tongue_closed_eyes"  . "😝")
-      ("stuck_out_tongue_wink"         . "😜")
-      ("zanzy"                         . "🤪")
-      ("raised_eyebrow"                . "🤨")
-      ("monocle"                       . "🧐")
-      ("nerd"                          . "🤓")
-      ("cool"                          . "😎")
-      ("star_struck"                   . "🤩")
-      ("party"                         . "🥳")
-      ("smirk"                         . "😏")
-      ("unamused"                      . "😒")
-      ("disapointed"                   . "😞")
-      ("pensive"                       . "😔")
-      ("worried"                       . "😟")
-      ("confused"                      . "😕")
-      ("slight_frown"                  . "🙁")
-      ("frown"                         . "☹️")
-      ("persevere"                     . "😣")
-      ("confounded"                    . "😖")
-      ("tired"                         . "😫")
-      ("weary"                         . "😩")
-      ("pleading"                      . "🥺")
-      ("tear"                          . "😢")
-      ("cry"                           . "😢")
-      ("sob"                           . "😭")
-      ("triumph"                       . "😤")
-      ("angry"                         . "😠")
-      ("rage"                          . "😡")
-      ("exploding_head"                . "🤯")
-      ("flushed"                       . "😳")
-      ("hot"                           . "🥵")
-      ("cold"                          . "🥶")
-      ("scream"                        . "😱")
-      ("fearful"                       . "😨")
-      ("disapointed"                   . "😰")
-      ("relieved"                      . "😥")
-      ("sweat"                         . "😓")
-      ("thinking"                      . "🤔")
-      ("shush"                         . "🤫")
-      ("liar"                          . "🤥")
-      ("blank_face"                    . "😶")
-      ("neutral"                       . "😐")
-      ("expressionless"                . "😑")
-      ("grimace"                       . "😬")
-      ("rolling_eyes"                  . "🙄")
-      ("hushed"                        . "😯")
-      ("frowning"                      . "😦")
-      ("anguished"                     . "😧")
-      ("wow"                           . "😮")
-      ("astonished"                    . "😲")
-      ("sleeping"                      . "😴")
-      ("drooling"                      . "🤤")
-      ("sleepy"                        . "😪")
-      ("dizzy"                         . "😵")
-      ("zipper_mouth"                  . "🤐")
-      ("woozy"                         . "🥴")
-      ("sick"                          . "🤢")
-      ("vomiting"                      . "🤮")
-      ("sneeze"                        . "🤧")
-      ("mask"                          . "😷")
-      ("bandaged_head"                 . "🤕")
-      ("money_face"                    . "🤑")
-      ("cowboy"                        . "🤠")
-      ("imp"                           . "😈")
-      ("ghost"                         . "👻")
-      ("alien"                         . "👽")
-      ("robot"                         . "🤖")
-      ("clap"                          . "👏")
-      ("thumpup"                       . "👍")
-      ("+1"                            . "👍")
-      ("thumbdown"                     . "👎")
-      ("-1"                            . "👎")
-      ("ok"                            . "👌")
-      ("pinch"                         . "🤏")
-      ("left"                          . "👈")
-      ("right"                         . "👉")
-      ("down"                          . "👇")
-      ("wave"                          . "👋")
-      ("pray"                          . "🙏")
-      ("eyes"                          . "👀")
-      ("brain"                         . "🧠")
-      ("facepalm"                      . "🤦")
-      ("tada"                          . "🎉")
-      ("fire"                          . "🔥")
-      ("flying_money"                  . "💸")
-      ("lighbulb"                      . "💡")
-      ("heart"                         . "❤️")
-      ("sparkling_heart"               . "💖")
-      ("heartbreak"                    . "💔")
-      ("100"                           . "💯")))
-  
-  (defvar lui-emoticons-alist
-    '((":)"   . "slight_smile")
-      (";)"   . "wink")
-      (":D"   . "smile")
-      ("=D"   . "grin")
-      ("xD"   . "laughing")
-      (";("   . "joy")
-      (":P"   . "stuck_out_tongue")
-      (";D"   . "stuck_out_tongue_wink")
-      ("xP"   . "stuck_out_tongue_closed_eyes")
-      (":("   . "slight_frown")
-      (";("   . "cry")
-      (";'("  . "sob")
-      (">:("  . "angry")
-      (">>:(" . "rage")
-      (":o"   . "wow")
-      (":O"   . "astonished")
-      (":/"   . "confused")
-      (":-/"  . "thinking")
-      (":|"   . "neutral")
-      (":-|"  . "expressionless")))
 
   (defun named-circe-prompt ()
     (lui-set-prompt
