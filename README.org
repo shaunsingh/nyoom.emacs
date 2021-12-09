@@ -1,4 +1,4 @@
-#+title: Doom Emacs Configuration --- [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML Version]], [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]]
+#+title: Doom Emacs Configuration 
 #+author: Shaunsingh
 
 #+html: <a href="https://www.gnu.org/software/emacs/emacs.html#Releases"><img src="https://img.shields.io/badge/Emacs-27.1%20%E2%80%93%2028.0.50-blueviolet.svg?style=flat-square&logo=GNU%20Emacs&logoColor=white"></a>
