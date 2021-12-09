@@ -7,6 +7,7 @@
 Here you may find my config. There is only one significant file:
 + =config.org=, my configuration file --- see the [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML]] or [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]] export.
 
+#+attr_org: :width 40%
 [[./misc/assets/dash.png]]
 [[./misc/assets/org.png]]
 [[./misc/assets/vertico.png]]
@@ -17,9 +18,7 @@ about a dozen others.
 Other than that, resources are put in [[file:misc/][misc]], and you may find some packages I'm working on in [[file:lisp/][lisp]].
 
 * Installation
-
 ** Nix
-
 First install nix, and enable both the =nix command= and =flakes= experimental features
 #+begin_src shell
 git clone --depth 1 https://github.com/shaunsingh/Nyoom.emacs.git && cd Nyoom.emacs
@@ -27,9 +26,8 @@ nix develop
 #+end_src
 
 ** Regular installation: 
-
-First install the following dependencies: 
-- Emacs (preferably one with =native-comp=)
+First install the following dependencies:
+- Emacs (preferably one with =native-comp=, note that I (or rather doom-emacs) doesn't support =emacs29=, I recommend =emacs28= instead)
 - sqlite
 - fd
 - ripgrep

@@ -392,16 +392,12 @@ Return nil otherwise."
       auto-save-default t                          ;I dont like to lose work
       display-line-numbers-type nil                ;I dislike line numbers
       history-length 25                            ;Slight speedup
-      delete-by-moving-to-trash t                  ;delete to system trash instead
-      browser-url-browser-function 'eww-browse-url ; use the builtin eww to browse links
-      truncate-string-ellipsis "…")                ;default ellipses suck
+      delete-by-moving-to-trash t                  ;delete
+      truncate-string-ellipsis "…"                 ;default ellipses sucko system trash instead
+      browse-url-browser-function 'xwidget-webkit-browse-url)
 
 (fringe-mode 0) ;;disable fringe
 (global-subword-mode 1) ;;navigate through Camel Case words
-
-;; emacs29 fixes
-(general-auto-unbind-keys :off)
-(remove-hook 'doom-after-init-modules-hook #'general-auto-unbind-keys)
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
@@ -431,9 +427,22 @@ Return nil otherwise."
         window-divider-default-right-width 0))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
+(setq line-spacing 0.24)
 
 (use-package! selectric-mode
   :commands selectric-mode)
+
+(use-package! monkeytype
+  :commands (monkeytype-region monkeytype-buffer monkeytype-region-as-words)
+  :init
+  (evil-escape-mode -1)
+  (evil-insert -1)
+  :config
+  (setq monkeytype-directory "~/.config/monkeytype"
+        monkeytype-file-name "%a-%d-%b-%Y-%H-%M-%S"
+        monkeytype-randomize t
+        monkeytype-delete-trailing-whitespace t
+        monkeytype-excluded-chars-regexp "[^[:alnum:]']"))
 
 ;; (use-package! tree-sitter
 ;;   :config
@@ -442,8 +451,200 @@ Return nil otherwise."
 ;;   (global-tree-sitter-mode)
 ;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(add-to-list 'load-path "~/.config/doom/lisp/nano-integration")
-(require 'load-nano)
+(setq doom-theme 'nil)
+
+(require 'nano-layout)
+(require 'nano-modeline)
+(require 'nano-theme-light)
+(require 'nano-theme)
+(require 'nano-colors)
+(require 'nano-faces)
+(nano-faces)
+(nano-theme)
+
+(after! flycheck
+  (set-face-attribute 'flycheck-error nil
+                      :underline
+                      '(:color "#9C2F18" :style wave  ))
+  (set-face-attribute 'flycheck-warning nil
+                      :underline
+                      '(:color "#AB9D27" :style wave  )))
+(after! nano-faces
+  (set-face-attribute 'nano-face-critical nil
+                      :foreground dn-critical
+                      :background dn-background                   )
+  (set-face-attribute 'nano-face-tag-critical nil
+                      :foreground dn-critical
+                      :background dn-background                   ))
+(set-face-attribute 'help-key-binding nil
+                    :foreground dn-foreground
+                    :background dn-background
+                    :weight 'bold
+                    :box nil                                    )
+(after! eros
+  (set-face-attribute 'eros-result-overlay-face nil
+                      :foreground dn-foreground
+                      :background dn-background
+                      :weight 'bold
+                      :box t                                     ))
+(after! avy
+  (set-face-attribute 'avy-lead-face nil
+                      :foreground dn-foreground
+                      :background dn-subtle
+                      :underline t                               )
+  (set-face-attribute 'avy-lead-face-1 nil
+                      :foreground dn-foreground
+                      :background dn-subtle
+                      :underline t                               )
+  (set-face-attribute 'avy-lead-face-0 nil
+                      :foreground dn-foreground
+                      :background dn-subtle
+                      :underline t                               ))
+(after! lsp-ui
+  (set-face-attribute 'lsp-ui-doc-url nil
+                      :background dn-contrast
+                      :inherit nil
+                      :underline t                              )
+  (set-face-attribute 'lsp-ui-doc-background nil
+                      :background dn-contrast
+                      :inherit nil
+                      :box t                                    ))
+(after! lsp-mode
+  (set-face-attribute 'lsp-signature-face nil
+                      :background dn-contrast
+                      :inherit nil                              )
+  (set-face-attribute 'lsp-face-highlight-read nil
+                      :background dn-contrast
+                      :underline nil
+                      :inherit nil                              )
+  (set-face-attribute 'lsp-face-highlight-write nil
+                      :background dn-contrast
+                      :underline t
+                      :inherit nil                              ))
+(after! git-gutter-fringe
+  (set-face-attribute 'git-gutter-fr:added nil
+                      :foreground dn-popout
+                      :weight 'bold )
+  (set-face-attribute 'git-gutter:modified nil
+                      :foreground dn-attention
+                      :weight 'bold)
+  (set-face-attribute 'git-gutter-fr:modified nil
+                      :foreground dn-attention
+                      :weight 'bold))
+(after! magit
+  (set-face-attribute 'magit-diff-hunk-heading-highlight nil
+                      :background dn-medium
+                      :box nil
+                      :underline t                              )
+  (set-face-attribute 'magit-diff-hunk-heading nil
+                      :background dn-medium                     )
+  (set-face-attribute 'magit-diff-context-highlight nil
+                      :foreground dn-foreground
+                      :background dn-background                 )
+  (set-face-attribute 'magit-diff-added-highlight nil
+                      :foreground dn-popout
+                      :background dn-background
+                      :weight 'bold)
+  (set-face-attribute 'magit-diff-added nil
+                      :foreground dn-popout
+                      :background dn-background                 )
+  (set-face-attribute 'magit-diff-removed-highlight nil
+                      :foreground dn-critical
+                      :background dn-background
+                      :weight 'bold                 )
+  (set-face-attribute 'magit-diff-removed nil
+                      :foreground dn-critical
+                      :background dn-background                 )
+  (set-face-attribute 'magit-hash nil
+                      :foreground dn-grey
+                      :weight 'bold)
+  (set-face-attribute 'magit-section-highlight nil
+                      :background dn-contrast
+                      :inherit nil                              ))
+(after! info
+  (set-face-attribute 'info-xref-visited nil
+                      :foreground dn-violet                      )
+  (set-face-attribute 'info-menu-star nil
+                      :foreground dn-foreground                  ))
+(after! popup
+  (set-face-attribute 'popup-tip-face nil
+                      :background dn-contrast                    ))
+(set-face-attribute 'link nil
+                    :underline  t                               )
+(set-face-attribute 'button nil
+                    :underline  t                               )
+(after! hl-line
+  (set-face-attribute 'hl-line nil :background dn-subtle          ))
+(set-face-attribute 'cursor nil
+                    :background dn-subtle )
+(after! company
+  (set-face-attribute 'company-tooltip-search nil
+                      :background dn-medium                      )
+  (set-face-attribute 'company-tooltip-common nil
+                      :background dn-medium                      )
+  (set-face-attribute 'company-tooltip-annotation nil
+                      :background dn-medium                      )
+  (set-face-attribute 'company-scrollbar-bg nil
+                      :background dn-medium                      )
+  (set-face-attribute 'company-scrollbar-fg nil
+                      :background dn-medium                      ))
+(after! diredfl
+  (set-face-attribute 'diredfl-dir-heading nil
+                      :foreground dn-faded
+                      :background nil
+                      :weight 'bold
+                      :underline  t                              )
+  (set-face-attribute 'diredfl-dir-name nil
+                      :foreground dn-salient
+                      :background nil                            )
+  (set-face-attribute 'diredfl-compressed-file-suffix nil
+                      :foreground dn-salient
+                      :background nil                            )
+  (set-face-attribute 'diredfl-file-name nil
+                      :foreground dn-foreground                  )
+  (set-face-attribute 'diredfl-deletion nil
+                      :foreground dn-critical
+                      :background dn-background                    )
+  :weight 'bold
+  (set-face-attribute 'diredfl-deletion-file-name nil
+                      :foreground dn-critical                    )
+  (set-face-attribute 'diredfl-file-suffix nil
+                      :foreground dn-faded                       ))
+(set-face-attribute 'font-lock-builtin-face nil
+                    :foreground dn-violet                       )
+(defun vterm-faces
+    (                                            )
+  (set-face-attribute 'vterm-color-red nil
+                      :foreground dn-critical
+                      :background nil                            )
+  (set-face-attribute 'vterm-color-yellow nil
+                      :foreground dn-attention
+                      :background nil                            )
+  (set-face-attribute 'vterm-color-blue nil
+                      :foreground dn-blue
+                      :background nil                            )
+  (set-face-attribute 'vterm-color-magenta nil
+                      :foreground dn-violet
+                      :background nil                            )
+  (set-face-attribute 'vterm-color-green nil
+                      :foreground dn-popout
+                      :background nil                            ))
+(add-hook 'vterm-mode-hook #'vterm-faces                        )
+(after! hydra
+  (set-face-attribute 'hydra-face-red nil
+                      :foreground dn-critical
+                      :weight 'bold                              ))
+(after! smartparens
+  (set-face-attribute 'show-paren-match nil
+                      :foreground dn-violet
+                      :background dn-blue-green
+                      :weight 'bold
+                      :inverse-video t                           )
+  (set-face-attribute 'sp-show-pair-match-face nil
+                      :foreground dn-violet
+                      :background dn-blue-green
+                      :weight 'bold
+                      :inverse-video t                           ))
 
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
 (setq +doom-dashboard-banner-padding '(0 . 0))
@@ -526,7 +727,6 @@ Return nil otherwise."
 
 (defadvice! doom-dashboard-widget-loaded-with-phrase ()
   :override #'doom-dashboard-widget-loaded
-  (setq line-spacing 0.2)
   (insert
    "\n\n"
    (propertize
@@ -747,8 +947,7 @@ Return nil otherwise."
 
       (insert (propertize feed-column 'face 'elfeed-search-feed-face) " ")
       (insert (propertize tag-column 'face 'elfeed-search-tag-face) " ")
-      (insert (propertize title 'face title-faces 'kbd-help title))
-      (setq-local line-spacing 0.2)))
+      (insert (propertize title 'face title-faces 'kbd-help title))))
 
   (defun +rss/elfeed-show-refresh--better-style ()
     "Update the buffer to match the selected entry, using a mail-style."
@@ -847,8 +1046,7 @@ Return nil otherwise."
                              :height 1.4
                              :width 'semi-expanded)
     (face-remap-add-relative 'default :height 1.3)
-    (setq-local line-spacing 0.2
-                next-screen-context-lines 4
+    (setq-local next-screen-context-lines 4
                 shr-use-colors nil)
     (require 'visual-fill-column nil t)
     (setq-local visual-fill-column-center-text t

@@ -32,10 +32,9 @@
 ;;                   :pre-build (("nix-shell" "shell.nix" "--command make"))))
 
 ;;looks
-(package! modus-themes)
 (package! solaire-mode :disable t)
-(package! ox-chameleon 
-  :recipe (:host github :repo "tecosaur/ox-chameleon"))
+(package! nano-integration :recipe (:local-repo "lisp/nano-integration"))
+(package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
 
 ;;emacs additions
 (package! lexic)
@@ -48,4 +47,5 @@
 ;;fun
 (package! nov)
 (package! xkcd)
+(package! monkeytype)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))

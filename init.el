@@ -190,7 +190,6 @@
        ;;notmuch
        ;;(wanderlust +gmail)
 
-
        :app
        ;;calendar                   ; A dated approach to timetabling
        ;;emms                       ; Multimedia in Emacs is music to my ears
