@@ -446,7 +446,7 @@ Return nil otherwise."
 (require 'load-nano)
 
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
-(setq +doom-dashboard-banner-padding '(0 . 1))
+(setq +doom-dashboard-banner-padding '(0 . 0))
 
 (defvar splash-phrase-source-folder
   (expand-file-name "misc/splash-phrases" doom-private-dir)
@@ -541,6 +541,19 @@ Return nil otherwise."
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
+
+(setq +doom-quit-messages '(;;from doom 1
+                            "Don't leave yet -- There's a daemon around that corner!"
+                            "Go ahead and leave. See if I care."
+                            ;;from doom 2
+                            "Get outta here and go back to your boring programs."
+                            ;;from Portal
+                            "Thank you for participating in this Aperture Science computer-aided enrichment activity."
+                            "You can't fire me, I quit!"
+                            "I'm the man who's going to burn your house down! With the lemons!"
+                            ;;custom
+                            "It's not like I'll miss you or anything, b-baka!"
+                            "Please don't go. The drones need you. They look up to you."))
 
 (after! marginalia
   (setq marginalia-censor-variables nil)

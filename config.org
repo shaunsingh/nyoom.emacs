@@ -1,5 +1,5 @@
 #+title: Doom Emacs Configuration
-#+property: header-args:elisp :exports code
+#+property: header-args:emacs-lisp :exports code :comments none
 #+latex_header: \let\textls\relax
 #+latex_class: chameleon
 #+startup: fold
@@ -127,7 +127,7 @@ few extras.
   native-comp flag with emacs28.
 
 * Doom Configuration
-*** Modules
+** Modules
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle no
 :END:
@@ -486,7 +486,7 @@ I couldn't resist the Email and Feed modules.
 ;;twitter                    ; twitter client https://twitter.com/vnought
 #+end_src
 
-*** Packages
+** Packages
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle no
 :END:
@@ -603,13 +603,13 @@ We do a little trolling (and reading)
 
 * Basic Configuration
 Make this file run (slightly) faster with lexical binding
-#+begin_src elisp
+#+begin_src emacs-lisp
 ;;; config.el -*- lexical-binding: t; -*-
 #+end_src
 
 ** Personal information
 Of course we need to tell emacs who I am
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq user-full-name "Shaurya Singh"
       user-mail-address "shaunsingh0207@gmail.com")
 #+end_src
@@ -617,7 +617,7 @@ Of course we need to tell emacs who I am
 ** Authinfo
 I frequently delete my =~/.emacs.d= for fun, so having authinfo in a seperate file
 sounds like a good idea
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq auth-sources '("~/.authinfo.gpg")
       auth-source-cache-expiry nil) ; default is 7200 (2h)
 #+end_src
@@ -625,7 +625,7 @@ sounds like a good idea
 ** Emacsclient
 mu4e is a bit finicky with emacsclient, and org takes forever to load. The
 solution? Use tecosaurs greedy daemon startup
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defun greedily-do-daemon-setup ()
   (require 'org)
   (require 'vertico)
@@ -646,7 +646,7 @@ solution? Use tecosaurs greedy daemon startup
 
 ** Shell
 I use the fish shell. If you use zsh/bash, be sure to change this
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq explicit-shell-file-name (executable-find "fish"))
 #+end_src
 
@@ -676,14 +676,14 @@ Useful functions for the shell-side integration provided by vterm.
 #+end_src
 
 I also want to hook Delta into Magit
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! magit
    (magit-delta-mode +1))
 #+end_src
 
 **** Ligatures
 Use ligatures from within vterm (and eshell), we do this by redefining the variable where /not/ to show ligatures. On the other hand, in select modes we want to use extra ligatures, so lets enable that.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq +ligatures-in-modes t)
 (setq +ligatures-extras-in-modes '(org-mode emacs-lisp-mode))
 #+end_src
@@ -693,7 +693,7 @@ Use ligatures from within vterm (and eshell), we do this by redefining the varia
 
 I like the apple fonts for programming, so I'll go with Liga SFMono Nerd Font. I
 prefer a rounder font for plain text, so I'll go with Overpass for that. I have a retina display as well, so lets keep the fonts light.
-#+begin_src elisp
+#+begin_src emacs-lisp
 ;;fonts
 (setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
@@ -703,7 +703,7 @@ prefer a rounder font for plain text, so I'll go with Overpass for that. I have 
 #+end_src
 
 For mixed pitch, I would go with something comfier. I like Alegreya Sans for a minimalist feel, so lets go with that
-#+begin_src elisp
+#+begin_src emacs-lisp
 ;;mixed pitch modes
 (defvar mixed-pitch-modes '(org-mode LaTeX-mode markdown-mode gfm-mode Info-mode)
   "Modes that `mixed-pitch-mode' should be enabled in, but only after UI initialisation.")
@@ -733,9 +733,9 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
       (mixed-pitch-mode (or arg 'toggle)))))
 #+end_src
 
-Harfbuzz is missing the beautiful ff ffi ffj ffl fft fi fj ft Th ligatures,
+Harfbuzz is missing the beautiful ligatures,
 lets add those back in with the help of composition-function-table
-#+begin_src elisp
+#+begin_src emacs-lisp
 (set-char-table-range composition-function-table ?f '(["\\(?:ff?[fijlt]\\)" 0 font-shape-gstring]))
 (set-char-table-range composition-function-table ?T '(["\\(?:Th\\)" 0 font-shape-gstring]))
 #+end_src
@@ -909,7 +909,7 @@ can correct for this by redefining it with subtlety shifted kerning.
 
 ** Company
 I think company is a bit too quick to recommend some stuff
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! company
    (setq company-idle-delay 0.1
       company-minimum-prefix-length 1
@@ -933,7 +933,7 @@ I think company is a bit too quick to recommend some stuff
 #+end_src
 
 Lets add some snippets for latex
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! aas
   :commands aas-mode)
 
@@ -949,7 +949,7 @@ Lets add some snippets for latex
 #+end_src
 
 And with a little help from henrik, lets use those snippets in org mode
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defadvice! fixed-org-yas-expand-maybe-h ()
   "Expand a yasnippet snippet, if trigger exists at point or region is active.
 Made for `org-tab-first-hook'."
@@ -1093,13 +1093,13 @@ Lets also include << to autocomplete, as with () and {}
 #+end_src
 
 And lastly lets add some helpful snippets for org-mode, and add a better templete
-#+begin_src elisp
+#+begin_src emacs-lisp
 (set-file-template! "\\.org$" :trigger "__" :mode 'org-mode)
 #+end_src
 
 ** LSP
 I think the LSP is a bit intrusive (especially with inline suggestions), so lets make it behave a bit more
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
@@ -1114,7 +1114,7 @@ I think the LSP is a bit intrusive (especially with inline suggestions), so lets
 #+end_src
 
 The rust language server also has some extra features I would like to enable
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! lsp-rust
   (setq lsp-rust-server 'rust-analyzer
   lsp-rust-analyzer-display-chaining-hints t
@@ -1125,7 +1125,7 @@ The rust language server also has some extra features I would like to enable
 #+end_src
 
 I also want to use clippy for linting, and those sweet org-mode docs
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package rustic
   :after lsp
   :config
@@ -1136,7 +1136,7 @@ I also want to use clippy for linting, and those sweet org-mode docs
 
 ** Better Defaults
 The defaults for emacs aren't so good nowadays. Lets fix that up a bit
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq scroll-margin 4                              ;having a little margin is nice
       auto-save-default t                          ;I dont like to lose work
       display-line-numbers-type nil                ;I dislike line numbers
@@ -1165,7 +1165,7 @@ Instead of fundamental mode, lisp-interaction-mode seems much more useful
 #+end_src
 
 The default bindings of doom are pretty good. I'm not so good with motions though, so lets make life easier with avy
-#+begin_src elisp
+#+begin_src emacs-lisp
 (map! :leader
       :desc "hop to word" "w w" #'avy-goto-word-or-subword-1)
 (map! :leader
@@ -1176,13 +1176,13 @@ The default bindings of doom are pretty good. I'm not so good with motions thoug
 #+end_src
 
 I also fine ; more intuitive than : for entering command mode
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! evil
   (map! :nmv ";" #'evil-ex))
 #+end_src
 
 When im doing regexes, its usually with /g anyways, lets make that the default
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! evil
   (setq evil-ex-substitute-global t     ; I like my s/../.. to by global by default
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
@@ -1190,7 +1190,7 @@ When im doing regexes, its usually with /g anyways, lets make that the default
 #+end_src
 
 And just some simple visual tweaks
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq-default window-resize-pixelwise t
               frame-resize-pixelwise t)
 
@@ -1208,7 +1208,7 @@ Instead of using the regular selectric-mode, I modified it with a few notable tw
 The samples used here are taken from monketype, but heres a similar board
 [[yt:WmE4iwZy08g]]
 
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! selectric-mode
   :commands selectric-mode)
 #+end_src
@@ -1218,7 +1218,7 @@ The samples used here are taken from monketype, but heres a similar board
 Nvim-treesitter is based on three interlocking features: language parsers, queries, and modules, where modules provide features – e.g., highlighting – based on queries for syntax objects extracted from a given buffer by language parsers. Allowing this to work in doom will reduce the lag introduced by fontlock as well as improve textobjects.
 
 Since I use an apple silicon mac, I prefer if nix handles compiling the parsers for me
-#+begin_src elisp
+#+begin_src emacs-lisp
 ;; (use-package! tree-sitter
 ;;   :config
 ;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
@@ -1229,20 +1229,20 @@ Since I use an apple silicon mac, I prefer if nix handles compiling the parsers 
 
 ** Nano
 I prefer the nano look and feel over the default doom one. Lets integrate it with doom!
-#+begin_src elisp
+#+begin_src emacs-lisp
 (add-to-list 'load-path "~/.config/doom/lisp/nano-integration")
 (require 'load-nano)
 #+end_src
 
 ** Splash
 Gura :emma:
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
-(setq +doom-dashboard-banner-padding '(0 . 1))
+(setq +doom-dashboard-banner-padding '(0 . 0))
 #+end_src
 
 Add random quotes to the splash screen
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defvar splash-phrase-source-folder
   (expand-file-name "misc/splash-phrases" doom-private-dir)
   "A folder of text files with a fun phrase on each line.")
@@ -1335,15 +1335,32 @@ Add random quotes to the splash screen
 #+end_src
 
 And lets disable all the unessecary stuff
-#+begin_src elisp
+#+begin_src emacs-lisp
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 #+end_src
 
+** Doom-quit
+I don't like all of the quit messages, lets keep it down to just a few
+#+begin_src emacs-lisp
+(setq +doom-quit-messages '(;;from doom 1
+                            "Don't leave yet -- There's a daemon around that corner!"
+                            "Go ahead and leave. See if I care."
+                            ;;from doom 2
+                            "Get outta here and go back to your boring programs."
+                            ;;from Portal
+                            "Thank you for participating in this Aperture Science computer-aided enrichment activity."
+                            "You can't fire me, I quit!"
+                            "I'm the man who's going to burn your house down! With the lemons!"
+                            ;;custom
+                            "It's not like I'll miss you or anything, b-baka!"
+                            "Please don't go. The drones need you. They look up to you."))
+#+end_src
+
 ** Vertico
 For marginalia (vertico), lets use relative time, along with some other things
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! marginalia
   (setq marginalia-censor-variables nil)
 
@@ -1394,7 +1411,7 @@ tweaks. Namely:
 + Removing outline indentation
 + Centering the text
 
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defvar +zen-serif-p t
   "Whether to use a serifed font with `mixed-pitch-mode'.")
 (after! writeroom-mode
@@ -1444,7 +1461,7 @@ tweaks. Namely:
 
 ** RSS
 RSS is a nice simple way of getting my news. Lets set that up
-#+begin_src elisp
+#+begin_src emacs-lisp
 (map! :map elfeed-search-mode-map
       :after elfeed-search
       [remap kill-this-buffer] "q"
@@ -1685,7 +1702,7 @@ Sadly I can't always work in org, but I can import stuff into it!
 #+end_src
 
 I prefer /org as my directory. Lets change some other defaults too
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-directory "~/org"                       ; let's put files here
       org-use-property-inheritance t              ; it's convenient to have properties inherited
       org-log-done 'time                          ; having the time a item is done sounds convenient
@@ -1695,7 +1712,7 @@ I prefer /org as my directory. Lets change some other defaults too
 #+end_src
 
 I want to slightly change the default args for babel
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-babel-default-header-args
       '((:session . "none")
         (:results . "replace")
@@ -1708,12 +1725,12 @@ I want to slightly change the default args for babel
 #+end_src
 
 I also want to change the order of bullets
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
 #+end_src
 
 The =[[yt:...]]= links preview nicely, but don’t export nicely. Thankfully, we can fix that.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! ox
 (org-link-set-parameters "yt" :export #'+org-export-yt)
 (defun +org-export-yt (path desc backend _com)
@@ -1729,7 +1746,7 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
 #+end_src
 
 *** HTML
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! ox-gfm
   :after org)
 #+end_src
@@ -1738,7 +1755,7 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
 :header-args:emacs-lisp: :noweb-ref ox-html-conf
 :END:
 For some reason this only works if you have org first
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! ox-html
   (define-minor-mode org-fancy-html-export-mode
   "Toggle my fabulous org export tweaks. While this mode itself does a little bit,
@@ -2317,12 +2334,12 @@ Tecosaur has a good collection of fonts, might as well take some
 
 ** Org-Roam
 I would like to get into the habit of using org-roam for my notes, mainly because of that cool reddit post with the server.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-roam-directory "~/org/roam/")
 #+end_src
 
 Lets set up the org-roam-ui as well
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! websocket
   :after org-roam)
 
@@ -2338,20 +2355,20 @@ Lets set up the org-roam-ui as well
 
 Now, I want to replace the org-roam buffer with org-roam-ui, to do that, we need
 to disable the regular buffer
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! org-roam
    (setq +org-roam-open-buffer-on-find-file nil))
 #+end_src
 
 ** Org-Agenda
 Set the directory
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-agenda-files (list "~/org/school.org"
                              "~/org/todo.org"))
 #+end_src
 
 ** Org Cite
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! citar
   :when (featurep! :completion vertico)
   :no-require
@@ -2651,7 +2668,7 @@ Firstly, I dislike the default stars for org-mode, so lets improve that
 #+end_src
 
 I also want to hide leading stars, since they feel redundant
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-ellipsis " ▾ "
       org-hide-leading-stars t
       org-priority-highest ?A
@@ -2665,7 +2682,7 @@ I also want to hide leading stars, since they feel redundant
 #+end_src
 
 Lastly, lets add some ligatures for some org mode stuff
-#+begin_src elisp
+#+begin_src emacs-lisp
 (appendq! +ligatures-extra-symbols
           `(:checkbox      "☐"
             :pending       "◼"
@@ -2747,7 +2764,7 @@ Lastly, lets add some ligatures for some org mode stuff
 Lets also add a function that makes it easy to convert from upper to lowercase,
 since the ligatures don't work with Uppercase (I can make them work, but
 lowercase looks better anyways)
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defun org-syntax-convert-keyword-case-to-lower ()
   "Convert all #+KEYWORDS to #+keywords."
   (interactive)
@@ -2857,7 +2874,7 @@ responsive.
 
 ** Org-Plot
 You can't ever have too many graphs! Lets make it look prettier, and tell it to use the doom theme colors
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! org-plot
   (defun org-plot/generate-theme (_type)
     "Use the current Doom theme colours to generate a GnuPlot preamble."
@@ -3273,7 +3290,7 @@ Now to just have this register with org
 #+end_src
 ** View Exported File
 I have to export files pretty often, lets setup some keybindings to make it easier
-#+begin_src elisp
+#+begin_src emacs-lisp
 (map! :map org-mode-map
       :localleader
       :desc "View exported file" "v" #'org-view-output-file)
@@ -3305,7 +3322,7 @@ I have to export files pretty often, lets setup some keybindings to make it easi
 
 ** Dictionaries
 On every system I use (I have a lot of systems) the dictionary results in doom/emacs are different, and that gets annoying. Lets use lexic + stardict, instead of the default dictionaries.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! lexic
   :commands lexic-search lexic-list-dictionary
   :config
@@ -3344,12 +3361,12 @@ write everything in org and then export it to tex. Best of both worlds!
 
 ** Basic configuration
 First of all, lets use pdf-tools to preview pdfs by defaults
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq +latex-viewers '(pdf-tools evince zathura okular skim sumatrapdf))
 #+end_src
 
 I also want to adjust the look of those previews
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! org
   (setq org-highlight-latex-and-related '(native script entities))
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
@@ -3359,7 +3376,7 @@ I also want to adjust the look of those previews
 #+end_src
 
 Lets add cdlatex org mode integration
-#+begin_src elisp
+#+begin_src emacs-lisp
 (after! org
   (add-hook 'org-mode-hook 'turn-on-org-cdlatex))
 
@@ -3369,20 +3386,20 @@ Lets add cdlatex org mode integration
 #+end_src
 
 I like to preview images inline too
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-display-inline-images t)
 (setq org-redisplay-inline-images t)
 (setq org-startup-with-inline-images "inlineimages")
 #+end_src
 
 Obviously we can't edit a png though. Let use org-fragtog to toggle between previews and text mode
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package! org-fragtog
   :hook (org-mode . org-fragtog-mode))
 #+end_src
 
 Here's just my private LaTeX config.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (setq org-format-latex-header "\\documentclass{article}
 \\usepackage[usenames]{xcolor}
 
@@ -3409,7 +3426,7 @@ Here's just my private LaTeX config.
 
 ** PDF-Tools
 DocView gives me a headache, but pdf-tools can be improved, lets configure it a little more
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
   :hook (pdf-tools-enabled . hide-mode-line-mode)
@@ -4043,7 +4060,7 @@ setup your emails first
 (setq mu4e-update-interval 300)
 #+end_src
 
-#+begin_src elisp
+#+begin_src emacs-lisp
 (set-email-account! "shaunsingh0207"
   '((mu4e-sent-folder       . "/Sent Mail")
     (mu4e-drafts-folder     . "/Drafts")
