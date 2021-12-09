@@ -100,31 +100,16 @@ applications which act like islands, but this often doesn't mirror how we
 users the power to bridge this gap.
 
 ** Notes for the unwary adventurer
-The lovely ~doom doctor~ is good at diagnosing most missing things, but here are a
-few extras.
+The lovely ~doom doctor~ is good at diagnosing most missing things, but a few extras packages might be needed. You can find most of them in the =flake.nix= and =shell.nix= files.
 
-+ A [[https://www.tug.org/texlive/][LaTeX Compiler]] is required for the mathematics rendering performed in [[https://orgmode.org/][org]],
-  and that wonderful pdf/html export we have going. I recommend [[https://github.com/tectonic-typesetting/tectonic][Tectonic]] if you are new, this config uses XeLaTeX.
-+ I use the [[https://overpassfont.org/][Overpass]] font as a go-to sans serif.
-  It's used as my ~doom-variable-pitch-font~
-  I have chosen it because it possesses a few characteristics I consider
-  desirable, namely:
-  - A clean, and legible style. Highway-style fonts tend to be designed to be
-    clear at a glance, and work well with a thicker weight, and this is inspired
-    by /Highway Gothic/.
-  - It's slightly quirky. Look at the diagonal cut on stems for example.
-    Helvetica is a masterful design, but I like a bit more pizzazz now and then.
-  - *Note:* Alegreya is used for my latex export and writeroom mode configurations
-+ I use my [[https://github.com/shaunsingh/SFMono-Nerd-Font-Ligaturized][patched SFMono]] font as a go-to monospace.
- I have chosen it because it possesses a few characteristics I consider
- desirable, namely:
-  - Elegent characters, and good ligatures/unicode support
-  - It fits will with the rest of my system
-+ A few LSP servers. Take a look at [[file:init.el][init.el]]' to see which modules have the ~+lsp~
-  flag.
-+ Gnuplot, used for =org-plot=.
-+ A build of emacs with modules and xwidgets support. I also recommend the
-  native-comp flag with emacs28.
+#+include: "./flake.nix" src nix
+#+include: "./shell.nix" src nix
+
+Installing =nix= followed by running =nix develop= will
++ Install all the required dependencies (excluding fonts)
++ Build the latest emacs (v29)
++ Install a pinned version of =doom-emacs=, defined in the =flake.lock= file
++ Install the required dependencies for my \LaTeX configuration
 
 * Doom Configuration
 ** Modules
@@ -4222,12 +4207,4 @@ Let's do our *bold*, /italic/, and _underline_ in org-syntax, using IRC control 
 - Tecosaur - For all his help and the excellent Org, \LaTeX, and HTML export configs
 - Dr. Elken - For his EXWM Module and help on the DOOM Server
 - Henrik - For making Doom Emacs in the first place
-
-#+begin_quote
-Includes (snippets) of other software related under the MIT license:
-- Doom Emacs Config, 2021 Tecosaur. https://tecosaur.github.io/emacs-config/config.html
-- .doom.d, 2021 Elken. https://github.com/elken/.doom.d/blob/master/config.org
-
-Includes (snippets) of other software related under the GPLv3 license:
-- .dotfiles, 2021 Daviwil. https://github.com/daviwil/dotfiles
-#+end_quote
+- Rougier - For his work on NANO Emacs.
