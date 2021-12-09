@@ -1,8 +1,7 @@
 ;;; load-nano.el -*- lexical-binding: t; -*-
-
 ;; This file loads nano. Enable by putting (require 'load-nano) in config.el
 
-; necessary for proper appearance of nano
+;; necessary for proper appearance of nano
 (setq doom-theme 'nil)
 
 (require 'nano-layout)

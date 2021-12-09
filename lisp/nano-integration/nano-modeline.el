@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t -*-
 ;; -------------------------------------------------------------------
 ;; GNU Emacs / N Λ N O - Emacs made simple
-;; Copyright (C) 2020 - N Λ N O developers 
+;; Copyright (C) 2021 - N Λ N O developers 
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -34,6 +34,9 @@
         (concat "#" (substring-no-properties vc-mode
                                  (+ (if (eq backend 'Hg) 2 3) 2))))  nil))
 
+(defun nano-mode-name ()
+  (if (listp mode-name) (car mode-name) mode-name))
+
 
 ;; From https://amitp.blogspot.com/2011/08/emacs-custom-mode-line.html
 ;; ---------------------------------------------------------------------
@@ -57,30 +60,33 @@
          (window        (get-buffer-window (current-buffer)))
          (space-up       +0.15)
          (space-down     -0.20)
-         (prefix (cond ((string= status "RO")
-                        (propertize " RO " 'face 'nano-face-header-popout))
-                       ((string= status "**")
-                        (propertize " ** " 'face 'nano-face-header-critical))
-                       ((string= status "RW")
-                        (propertize " RW " 'face 'nano-face-header-faded))
-                       (t (propertize status 'face 'nano-face-header-popout))))
+	 (prefix (cond ((string= status "RO")
+			        (propertize (if (window-dedicated-p)" -- " " RO ")
+                                'face 'nano-face-header-popout))
+                   ((string= status "**")
+			        (propertize (if (window-dedicated-p)" -- " " ** ")
+                                'face 'nano-face-header-critical))
+                   ((string= status "RW")
+			        (propertize (if (window-dedicated-p)" -- " " RW ")
+                                'face 'nano-face-header-faded))
+                   (t (propertize status 'face 'nano-face-header-popout))))
          (left (concat
                 (propertize " "  'face 'nano-face-header-default
-                            'display `(raise ,space-up))
+			    'display `(raise ,space-up))
                 (propertize name 'face 'nano-face-header-strong)
                 (propertize " "  'face 'nano-face-header-default
-                            'display `(raise ,space-down))
-                (propertize primary 'face 'nano-face-header-default)))
+			    'display `(raise ,space-down))
+		(propertize primary 'face 'nano-face-header-default)))
          (right (concat secondary " "))
          (available-width (- (window-total-width) 
-                             (length prefix) (length left) (length right)
-                             (/ (window-right-divider-width) char-width)))
-         (available-width (max 1 available-width)))
+			     (length prefix) (length left) (length right)
+			     (/ (window-right-divider-width) char-width)))
+	 (available-width (max 1 available-width)))
     (concat prefix
-            left
-            (propertize (make-string available-width ?\ )
+	    left
+	    (propertize (make-string available-width ?\ )
                         'face 'nano-face-header-default)
-            (propertize right 'face `(:inherit nano-face-header-default
+	    (propertize right 'face `(:inherit nano-face-header-default
                                       :foreground ,nano-color-faded)))))
 
 ;; ---------------------------------------------------------------------
@@ -91,7 +97,8 @@
   (nano-modeline-compose (nano-modeline-status)
                          "Mail"
                          (nano-modeline-mu4e-context)
-                         ""))
+                         (format "%d messages" (plist-get mu4e~server-props :doccount))
+                         ))
 
 ;; ---------------------------------------------------------------------
 
@@ -187,26 +194,26 @@
 (defun nano-modeline-info-breadcrumbs ()
   (let ((nodes (Info-toc-nodes Info-current-file))
         (cnode Info-current-node)
-        (node Info-current-node)
+	(node Info-current-node)
         (crumbs ())
         (depth Info-breadcrumbs-depth)
-        line)
+	line)
     (while  (> depth 0)
       (setq node (nth 1 (assoc node nodes)))
       (if node (push node crumbs))
       (setq depth (1- depth)))
     (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
-                                 crumbs (cons nil crumbs))))
+			         crumbs (cons nil crumbs))))
     (forward-line 1)
     (dolist (node crumbs)
       (let ((text
-             (if (not (equal node "Top")) node
-               (format "%s"
-                       (if (stringp Info-current-file)
-                           (file-name-sans-extension
-                            (file-name-nondirectory Info-current-file))
-                         Info-current-file)))))
-        (setq line (concat line (if (null line) "" " > ")
+	     (if (not (equal node "Top")) node
+	       (format "%s"
+		       (if (stringp Info-current-file)
+			   (file-name-sans-extension
+			    (file-name-nondirectory Info-current-file))
+			 Info-current-file)))))
+	(setq line (concat line (if (null line) "" " > ")
                                 (if (null node) "..." text)))))
     (if (and cnode (not (equal cnode "Top")))
         (setq line (concat line (if (null line) "" " > ") cnode)))
@@ -231,7 +238,7 @@
   (nano-modeline-compose (nano-modeline-status)
                          "Agenda"
                          ""
-                         (format-time-string "%H:%M")))
+                         (format-time-string "%A %-e %B %Y")))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-term-mode-p ()
@@ -285,13 +292,14 @@
                            ""
                            from)))
 
-(add-hook 'mu4e-view-mode-hook
-          (lambda () (setq header-line-format "%-")
-            (face-remap-add-relative 'header-line
-                                     '(:background nil
-                                       :underline nil
-                                       :box nil
-                                       :height 1.0))))
+(defun nano-modeline-mu4e-view-hook ()
+  (setq header-line-format "%-")
+  (face-remap-add-relative 'header-line
+                           '(:background "#ffffff"
+                                         :underline nil
+                                         :box nil
+                                         :height 1.0)))
+(add-hook 'mu4e-view-mode-hook #'nano-modeline-mu4e-view-hook)
 
 
 ;; ---------------------------------------------------------------------
@@ -325,7 +333,7 @@
 
 (defun nano-modeline-org-clock-mode ()
     (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (format-mode-line "%m"))
+          (mode-name   (nano-mode-name))
           (branch      (vc-branch))
           (position    (format-mode-line "%l:%c")))
       (nano-modeline-compose (nano-modeline-status)
@@ -342,20 +350,20 @@
 
 (defun nano-modeline-docview-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-        (mode-name   (format-mode-line "%m"))
-        (branch      (vc-branch))
-        (page-number (concat
-                      (number-to-string (doc-view-current-page)) "/"
-                      (or (ignore-errors
-                            (number-to-string (doc-view-last-page-number)))
-                          "???"))))
+	(mode-name   (nano-mode-name))
+	(branch      (vc-branch))
+	(page-number (concat
+		      (number-to-string (doc-view-current-page)) "/"
+		      (or (ignore-errors
+			    (number-to-string (doc-view-last-page-number)))
+			  "???"))))
     (nano-modeline-compose
      (nano-modeline-status)
      buffer-name
      (concat "(" mode-name
-             (if branch (concat ", "
-                                (propertize branch 'face 'italic)))
-             ")" )
+	     (if branch (concat ", "
+				(propertize branch 'face 'italic)))
+	     ")" )
      page-number)))
 
 ;; ---------------------------------------------------------------------
@@ -364,20 +372,20 @@
 
 (defun nano-modeline-pdf-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-        (mode-name   (format-mode-line "%m"))
-        (branch      (vc-branch))
-        (page-number (concat
-                      (number-to-string (pdf-view-current-page)) "/"
-                      (or (ignore-errors
-                            (number-to-string (pdf-cache-number-of-pages)))
-                          "???"))))
+	(mode-name   (nano-mode-name))
+	(branch      (vc-branch))
+	(page-number (concat
+		      (number-to-string (pdf-view-current-page)) "/"
+		      (or (ignore-errors
+			    (number-to-string (pdf-cache-number-of-pages)))
+			  "???"))))
     (nano-modeline-compose
      "RW"
      buffer-name
      (concat "(" mode-name
-             (if branch (concat ", "
-                                (propertize branch 'face 'italic)))
-             ")" )
+	     (if branch (concat ", "
+				(propertize branch 'face 'italic)))
+	     ")" )
      page-number)))
 
 ;; ---------------------------------------------------------------------
@@ -393,7 +401,7 @@
 
 (defun nano-modeline-completion-list-mode ()
     (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (format-mode-line "%m"))
+          (mode-name   (nano-mode-name))
           (position    (format-mode-line "%l:%c")))
 
       (nano-modeline-compose (nano-modeline-status)
@@ -409,7 +417,7 @@
 
 (defun nano-modeline-deft-mode ()
   (let ((prefix " DEFT ")
-        (primary "Search")
+        (primary "Notes")
         (filter  (if deft-filter-regexp
                      (deft-whole-filter-regexp) "<filter>"))
         (matches (if deft-filter-regexp
@@ -428,7 +436,7 @@
 
 (defun nano-modeline-default-mode ()
     (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (format-mode-line "%m"))
+          (mode-name   (nano-mode-name))
           (branch      (vc-branch))
           (position    (format-mode-line "%l:%c")))
       (nano-modeline-compose (nano-modeline-status)
@@ -455,6 +463,7 @@
       (concat "(" (substring-no-properties (mu4e-context-label) 1 -1) ")")
     "(none)"))
 
+
 ;; ---------------------------------------------------------------------
 (defun nano-modeline ()
   "Install a header line whose content is dependend on the major mode"
@@ -479,33 +488,33 @@
 ;;         ((nano-modeline-mu4e-view-mode-p)       (nano-modeline-mu4e-view-mode))
            ((nano-modeline-text-mode-p)            (nano-modeline-default-mode))
            ((nano-modeline-pdf-view-mode-p)        (nano-modeline-pdf-view-mode))
-           ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
-           ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
+	   ((nano-modeline-docview-mode-p)         (nano-modeline-docview-mode))
+	   ((nano-modeline-completion-list-mode-p) (nano-modeline-completion-list-mode))
            ((nano-modeline-nano-help-mode-p)       (nano-modeline-nano-help-mode))
            (t                                      (nano-modeline-default-mode)))))))
 
 ;; ---------------------------------------------------------------------
 (defun nano-modeline-update-windows ()
-  "Modify the mode line depending on the presence of a window below."
-  
+  "Modify the mode line depending on the presence of a window
+below or a buffer local variable 'no-mode-line'."
   (dolist (window (window-list))
     (with-selected-window window
-      (if (or (one-window-p t)
-              (eq (window-in-direction 'below) (minibuffer-window))
-              (not (window-in-direction 'below)))
-          (with-current-buffer (window-buffer window)
-            (setq mode-line-format (list "")))
-                ;; (setq mode-line-format (list "")))
-        (with-current-buffer (window-buffer window)
-          (setq mode-line-format nil)))
-        (if (window-in-direction 'above)
-              (face-remap-add-relative 'header-line '(:overline "#98A5B3"))
-            (face-remap-add-relative 'header-line '(:overline nil)))
-          )))
+	  (with-current-buffer (window-buffer window)
+        (if (or (not (boundp 'no-mode-line)) (not no-mode-line))
+            (set-window-parameter window 'mode-line-format
+                                  (cond ((not mode-line-format) 'none)
+                                        ((one-window-p t 'visible) (list ""))
+                                        ((eq (window-in-direction 'below) (minibuffer-window)) (list ""))
+                                        ((not (window-in-direction 'below)) (list ""))
+                                        (t 'none))))))))
+
 (add-hook 'window-configuration-change-hook 'nano-modeline-update-windows)
 
 (setq eshell-status-in-modeline nil)
+;; (setq-default mode-line-format (list "%-"))
 (setq-default mode-line-format "")
 (nano-modeline)
 
 (provide 'nano-modeline)
+
+
