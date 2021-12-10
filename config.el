@@ -284,94 +284,6 @@ Return nil otherwise."
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 
-(after! circe
-  (setq-default circe-use-tls t)
-  (setq circe-notifications-alert-icon "/usr/share/icons/breeze/actions/24/network-connect.svg"
-        lui-logging-directory "~/.emacs.d/.local/etc/irc"
-        lui-logging-file-format "{buffer}/%Y/%m-%d.txt"
-        circe-format-self-say "{nick:+13s} ┃ {body}")
-
-  (custom-set-faces!
-    '(circe-my-message-face :weight unspecified))
-
-  (enable-lui-logging-globally)
-  (enable-circe-display-images)
-
-  (defun lui-org-to-irc ()
-    "Examine a buffer with simple org-mode formatting, and converts the empasis:
-  *bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
-  =code= is converted to inverse (highlighted) text."
-    (goto-char (point-min))
-    (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
-      (replace-match
-       (concat (pcase (match-string 1)
-                 ("*" "")
-                 ("/" "")
-                 ("_" "")
-                 ("=" ""))
-               (match-string 2)
-               "") nil nil)))
-  
-  (add-hook 'lui-pre-input-hook #'lui-org-to-irc)
-
-  (defun named-circe-prompt ()
-    (lui-set-prompt
-     (concat (propertize (format "%13s > " (circe-nick))
-                         'face 'circe-prompt-face)
-             "")))
-  (add-hook 'circe-chat-mode-hook #'named-circe-prompt)
-
-  (appendq! all-the-icons-mode-icon-alist
-            '((circe-channel-mode all-the-icons-material "message" :face all-the-icons-lblue)
-              (circe-server-mode all-the-icons-material "chat_bubble_outline" :face all-the-icons-purple))))
-
-(defun auth-server-pass (server)
-  (if-let ((secret (plist-get (car (auth-source-search :host server)) :secret)))
-      (if (functionp secret)
-          (funcall secret) secret)
-    (error "Could not fetch password for host %s" server)))
-
-(defun register-irc-auths ()
-  (require 'circe)
-  (require 'dash)
-  (let ((accounts (-filter (lambda (a) (string= "irc" (plist-get a :for)))
-                           (auth-source-search :require '(:for) :max 10))))
-    (appendq! circe-network-options
-              (mapcar (lambda (entry)
-                        (let* ((host (plist-get entry :host))
-                               (label (or (plist-get entry :label) host))
-                               (_ports (mapcar #'string-to-number
-                                               (s-split "," (plist-get entry :port))))
-                               (port (if (= 1 (length _ports)) (car _ports) _ports))
-                               (user (plist-get entry :user))
-                               (nick (or (plist-get entry :nick) user))
-                               (channels (mapcar (lambda (c) (concat "#" c))
-                                                 (s-split "," (plist-get entry :channels)))))
-                          `(,label
-                            :host ,host :port ,port :nick ,nick
-                            :sasl-username ,user :sasl-password auth-server-pass
-                            :channels ,channels)))
-                      accounts))))
-
-(add-transient-hook! #'=irc (register-irc-auths))
-
-(defun lui-org-to-irc ()
-  "Examine a buffer with simple org-mode formatting, and converts the empasis:
-*bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
-=code= is converted to inverse (highlighted) text."
-  (goto-char (point-min))
-  (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
-    (replace-match
-     (concat (pcase (match-string 1)
-               ("*" "")
-               ("/" "")
-               ("_" "")
-               ("=" ""))
-             (match-string 2)
-             "") nil nil)))
-
-(add-hook 'lui-pre-input-hook #'lui-org-to-irc)
-
 (setq mu4e-update-interval 300)
 
 (set-email-account! "shaunsingh0207"
@@ -2880,7 +2792,7 @@ This is done according to `org-latex-feature-implementations'"
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 
 (after! ox-latex
-  (setq org-latex-default-class "chameleon"
+  (setq org-latex-default-class "cb-doc"
         org-latex-tables-booktabs t
         org-latex-hyperref-template "\\colorlet{greenyblue}{blue!70!green}
 \\colorlet{blueygreen}{blue!40!green}
@@ -3094,7 +3006,7 @@ This is done according to `org-latex-feature-implementations'"
 (setq org-export-with-sub-superscripts '{})
 
 (after! ox-latex
-(defvar org-latex-default-fontset 'alegreya
+(defvar org-latex-default-fontset 'fira
   "Fontset from `org-latex-fontsets' to use by default.
 As cm (computer modern) is TeX's default, that causes nothing
 to be added to the document.
@@ -3162,7 +3074,7 @@ the cars in `org-latex-fontsets'."
     (fira
      :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
      :mono "\\usepackage[scale=0.80]{FiraMono}"
-     :maths "\\usepackage{newtxsf} % change to firamath in future?")
+     :maths "\\usepackage[fakebold]{firamath-otf}")
     (kp
      :serif "\\usepackage{kpfonts}")
     (newpx

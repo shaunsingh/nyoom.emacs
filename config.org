@@ -983,108 +983,6 @@ When im doing regexes, its usually with /g anyways, lets make that the default
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 #+end_src
 
-** IRC
-[[xkcd:1782]]
-
-I'm trying to move everything to emacs, and discord is the one electron app I
-need to ditch. With bitlbee and circe it should be possible
-
-To make this easier, I
-
-1. Have everything (serverinfo and passwords) in an authinfo.gpg file
-2. Tell circe to use it
-3. Use org syntax for formatting
-4. Set it up with discord
-
-#+name: irc-authinfo-reader
-#+begin_src emacs-lisp :tangle no
-(defun auth-server-pass (server)
-  (if-let ((secret (plist-get (car (auth-source-search :host server)) :secret)))
-      (if (functionp secret)
-          (funcall secret) secret)
-    (error "Could not fetch password for host %s" server)))
-
-(defun register-irc-auths ()
-  (require 'circe)
-  (require 'dash)
-  (let ((accounts (-filter (lambda (a) (string= "irc" (plist-get a :for)))
-                           (auth-source-search :require '(:for) :max 10))))
-    (appendq! circe-network-options
-              (mapcar (lambda (entry)
-                        (let* ((host (plist-get entry :host))
-                               (label (or (plist-get entry :label) host))
-                               (_ports (mapcar #'string-to-number
-                                               (s-split "," (plist-get entry :port))))
-                               (port (if (= 1 (length _ports)) (car _ports) _ports))
-                               (user (plist-get entry :user))
-                               (nick (or (plist-get entry :nick) user))
-                               (channels (mapcar (lambda (c) (concat "#" c))
-                                                 (s-split "," (plist-get entry :channels)))))
-                          `(,label
-                            :host ,host :port ,port :nick ,nick
-                            :sasl-username ,user :sasl-password auth-server-pass
-                            :channels ,channels)))
-                      accounts))))
-#+end_src
-
-We'll just call src_elisp{(register-irc-auths)} on a hook when we start Circe
-up.
-
-Now we're ready to go, let's actually wire-up Circe, with one or two
-configuration tweaks.
-#+begin_src emacs-lisp :noweb no-export
-(after! circe
-  (setq-default circe-use-tls t)
-  (setq circe-notifications-alert-icon "/usr/share/icons/breeze/actions/24/network-connect.svg"
-        lui-logging-directory "~/.emacs.d/.local/etc/irc"
-        lui-logging-file-format "{buffer}/%Y/%m-%d.txt"
-        circe-format-self-say "{nick:+13s} ┃ {body}")
-
-  (custom-set-faces!
-    '(circe-my-message-face :weight unspecified))
-
-  (enable-lui-logging-globally)
-  (enable-circe-display-images)
-
-  <<org-emph-to-irc>>
-
-  (defun named-circe-prompt ()
-    (lui-set-prompt
-     (concat (propertize (format "%13s > " (circe-nick))
-                         'face 'circe-prompt-face)
-             "")))
-  (add-hook 'circe-chat-mode-hook #'named-circe-prompt)
-
-  (appendq! all-the-icons-mode-icon-alist
-            '((circe-channel-mode all-the-icons-material "message" :face all-the-icons-lblue)
-              (circe-server-mode all-the-icons-material "chat_bubble_outline" :face all-the-icons-purple))))
-
-<<irc-authinfo-reader>>
-
-(add-transient-hook! #'=irc (register-irc-auths))
-#+end_src
-
-Let's do our *bold*, /italic/, and _underline_ in org-syntax, using IRC control characters.
-#+name: org-emph-to-irc
-#+begin_src emacs-lisp
-(defun lui-org-to-irc ()
-  "Examine a buffer with simple org-mode formatting, and converts the empasis:
-,*bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
-=code= is converted to inverse (highlighted) text."
-  (goto-char (point-min))
-  (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
-    (replace-match
-     (concat (pcase (match-string 1)
-               ("*" "")
-               ("/" "")
-               ("_" "")
-               ("=" ""))
-             (match-string 2)
-             "") nil nil)))
-
-(add-hook 'lui-pre-input-hook #'lui-org-to-irc)
-#+end_src
-
 ** Mu4e
 [[xkcd:1796]]
 I'm trying out emails in emacs, should be nice. Related, check .mbsyncrc to
@@ -2749,7 +2647,7 @@ is selected, only the bare key is returned."
 (advice-add 'org-mks :override #'org-mks-pretty)
 #+end_src
 
-The [[file:~/.emacs.doom/bin/org-capture][org-capture bin]] is rather nice, but I'd be nicer with a smaller frame, and
+Org-capture is rather nice, but I'd be nicer with a smaller frame, and
 no modeline.
 
 #+begin_src emacs-lisp
@@ -3919,7 +3817,7 @@ Now for some class setup
 And some saner defaults for them
 #+begin_src emacs-lisp
 (after! ox-latex
-  (setq org-latex-default-class "chameleon"
+  (setq org-latex-default-class "cb-doc"
         org-latex-tables-booktabs t
         org-latex-hyperref-template "\\colorlet{greenyblue}{blue!70!green}
 \\colorlet{blueygreen}{blue!40!green}
@@ -4162,7 +4060,7 @@ of =#+options=.
 
 #+begin_src emacs-lisp
 (after! ox-latex
-(defvar org-latex-default-fontset 'alegreya
+(defvar org-latex-default-fontset 'fira
   "Fontset from `org-latex-fontsets' to use by default.
 As cm (computer modern) is TeX's default, that causes nothing
 to be added to the document.
@@ -4250,7 +4148,7 @@ Finally, we just need to add some fonts.
     (fira
      :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
      :mono "\\usepackage[scale=0.80]{FiraMono}"
-     :maths "\\usepackage{newtxsf} % change to firamath in future?")
+     :maths "\\usepackage[fakebold]{firamath-otf}")
     (kp
      :serif "\\usepackage{kpfonts}")
     (newpx
@@ -4282,6 +4180,9 @@ Each car is the name of the fontset (which cannot include \"-\").
 Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
 A key's value is a LaTeX snippet which loads such a font."))
 #+end_src
+
+#+RESULTS:
+: org-latex-fontsets
 
 When we're using Alegreya we can apply a lovely little tweak to =tabular= which
 (locally) changes the figures used to lining fixed-width.
