@@ -597,14 +597,6 @@ Of course we need to tell emacs who I am
       user-mail-address "shaunsingh0207@gmail.com")
 #+end_src
 
-** Authinfo
-I frequently delete my =~/.emacs.d= for fun, so having authinfo in a seperate file
-sounds like a good idea
-#+begin_src emacs-lisp
-(setq auth-sources '("~/.authinfo.gpg")
-      auth-source-cache-expiry nil) ; default is 7200 (2h)
-#+end_src
-
 ** Emacsclient
 mu4e is a bit finicky with emacsclient, and org takes forever to load. The
 solution? Use tecosaurs greedy daemon startup
@@ -637,19 +629,17 @@ I use the fish shell. If you use zsh/bash, be sure to change this
 Vterm is my terminal emulator of choice. We can tell it to use ligatures, and also tell it to compile automatically
 Vterm clearly wins the terminal war. Also doesn't need much configuration out of
 the box, although the shell integration does. You can find that in =~/.config/fish/config.fish=
-**** Always compile
+
 Fixes a weird bug with native-comp
 #+begin_src emacs-lisp
 (setq vterm-always-compile-module t)
 #+end_src
 
-**** Kill buffer
 If the process exits, kill the =vterm= buffer
 #+begin_src emacs-lisp
 (setq vterm-kill-buffer-on-exit t)
 #+end_src
 
-**** Functions
 Useful functions for the shell-side integration provided by vterm.
 #+begin_src emacs-lisp
 (after! vterm
@@ -658,7 +648,6 @@ Useful functions for the shell-side integration provided by vterm.
             (magit-status path)))))
 #+end_src
 
-**** Ligatures
 Use ligatures from within vterm (and eshell), we do this by redefining the variable where /not/ to show ligatures. On the other hand, in select modes we want to use extra ligatures, so lets enable that.
 #+begin_src emacs-lisp
 (setq +ligatures-in-modes t)
@@ -717,173 +706,6 @@ lets add those back in with the help of composition-function-table
 (set-char-table-range composition-function-table ?T '(["\\(?:Th\\)" 0 font-shape-gstring]))
 #+end_src
 
-*** Font collections
-Using the lovely conditional preamble, I'll define a number of font collections
-that can be used for LaTeX exports. Who knows, maybe I'll use it with other
-export formats too at some point.
-
-To start with I'll create a default state variable and register =fontset= as part
-of =#+options=.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(defvar org-latex-default-fontset 'alegreya
-  "Fontset from `org-latex-fontsets' to use by default.
-As cm (computer modern) is TeX's default, that causes nothing
-to be added to the document.
-
-If \"nil\" no custom fonts will ever be used.")
-(eval '(cl-pushnew '(:latex-font-set nil "fontset" org-latex-default-fontset)
-                   (org-export-backend-options (org-export-get-backend 'latex)))))
-#+end_src
-
-Then a function is needed to generate a LaTeX snippet which applies the fontset. It
-would be nice if this could be done for individual styles and use different
-styles as the main document font. If the individual typefaces for a fontset are
-defined individually as
-src_elisp{:serif}, src_elisp{:sans}, src_elisp{:mono}, and src_elisp{:maths}.
-I can use those to generate LaTeX for subsets of the full fontset. Then, if I
-don't let any fontset names have =-= in them, I can use =-sans= and =-mono= as
-suffixes that specify the document font to use.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(defun org-latex-fontset-entry ()
-  "Get the fontset spec of the current file.
-Has format \"name\" or \"name-style\" where 'name' is one of
-the cars in `org-latex-fontsets'."
-  (let ((fontset-spec
-         (symbol-name
-          (or (car (delq nil
-                         (mapcar
-                          (lambda (opt-line)
-                            (plist-get (org-export--parse-option-keyword opt-line 'latex)
-                                       :latex-font-set))
-                          (cdar (org-collect-keywords '("OPTIONS"))))))
-              org-latex-default-fontset))))
-    (cons (intern (car (split-string fontset-spec "-")))
-          (when (cadr (split-string fontset-spec "-"))
-            (intern (concat ":" (cadr (split-string fontset-spec "-"))))))))
-
-(defun org-latex-fontset (&rest desired-styles)
-  "Generate a LaTeX preamble snippet which applies the current fontset for DESIRED-STYLES."
-  (let* ((fontset-spec (org-latex-fontset-entry))
-         (fontset (alist-get (car fontset-spec) org-latex-fontsets)))
-    (if fontset
-        (concat
-         (mapconcat
-          (lambda (style)
-            (when (plist-get fontset style)
-              (concat (plist-get fontset style) "\n")))
-          desired-styles
-          "")
-         (when (memq (cdr fontset-spec) desired-styles)
-           (pcase (cdr fontset-spec)
-             (:serif "\\renewcommand{\\familydefault}{\\rmdefault}\n")
-             (:sans "\\renewcommand{\\familydefault}{\\sfdefault}\n")
-             (:mono "\\renewcommand{\\familydefault}{\\ttdefault}\n"))))
-      (error "Font-set %s is not provided in org-latex-fontsets" (car fontset-spec))))))
-#+end_src
-
-Now that all the functionality has been implemented, we should hook it into our
-preamble generation.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '(org-latex-default-fontset . custom-font) t)
-(add-to-list 'org-latex-feature-implementations '(custom-font :snippet (org-latex-fontset :serif :sans :mono) :order 0) t)
-(add-to-list 'org-latex-feature-implementations '(.custom-maths-font :eager t :when (custom-font maths) :snippet (org-latex-fontset :maths) :order 0.3) t))
-#+end_src
-
-Finally, we just need to add some fonts.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(defvar org-latex-fontsets
-  '((cm nil) ; computer modern
-    (## nil) ; no font set
-    (alegreya
-     :serif "\\usepackage[osf]{Alegreya}"
-     :sans "\\usepackage{AlegreyaSans}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (biolinum
-     :serif "\\usepackage[osf]{libertineRoman}"
-     :sans "\\usepackage[sfdefault,osf]{biolinum}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[libertine,varvw]{newtxmath}")
-    (fira
-     :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
-     :mono "\\usepackage[scale=0.80]{FiraMono}"
-     :maths "\\usepackage{newtxsf} % change to firamath in future?")
-    (kp
-     :serif "\\usepackage{kpfonts}")
-    (newpx
-     :serif "\\usepackage{newpxtext}"
-     :sans "\\usepackage{gillius}"
-     :mono "\\usepackage[scale=0.9]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (noto
-     :serif "\\usepackage[osf]{noto-serif}"
-     :sans "\\usepackage[osf]{noto-sans}"
-     :mono "\\usepackage[scale=0.96]{noto-mono}"
-     :maths "\\usepackage{notomath}")
-    (plex
-     :serif "\\usepackage{plex-serif}"
-     :sans "\\usepackage{plex-sans}"
-     :mono "\\usepackage[scale=0.95]{plex-mono}"
-     :maths "\\usepackage{newtxmath}") ; may be plex-based in future
-    (source
-     :serif "\\usepackage[osf]{sourceserifpro}"
-     :sans "\\usepackage[osf]{sourcesanspro}"
-     :mono "\\usepackage[scale=0.95]{sourcecodepro}"
-     :maths "\\usepackage{newtxmath}") ; may be sourceserifpro-based in future
-    (times
-     :serif "\\usepackage{newtxtext}"
-     :maths "\\usepackage{newtxmath}"))
-  "Alist of fontset specifications.
-Each car is the name of the fontset (which cannot include \"-\").
-
-Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
-A key's value is a LaTeX snippet which loads such a font."))
-#+end_src
-
-When we're using Alegreya we can apply a lovely little tweak to =tabular= which
-(locally) changes the figures used to lining fixed-width.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '((string= (car (org-latex-fontset-entry)) "alegreya") . alegreya-typeface))
-(add-to-list 'org-latex-feature-implementations '(alegreya-typeface) t)
-(add-to-list 'org-latex-feature-implementations'(.alegreya-tabular-figures :eager t :when (alegreya-typeface table) :order 0.5 :snippet "
-\\makeatletter
-% tabular lining figures in tables
-\\renewcommand{\\tabular}{\\AlegreyaTLF\\let\\@halignto\\@empty\\@tabular}
-\\makeatother\n") t))
-#+end_src
-
-Due to the Alegreya's metrics, the =\LaTeX= symbol doesn't quite look right. We
-can correct for this by redefining it with subtlety shifted kerning.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '("LaTeX" . latex-symbol))
-(add-to-list 'org-latex-feature-implementations '(latex-symbol :when alegreya-typeface :order 0.5 :snippet "
-\\makeatletter
-% Kerning around the A needs adjusting
-\\DeclareRobustCommand{\\LaTeX}{L\\kern-.24em%
-        {\\sbox\\z@ T%
-         \\vbox to\\ht\\z@{\\hbox{\\check@mathfonts
-                              \\fontsize\\sf@size\\z@
-                              \\math@fontsfalse\\selectfont
-                              A}%
-                        \\vss}%
-        }%
-        \\kern-.10em%
-        \\TeX}
-\\makeatother\n") t))
-#+end_src
-
 ** Company
 I think company is a bit too quick to recommend some stuff
 #+begin_src emacs-lisp
@@ -896,7 +718,7 @@ I think company is a bit too quick to recommend some stuff
       company-dabbrev-ignore-case t
       company-dabbrev-other-buffers nil
       company-tooltip-limit 5
-      company-tooltip-minimum-width 50))
+      company-tooltip-minimum-width 40))
 (set-company-backend!
   '(text-mode
     markdown-mode
@@ -905,7 +727,6 @@ I think company is a bit too quick to recommend some stuff
     company-yasnippet
     company-files))
 
-;;nested snippets
 (setq yas-triggers-in-field t)
 #+end_src
 
@@ -1061,7 +882,7 @@ Return nil otherwise."
     (car (cl-set-difference src-langs header-langs :test #'string=))))
 #+end_src
 
-Lets also include << to autocomplete, as with () and {}
+Lets also include <<>> to autocomplete, as with () and {}
 #+begin_src emacs-lisp
 (sp-local-pair
  '(org-mode)
@@ -1114,10 +935,9 @@ I also want to use clippy for linting, and those sweet org-mode docs
 ** Better Defaults
 The defaults for emacs aren't so good nowadays. Lets fix that up a bit
 #+begin_src emacs-lisp
-(setq scroll-margin 4                              ;having a little margin is nice
+(setq scroll-margin 2                              ;having a little margin is nice
       auto-save-default t                          ;I dont like to lose work
       display-line-numbers-type nil                ;I dislike line numbers
-      history-length 25                            ;Slight speedup
       delete-by-moving-to-trash t                  ;delete
       truncate-string-ellipsis "…"                 ;default ellipses sucko system trash instead
       browse-url-browser-function 'xwidget-webkit-browse-url)
@@ -1132,11 +952,12 @@ fix it
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 #+end_src
 
-Instead of fundamental mode, lisp-interaction-mode seems much more useful
+Instead of fundamental mode, =org-mode= seems much more useful
 #+begin_src emacs-lisp
-(setq doom-scratch-initial-major-mode 'lisp-interaction-mode)
+(setq doom-scratch-initial-major-mode 'org-mode)
 #+end_src
 
+*** EVIL
 The default bindings of doom are pretty good. I'm not so good with motions though, so lets make life easier with avy
 #+begin_src emacs-lisp
 (map! :leader
@@ -1162,17 +983,171 @@ When im doing regexes, its usually with /g anyways, lets make that the default
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 #+end_src
 
-And just some simple visual tweaks
+** IRC
+[[xkcd:1782]]
+
+I'm trying to move everything to emacs, and discord is the one electron app I
+need to ditch. With bitlbee and circe it should be possible
+
+To make this easier, I
+
+1. Have everything (serverinfo and passwords) in an authinfo.gpg file
+2. Tell circe to use it
+3. Use org syntax for formatting
+4. Set it up with discord
+
+#+name: irc-authinfo-reader
+#+begin_src emacs-lisp :tangle no
+(defun auth-server-pass (server)
+  (if-let ((secret (plist-get (car (auth-source-search :host server)) :secret)))
+      (if (functionp secret)
+          (funcall secret) secret)
+    (error "Could not fetch password for host %s" server)))
+
+(defun register-irc-auths ()
+  (require 'circe)
+  (require 'dash)
+  (let ((accounts (-filter (lambda (a) (string= "irc" (plist-get a :for)))
+                           (auth-source-search :require '(:for) :max 10))))
+    (appendq! circe-network-options
+              (mapcar (lambda (entry)
+                        (let* ((host (plist-get entry :host))
+                               (label (or (plist-get entry :label) host))
+                               (_ports (mapcar #'string-to-number
+                                               (s-split "," (plist-get entry :port))))
+                               (port (if (= 1 (length _ports)) (car _ports) _ports))
+                               (user (plist-get entry :user))
+                               (nick (or (plist-get entry :nick) user))
+                               (channels (mapcar (lambda (c) (concat "#" c))
+                                                 (s-split "," (plist-get entry :channels)))))
+                          `(,label
+                            :host ,host :port ,port :nick ,nick
+                            :sasl-username ,user :sasl-password auth-server-pass
+                            :channels ,channels)))
+                      accounts))))
+#+end_src
+
+We'll just call src_elisp{(register-irc-auths)} on a hook when we start Circe
+up.
+
+Now we're ready to go, let's actually wire-up Circe, with one or two
+configuration tweaks.
+#+begin_src emacs-lisp :noweb no-export
+(after! circe
+  (setq-default circe-use-tls t)
+  (setq circe-notifications-alert-icon "/usr/share/icons/breeze/actions/24/network-connect.svg"
+        lui-logging-directory "~/.emacs.d/.local/etc/irc"
+        lui-logging-file-format "{buffer}/%Y/%m-%d.txt"
+        circe-format-self-say "{nick:+13s} ┃ {body}")
+
+  (custom-set-faces!
+    '(circe-my-message-face :weight unspecified))
+
+  (enable-lui-logging-globally)
+  (enable-circe-display-images)
+
+  <<org-emph-to-irc>>
+
+  (defun named-circe-prompt ()
+    (lui-set-prompt
+     (concat (propertize (format "%13s > " (circe-nick))
+                         'face 'circe-prompt-face)
+             "")))
+  (add-hook 'circe-chat-mode-hook #'named-circe-prompt)
+
+  (appendq! all-the-icons-mode-icon-alist
+            '((circe-channel-mode all-the-icons-material "message" :face all-the-icons-lblue)
+              (circe-server-mode all-the-icons-material "chat_bubble_outline" :face all-the-icons-purple))))
+
+<<irc-authinfo-reader>>
+
+(add-transient-hook! #'=irc (register-irc-auths))
+#+end_src
+
+Let's do our *bold*, /italic/, and _underline_ in org-syntax, using IRC control characters.
+#+name: org-emph-to-irc
 #+begin_src emacs-lisp
-(setq-default line-spacing 0.3
-              window-resize-pixelwise t
-              frame-resize-pixelwise t)
+(defun lui-org-to-irc ()
+  "Examine a buffer with simple org-mode formatting, and converts the empasis:
+,*bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
+=code= is converted to inverse (highlighted) text."
+  (goto-char (point-min))
+  (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
+    (replace-match
+     (concat (pcase (match-string 1)
+               ("*" "")
+               ("/" "")
+               ("_" "")
+               ("=" ""))
+             (match-string 2)
+             "") nil nil)))
 
-(after! frame
-  (setq window-divider-default-bottom-width 0
-        window-divider-default-right-width 0))
+(add-hook 'lui-pre-input-hook #'lui-org-to-irc)
+#+end_src
 
-(remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
+** Mu4e
+[[xkcd:1796]]
+I'm trying out emails in emacs, should be nice. Related, check .mbsyncrc to
+setup your emails first
+
+10 minutes is a reasonable update time
+#+begin_src emacs-lisp
+(setq mu4e-update-interval 300)
+#+end_src
+
+#+begin_src emacs-lisp
+(set-email-account! "shaunsingh0207"
+  '((mu4e-sent-folder       . "/Sent Mail")
+    (mu4e-drafts-folder     . "/Drafts")
+    (mu4e-trash-folder      . "/Trash")
+    (mu4e-refile-folder     . "/All Mail")
+    (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
+
+;; don't need to run cleanup after indexing for gmail
+(setq mu4e-index-cleanup nil
+      mu4e-index-lazy-check t)
+
+(after! mu4e
+  (setq mu4e-headers-fields
+        '((:flags . 6)
+          (:account-stripe . 2)
+          (:from-or-to . 25)
+          (:folder . 10)
+          (:recipnum . 2)
+          (:subject . 80)
+          (:human-date . 8))
+        +mu4e-min-header-frame-width 142
+        mu4e-headers-date-format "%d/%m/%y"
+        mu4e-headers-time-format "⧖ %H:%M"
+        mu4e-headers-results-limit 1000
+        mu4e-index-cleanup t)
+
+  (add-to-list 'mu4e-bookmarks
+               '(:name "Yesterday's messages" :query "date:2d..1d" :key ?y) t)
+
+  (defvar +mu4e-header--folder-colors nil)
+  (appendq! mu4e-header-info-custom
+            '((:folder .
+               (:name "Folder" :shortname "Folder" :help "Lowest level folder" :function
+                (lambda (msg)
+                  (+mu4e-colorize-str
+                   (replace-regexp-in-string "\\`.*/" "" (mu4e-message-field msg :maildir))
+                   '+mu4e-header--folder-colors)))))))
+#+end_src
+
+We can also send messages using msmtp
+#+begin_src emacs-lisp
+(after! mu4e
+  (setq sendmail-program "msmtp"
+        send-mail-function #'smtpmail-send-it
+        message-sendmail-f-is-evil t
+        message-sendmail-extra-arguments '("--read-envelope-from")
+        message-send-mail-function #'message-send-mail-with-sendmail))
+#+end_src
+
+Notifications are quite nifty, especially if I'm as lazy as I am
+#+begin_src emacs-lisp
+(setq alert-default-style 'osx-notifier)
 #+end_src
 
 ** +Selectric+ NK-Creams mode
@@ -1202,6 +1177,19 @@ Notably here we want to start in insert mode.
 #+end_src
 
 * Visual configuration
+Just some simple visual tweaks. Lets give the text some more room to breathe, and remove those ugly dividers
+#+begin_src emacs-lisp
+(setq-default line-spacing 0.3
+              window-resize-pixelwise t
+              frame-resize-pixelwise t)
+
+(after! frame
+  (setq window-divider-default-bottom-width 0
+        window-divider-default-right-width 0))
+
+(remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
+#+end_src
+
 ** Treesitter
 Nvim-treesitter is based on three interlocking features: language parsers, queries, and modules, where modules provide features – e.g., highlighting – based on queries for syntax objects extracted from a given buffer by language parsers. Allowing this to work in doom will reduce the lag introduced by fontlock as well as improve textobjects.
 
@@ -3525,6 +3513,7 @@ On every system I use (I have a lot of systems) the dictionary results in doom/e
          current-prefix-arg))
   (lexic-search identifier nil nil t))
 #+end_src
+
 * Latex
 [[xkcd:1301]]
 I have a love-hate relationship with latex. Its extremely powerful, but at the
@@ -3601,7 +3590,6 @@ DocView gives me a headache, but pdf-tools can be improved, lets configure it a 
 #+begin_src emacs-lisp
 (use-package pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
-  :hook (pdf-tools-enabled . hide-mode-line-mode)
   :config
   (setq pdf-view-resize-factor 1.1)
   (setq-default pdf-view-display-size 'fit-page))
@@ -3929,10 +3917,9 @@ Now for some class setup
 #+end_src
 
 And some saner defaults for them
-
 #+begin_src emacs-lisp
 (after! ox-latex
-  (setq org-latex-default-class "cb-doc"
+  (setq org-latex-default-class "chameleon"
         org-latex-tables-booktabs t
         org-latex-hyperref-template "\\colorlet{greenyblue}{blue!70!green}
 \\colorlet{blueygreen}{blue!40!green}
@@ -4165,6 +4152,173 @@ Annoying having to gate these, so let's fix that
 (setq org-export-with-sub-superscripts '{})
 #+end_src
 
+*** Font collections
+Using the lovely conditional preamble, I'll define a number of font collections
+that can be used for LaTeX exports. Who knows, maybe I'll use it with other
+export formats too at some point.
+
+To start with I'll create a default state variable and register =fontset= as part
+of =#+options=.
+
+#+begin_src emacs-lisp
+(after! ox-latex
+(defvar org-latex-default-fontset 'alegreya
+  "Fontset from `org-latex-fontsets' to use by default.
+As cm (computer modern) is TeX's default, that causes nothing
+to be added to the document.
+
+If \"nil\" no custom fonts will ever be used.")
+(eval '(cl-pushnew '(:latex-font-set nil "fontset" org-latex-default-fontset)
+                   (org-export-backend-options (org-export-get-backend 'latex)))))
+#+end_src
+
+Then a function is needed to generate a LaTeX snippet which applies the fontset. It
+would be nice if this could be done for individual styles and use different
+styles as the main document font. If the individual typefaces for a fontset are
+defined individually as
+src_elisp{:serif}, src_elisp{:sans}, src_elisp{:mono}, and src_elisp{:maths}.
+I can use those to generate LaTeX for subsets of the full fontset. Then, if I
+don't let any fontset names have =-= in them, I can use =-sans= and =-mono= as
+suffixes that specify the document font to use.
+
+#+begin_src emacs-lisp
+(after! ox-latex
+(defun org-latex-fontset-entry ()
+  "Get the fontset spec of the current file.
+Has format \"name\" or \"name-style\" where 'name' is one of
+the cars in `org-latex-fontsets'."
+  (let ((fontset-spec
+         (symbol-name
+          (or (car (delq nil
+                         (mapcar
+                          (lambda (opt-line)
+                            (plist-get (org-export--parse-option-keyword opt-line 'latex)
+                                       :latex-font-set))
+                          (cdar (org-collect-keywords '("OPTIONS"))))))
+              org-latex-default-fontset))))
+    (cons (intern (car (split-string fontset-spec "-")))
+          (when (cadr (split-string fontset-spec "-"))
+            (intern (concat ":" (cadr (split-string fontset-spec "-"))))))))
+
+(defun org-latex-fontset (&rest desired-styles)
+  "Generate a LaTeX preamble snippet which applies the current fontset for DESIRED-STYLES."
+  (let* ((fontset-spec (org-latex-fontset-entry))
+         (fontset (alist-get (car fontset-spec) org-latex-fontsets)))
+    (if fontset
+        (concat
+         (mapconcat
+          (lambda (style)
+            (when (plist-get fontset style)
+              (concat (plist-get fontset style) "\n")))
+          desired-styles
+          "")
+         (when (memq (cdr fontset-spec) desired-styles)
+           (pcase (cdr fontset-spec)
+             (:serif "\\renewcommand{\\familydefault}{\\rmdefault}\n")
+             (:sans "\\renewcommand{\\familydefault}{\\sfdefault}\n")
+             (:mono "\\renewcommand{\\familydefault}{\\ttdefault}\n"))))
+      (error "Font-set %s is not provided in org-latex-fontsets" (car fontset-spec))))))
+#+end_src
+
+Now that all the functionality has been implemented, we should hook it into our
+preamble generation.
+
+#+begin_src emacs-lisp
+(after! ox-latex
+(add-to-list 'org-latex-conditional-features '(org-latex-default-fontset . custom-font) t)
+(add-to-list 'org-latex-feature-implementations '(custom-font :snippet (org-latex-fontset :serif :sans :mono) :order 0) t)
+(add-to-list 'org-latex-feature-implementations '(.custom-maths-font :eager t :when (custom-font maths) :snippet (org-latex-fontset :maths) :order 0.3) t))
+#+end_src
+
+Finally, we just need to add some fonts.
+
+#+begin_src emacs-lisp
+(after! ox-latex
+(defvar org-latex-fontsets
+  '((cm nil) ; computer modern
+    (## nil) ; no font set
+    (alegreya
+     :serif "\\usepackage[osf]{Alegreya}"
+     :sans "\\usepackage{AlegreyaSans}"
+     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
+     :maths "\\usepackage[varbb]{newpxmath}")
+    (biolinum
+     :serif "\\usepackage[osf]{libertineRoman}"
+     :sans "\\usepackage[sfdefault,osf]{biolinum}"
+     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
+     :maths "\\usepackage[libertine,varvw]{newtxmath}")
+    (fira
+     :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
+     :mono "\\usepackage[scale=0.80]{FiraMono}"
+     :maths "\\usepackage{newtxsf} % change to firamath in future?")
+    (kp
+     :serif "\\usepackage{kpfonts}")
+    (newpx
+     :serif "\\usepackage{newpxtext}"
+     :sans "\\usepackage{gillius}"
+     :mono "\\usepackage[scale=0.9]{sourcecodepro}"
+     :maths "\\usepackage[varbb]{newpxmath}")
+    (noto
+     :serif "\\usepackage[osf]{noto-serif}"
+     :sans "\\usepackage[osf]{noto-sans}"
+     :mono "\\usepackage[scale=0.96]{noto-mono}"
+     :maths "\\usepackage{notomath}")
+    (plex
+     :serif "\\usepackage{plex-serif}"
+     :sans "\\usepackage{plex-sans}"
+     :mono "\\usepackage[scale=0.95]{plex-mono}"
+     :maths "\\usepackage{newtxmath}") ; may be plex-based in future
+    (source
+     :serif "\\usepackage[osf]{sourceserifpro}"
+     :sans "\\usepackage[osf]{sourcesanspro}"
+     :mono "\\usepackage[scale=0.95]{sourcecodepro}"
+     :maths "\\usepackage{newtxmath}") ; may be sourceserifpro-based in future
+    (times
+     :serif "\\usepackage{newtxtext}"
+     :maths "\\usepackage{newtxmath}"))
+  "Alist of fontset specifications.
+Each car is the name of the fontset (which cannot include \"-\").
+
+Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
+A key's value is a LaTeX snippet which loads such a font."))
+#+end_src
+
+When we're using Alegreya we can apply a lovely little tweak to =tabular= which
+(locally) changes the figures used to lining fixed-width.
+
+#+begin_src emacs-lisp
+(after! ox-latex
+(add-to-list 'org-latex-conditional-features '((string= (car (org-latex-fontset-entry)) "alegreya") . alegreya-typeface))
+(add-to-list 'org-latex-feature-implementations '(alegreya-typeface) t)
+(add-to-list 'org-latex-feature-implementations'(.alegreya-tabular-figures :eager t :when (alegreya-typeface table) :order 0.5 :snippet "
+\\makeatletter
+% tabular lining figures in tables
+\\renewcommand{\\tabular}{\\AlegreyaTLF\\let\\@halignto\\@empty\\@tabular}
+\\makeatother\n") t))
+#+end_src
+
+Due to the Alegreya's metrics, the =\LaTeX= symbol doesn't quite look right. We
+can correct for this by redefining it with subtlety shifted kerning.
+
+#+begin_src emacs-lisp
+(after! ox-latex
+(add-to-list 'org-latex-conditional-features '("LaTeX" . latex-symbol))
+(add-to-list 'org-latex-feature-implementations '(latex-symbol :when alegreya-typeface :order 0.5 :snippet "
+\\makeatletter
+% Kerning around the A needs adjusting
+\\DeclareRobustCommand{\\LaTeX}{L\\kern-.24em%
+        {\\sbox\\z@ T%
+         \\vbox to\\ht\\z@{\\hbox{\\check@mathfonts
+                              \\fontsize\\sf@size\\z@
+                              \\math@fontsfalse\\selectfont
+                              A}%
+                        \\vss}%
+        }%
+        \\kern-.10em%
+        \\TeX}
+\\makeatother\n") t))
+#+end_src
+
 ** Calc
 Embedded calc is a lovely feature which let's us use calc to operate on LaTeX
 maths expressions. The standard keybinding is a bit janky however (=C-x * e=), so
@@ -4220,174 +4374,6 @@ panel.
                (split-window-horizontally (- (/ (window-width) 2))))))
       (switch-to-buffer "*Calculator*")
       (select-window main-window))))
-#+end_src
-
-* Mu4e
-[[xkcd:1796]]
-I'm trying out emails in emacs, should be nice. Related, check .mbsyncrc to
-setup your emails first
-
-10 minutes is a reasonable update time
-#+begin_src emacs-lisp
-(setq mu4e-update-interval 300)
-#+end_src
-
-#+begin_src emacs-lisp
-(set-email-account! "shaunsingh0207"
-  '((mu4e-sent-folder       . "/Sent Mail")
-    (mu4e-drafts-folder     . "/Drafts")
-    (mu4e-trash-folder      . "/Trash")
-    (mu4e-refile-folder     . "/All Mail")
-    (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
-
-;; don't need to run cleanup after indexing for gmail
-(setq mu4e-index-cleanup nil
-      mu4e-index-lazy-check t)
-
-(after! mu4e
-  (setq mu4e-headers-fields
-        '((:flags . 6)
-          (:account-stripe . 2)
-          (:from-or-to . 25)
-          (:folder . 10)
-          (:recipnum . 2)
-          (:subject . 80)
-          (:human-date . 8))
-        +mu4e-min-header-frame-width 142
-        mu4e-headers-date-format "%d/%m/%y"
-        mu4e-headers-time-format "⧖ %H:%M"
-        mu4e-headers-results-limit 1000
-        mu4e-index-cleanup t)
-
-  (add-to-list 'mu4e-bookmarks
-               '(:name "Yesterday's messages" :query "date:2d..1d" :key ?y) t)
-
-  (defvar +mu4e-header--folder-colors nil)
-  (appendq! mu4e-header-info-custom
-            '((:folder .
-               (:name "Folder" :shortname "Folder" :help "Lowest level folder" :function
-                (lambda (msg)
-                  (+mu4e-colorize-str
-                   (replace-regexp-in-string "\\`.*/" "" (mu4e-message-field msg :maildir))
-                   '+mu4e-header--folder-colors)))))))
-#+end_src
-
-We can also send messages using msmtp
-#+begin_src emacs-lisp
-(after! mu4e
-  (setq sendmail-program "msmtp"
-        send-mail-function #'smtpmail-send-it
-        message-sendmail-f-is-evil t
-        message-sendmail-extra-arguments '("--read-envelope-from")
-        message-send-mail-function #'message-send-mail-with-sendmail))
-#+end_src
-
-Notifications are quite nifty, especially if I'm as lazy as I am
-#+begin_src emacs-lisp
-(setq alert-default-style 'osx-notifier)
-#+end_src
-
-* Browsing
-** IRC
-[[xkcd:1782]]
-
-I'm trying to move everything to emacs, and discord is the one electron app I
-need to ditch. With bitlbee and circe it should be possible
-
-To make this easier, I
-
-1. Have everything (serverinfo and passwords) in an authinfo.gpg file
-2. Tell circe to use it
-3. Use org syntax for formatting
-4. Set it up with discord
-
-#+name: irc-authinfo-reader
-#+begin_src emacs-lisp :tangle no
-(defun auth-server-pass (server)
-  (if-let ((secret (plist-get (car (auth-source-search :host server)) :secret)))
-      (if (functionp secret)
-          (funcall secret) secret)
-    (error "Could not fetch password for host %s" server)))
-
-(defun register-irc-auths ()
-  (require 'circe)
-  (require 'dash)
-  (let ((accounts (-filter (lambda (a) (string= "irc" (plist-get a :for)))
-                           (auth-source-search :require '(:for) :max 10))))
-    (appendq! circe-network-options
-              (mapcar (lambda (entry)
-                        (let* ((host (plist-get entry :host))
-                               (label (or (plist-get entry :label) host))
-                               (_ports (mapcar #'string-to-number
-                                               (s-split "," (plist-get entry :port))))
-                               (port (if (= 1 (length _ports)) (car _ports) _ports))
-                               (user (plist-get entry :user))
-                               (nick (or (plist-get entry :nick) user))
-                               (channels (mapcar (lambda (c) (concat "#" c))
-                                                 (s-split "," (plist-get entry :channels)))))
-                          `(,label
-                            :host ,host :port ,port :nick ,nick
-                            :sasl-username ,user :sasl-password auth-server-pass
-                            :channels ,channels)))
-                      accounts))))
-#+end_src
-
-We'll just call src_elisp{(register-irc-auths)} on a hook when we start Circe
-up.
-
-Now we're ready to go, let's actually wire-up Circe, with one or two
-configuration tweaks.
-#+begin_src emacs-lisp :noweb no-export
-(after! circe
-  (setq-default circe-use-tls t)
-  (setq circe-notifications-alert-icon "/usr/share/icons/breeze/actions/24/network-connect.svg"
-        lui-logging-directory "~/.emacs.d/.local/etc/irc"
-        lui-logging-file-format "{buffer}/%Y/%m-%d.txt"
-        circe-format-self-say "{nick:+13s} ┃ {body}")
-
-  (custom-set-faces!
-    '(circe-my-message-face :weight unspecified))
-
-  (enable-lui-logging-globally)
-  (enable-circe-display-images)
-
-  <<org-emph-to-irc>>
-
-  (defun named-circe-prompt ()
-    (lui-set-prompt
-     (concat (propertize (format "%13s > " (circe-nick))
-                         'face 'circe-prompt-face)
-             "")))
-  (add-hook 'circe-chat-mode-hook #'named-circe-prompt)
-
-  (appendq! all-the-icons-mode-icon-alist
-            '((circe-channel-mode all-the-icons-material "message" :face all-the-icons-lblue)
-              (circe-server-mode all-the-icons-material "chat_bubble_outline" :face all-the-icons-purple))))
-
-<<irc-authinfo-reader>>
-
-(add-transient-hook! #'=irc (register-irc-auths))
-#+end_src
-
-Let's do our *bold*, /italic/, and _underline_ in org-syntax, using IRC control characters.
-#+name: org-emph-to-irc
-#+begin_src emacs-lisp
-(defun lui-org-to-irc ()
-  "Examine a buffer with simple org-mode formatting, and converts the empasis:
-,*bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
-=code= is converted to inverse (highlighted) text."
-  (goto-char (point-min))
-  (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
-    (replace-match
-     (concat (pcase (match-string 1)
-               ("*" "")
-               ("/" "")
-               ("_" "")
-               ("=" ""))
-             (match-string 2)
-             "") nil nil)))
-
-(add-hook 'lui-pre-input-hook #'lui-org-to-irc)
 #+end_src
 
 * Credits

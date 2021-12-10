@@ -3,9 +3,6 @@
 (setq user-full-name "Shaurya Singh"
       user-mail-address "shaunsingh0207@gmail.com")
 
-(setq auth-sources '("~/.authinfo.gpg")
-      auth-source-cache-expiry nil) ; default is 7200 (2h)
-
 (defun greedily-do-daemon-setup ()
   (require 'org)
   (require 'vertico)
@@ -75,133 +72,6 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
 (set-char-table-range composition-function-table ?f '(["\\(?:ff?[fijlt]\\)" 0 font-shape-gstring]))
 (set-char-table-range composition-function-table ?T '(["\\(?:Th\\)" 0 font-shape-gstring]))
 
-(after! ox-latex
-(defvar org-latex-default-fontset 'alegreya
-  "Fontset from `org-latex-fontsets' to use by default.
-As cm (computer modern) is TeX's default, that causes nothing
-to be added to the document.
-
-If \"nil\" no custom fonts will ever be used.")
-(eval '(cl-pushnew '(:latex-font-set nil "fontset" org-latex-default-fontset)
-                   (org-export-backend-options (org-export-get-backend 'latex)))))
-
-(after! ox-latex
-(defun org-latex-fontset-entry ()
-  "Get the fontset spec of the current file.
-Has format \"name\" or \"name-style\" where 'name' is one of
-the cars in `org-latex-fontsets'."
-  (let ((fontset-spec
-         (symbol-name
-          (or (car (delq nil
-                         (mapcar
-                          (lambda (opt-line)
-                            (plist-get (org-export--parse-option-keyword opt-line 'latex)
-                                       :latex-font-set))
-                          (cdar (org-collect-keywords '("OPTIONS"))))))
-              org-latex-default-fontset))))
-    (cons (intern (car (split-string fontset-spec "-")))
-          (when (cadr (split-string fontset-spec "-"))
-            (intern (concat ":" (cadr (split-string fontset-spec "-"))))))))
-
-(defun org-latex-fontset (&rest desired-styles)
-  "Generate a LaTeX preamble snippet which applies the current fontset for DESIRED-STYLES."
-  (let* ((fontset-spec (org-latex-fontset-entry))
-         (fontset (alist-get (car fontset-spec) org-latex-fontsets)))
-    (if fontset
-        (concat
-         (mapconcat
-          (lambda (style)
-            (when (plist-get fontset style)
-              (concat (plist-get fontset style) "\n")))
-          desired-styles
-          "")
-         (when (memq (cdr fontset-spec) desired-styles)
-           (pcase (cdr fontset-spec)
-             (:serif "\\renewcommand{\\familydefault}{\\rmdefault}\n")
-             (:sans "\\renewcommand{\\familydefault}{\\sfdefault}\n")
-             (:mono "\\renewcommand{\\familydefault}{\\ttdefault}\n"))))
-      (error "Font-set %s is not provided in org-latex-fontsets" (car fontset-spec))))))
-
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '(org-latex-default-fontset . custom-font) t)
-(add-to-list 'org-latex-feature-implementations '(custom-font :snippet (org-latex-fontset :serif :sans :mono) :order 0) t)
-(add-to-list 'org-latex-feature-implementations '(.custom-maths-font :eager t :when (custom-font maths) :snippet (org-latex-fontset :maths) :order 0.3) t))
-
-(after! ox-latex
-(defvar org-latex-fontsets
-  '((cm nil) ; computer modern
-    (## nil) ; no font set
-    (alegreya
-     :serif "\\usepackage[osf]{Alegreya}"
-     :sans "\\usepackage{AlegreyaSans}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (biolinum
-     :serif "\\usepackage[osf]{libertineRoman}"
-     :sans "\\usepackage[sfdefault,osf]{biolinum}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[libertine,varvw]{newtxmath}")
-    (fira
-     :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
-     :mono "\\usepackage[scale=0.80]{FiraMono}"
-     :maths "\\usepackage{newtxsf} % change to firamath in future?")
-    (kp
-     :serif "\\usepackage{kpfonts}")
-    (newpx
-     :serif "\\usepackage{newpxtext}"
-     :sans "\\usepackage{gillius}"
-     :mono "\\usepackage[scale=0.9]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (noto
-     :serif "\\usepackage[osf]{noto-serif}"
-     :sans "\\usepackage[osf]{noto-sans}"
-     :mono "\\usepackage[scale=0.96]{noto-mono}"
-     :maths "\\usepackage{notomath}")
-    (plex
-     :serif "\\usepackage{plex-serif}"
-     :sans "\\usepackage{plex-sans}"
-     :mono "\\usepackage[scale=0.95]{plex-mono}"
-     :maths "\\usepackage{newtxmath}") ; may be plex-based in future
-    (source
-     :serif "\\usepackage[osf]{sourceserifpro}"
-     :sans "\\usepackage[osf]{sourcesanspro}"
-     :mono "\\usepackage[scale=0.95]{sourcecodepro}"
-     :maths "\\usepackage{newtxmath}") ; may be sourceserifpro-based in future
-    (times
-     :serif "\\usepackage{newtxtext}"
-     :maths "\\usepackage{newtxmath}"))
-  "Alist of fontset specifications.
-Each car is the name of the fontset (which cannot include \"-\").
-
-Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
-A key's value is a LaTeX snippet which loads such a font."))
-
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '((string= (car (org-latex-fontset-entry)) "alegreya") . alegreya-typeface))
-(add-to-list 'org-latex-feature-implementations '(alegreya-typeface) t)
-(add-to-list 'org-latex-feature-implementations'(.alegreya-tabular-figures :eager t :when (alegreya-typeface table) :order 0.5 :snippet "
-\\makeatletter
-% tabular lining figures in tables
-\\renewcommand{\\tabular}{\\AlegreyaTLF\\let\\@halignto\\@empty\\@tabular}
-\\makeatother\n") t))
-
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '("LaTeX" . latex-symbol))
-(add-to-list 'org-latex-feature-implementations '(latex-symbol :when alegreya-typeface :order 0.5 :snippet "
-\\makeatletter
-% Kerning around the A needs adjusting
-\\DeclareRobustCommand{\\LaTeX}{L\\kern-.24em%
-        {\\sbox\\z@ T%
-         \\vbox to\\ht\\z@{\\hbox{\\check@mathfonts
-                              \\fontsize\\sf@size\\z@
-                              \\math@fontsfalse\\selectfont
-                              A}%
-                        \\vss}%
-        }%
-        \\kern-.10em%
-        \\TeX}
-\\makeatother\n") t))
-
 (after! company
    (setq company-idle-delay 0.1
       company-minimum-prefix-length 1
@@ -211,7 +81,7 @@ A key's value is a LaTeX snippet which loads such a font."))
       company-dabbrev-ignore-case t
       company-dabbrev-other-buffers nil
       company-tooltip-limit 5
-      company-tooltip-minimum-width 50))
+      company-tooltip-minimum-width 40))
 (set-company-backend!
   '(text-mode
     markdown-mode
@@ -220,7 +90,6 @@ A key's value is a LaTeX snippet which loads such a font."))
     company-yasnippet
     company-files))
 
-;;nested snippets
 (setq yas-triggers-in-field t)
 
 (use-package! aas
@@ -385,10 +254,9 @@ Return nil otherwise."
         rustic-lsp-server 'rust-analyzer)
   (rustic-doc-mode t))
 
-(setq scroll-margin 4                              ;having a little margin is nice
+(setq scroll-margin 2                              ;having a little margin is nice
       auto-save-default t                          ;I dont like to lose work
       display-line-numbers-type nil                ;I dislike line numbers
-      history-length 25                            ;Slight speedup
       delete-by-moving-to-trash t                  ;delete
       truncate-string-ellipsis "…"                 ;default ellipses sucko system trash instead
       browse-url-browser-function 'xwidget-webkit-browse-url)
@@ -398,7 +266,7 @@ Return nil otherwise."
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
-(setq doom-scratch-initial-major-mode 'lisp-interaction-mode)
+(setq doom-scratch-initial-major-mode 'org-mode)
 
 (map! :leader
       :desc "hop to word" "w w" #'avy-goto-word-or-subword-1)
@@ -416,15 +284,142 @@ Return nil otherwise."
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 
-(setq-default line-spacing 0.3
-              window-resize-pixelwise t
-              frame-resize-pixelwise t)
+(after! circe
+  (setq-default circe-use-tls t)
+  (setq circe-notifications-alert-icon "/usr/share/icons/breeze/actions/24/network-connect.svg"
+        lui-logging-directory "~/.emacs.d/.local/etc/irc"
+        lui-logging-file-format "{buffer}/%Y/%m-%d.txt"
+        circe-format-self-say "{nick:+13s} ┃ {body}")
 
-(after! frame
-  (setq window-divider-default-bottom-width 0
-        window-divider-default-right-width 0))
+  (custom-set-faces!
+    '(circe-my-message-face :weight unspecified))
 
-(remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
+  (enable-lui-logging-globally)
+  (enable-circe-display-images)
+
+  (defun lui-org-to-irc ()
+    "Examine a buffer with simple org-mode formatting, and converts the empasis:
+  *bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
+  =code= is converted to inverse (highlighted) text."
+    (goto-char (point-min))
+    (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
+      (replace-match
+       (concat (pcase (match-string 1)
+                 ("*" "")
+                 ("/" "")
+                 ("_" "")
+                 ("=" ""))
+               (match-string 2)
+               "") nil nil)))
+  
+  (add-hook 'lui-pre-input-hook #'lui-org-to-irc)
+
+  (defun named-circe-prompt ()
+    (lui-set-prompt
+     (concat (propertize (format "%13s > " (circe-nick))
+                         'face 'circe-prompt-face)
+             "")))
+  (add-hook 'circe-chat-mode-hook #'named-circe-prompt)
+
+  (appendq! all-the-icons-mode-icon-alist
+            '((circe-channel-mode all-the-icons-material "message" :face all-the-icons-lblue)
+              (circe-server-mode all-the-icons-material "chat_bubble_outline" :face all-the-icons-purple))))
+
+(defun auth-server-pass (server)
+  (if-let ((secret (plist-get (car (auth-source-search :host server)) :secret)))
+      (if (functionp secret)
+          (funcall secret) secret)
+    (error "Could not fetch password for host %s" server)))
+
+(defun register-irc-auths ()
+  (require 'circe)
+  (require 'dash)
+  (let ((accounts (-filter (lambda (a) (string= "irc" (plist-get a :for)))
+                           (auth-source-search :require '(:for) :max 10))))
+    (appendq! circe-network-options
+              (mapcar (lambda (entry)
+                        (let* ((host (plist-get entry :host))
+                               (label (or (plist-get entry :label) host))
+                               (_ports (mapcar #'string-to-number
+                                               (s-split "," (plist-get entry :port))))
+                               (port (if (= 1 (length _ports)) (car _ports) _ports))
+                               (user (plist-get entry :user))
+                               (nick (or (plist-get entry :nick) user))
+                               (channels (mapcar (lambda (c) (concat "#" c))
+                                                 (s-split "," (plist-get entry :channels)))))
+                          `(,label
+                            :host ,host :port ,port :nick ,nick
+                            :sasl-username ,user :sasl-password auth-server-pass
+                            :channels ,channels)))
+                      accounts))))
+
+(add-transient-hook! #'=irc (register-irc-auths))
+
+(defun lui-org-to-irc ()
+  "Examine a buffer with simple org-mode formatting, and converts the empasis:
+*bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
+=code= is converted to inverse (highlighted) text."
+  (goto-char (point-min))
+  (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
+    (replace-match
+     (concat (pcase (match-string 1)
+               ("*" "")
+               ("/" "")
+               ("_" "")
+               ("=" ""))
+             (match-string 2)
+             "") nil nil)))
+
+(add-hook 'lui-pre-input-hook #'lui-org-to-irc)
+
+(setq mu4e-update-interval 300)
+
+(set-email-account! "shaunsingh0207"
+  '((mu4e-sent-folder       . "/Sent Mail")
+    (mu4e-drafts-folder     . "/Drafts")
+    (mu4e-trash-folder      . "/Trash")
+    (mu4e-refile-folder     . "/All Mail")
+    (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
+
+;; don't need to run cleanup after indexing for gmail
+(setq mu4e-index-cleanup nil
+      mu4e-index-lazy-check t)
+
+(after! mu4e
+  (setq mu4e-headers-fields
+        '((:flags . 6)
+          (:account-stripe . 2)
+          (:from-or-to . 25)
+          (:folder . 10)
+          (:recipnum . 2)
+          (:subject . 80)
+          (:human-date . 8))
+        +mu4e-min-header-frame-width 142
+        mu4e-headers-date-format "%d/%m/%y"
+        mu4e-headers-time-format "⧖ %H:%M"
+        mu4e-headers-results-limit 1000
+        mu4e-index-cleanup t)
+
+  (add-to-list 'mu4e-bookmarks
+               '(:name "Yesterday's messages" :query "date:2d..1d" :key ?y) t)
+
+  (defvar +mu4e-header--folder-colors nil)
+  (appendq! mu4e-header-info-custom
+            '((:folder .
+               (:name "Folder" :shortname "Folder" :help "Lowest level folder" :function
+                (lambda (msg)
+                  (+mu4e-colorize-str
+                   (replace-regexp-in-string "\\`.*/" "" (mu4e-message-field msg :maildir))
+                   '+mu4e-header--folder-colors)))))))
+
+(after! mu4e
+  (setq sendmail-program "msmtp"
+        send-mail-function #'smtpmail-send-it
+        message-sendmail-f-is-evil t
+        message-sendmail-extra-arguments '("--read-envelope-from")
+        message-send-mail-function #'message-send-mail-with-sendmail))
+
+(setq alert-default-style 'osx-notifier)
 
 (use-package! selectric-mode
   :commands selectric-mode)
@@ -440,6 +435,16 @@ Return nil otherwise."
         monkeytype-randomize t
         monkeytype-delete-trailing-whitespace t
         monkeytype-excluded-chars-regexp "[^[:alnum:]']"))
+
+(setq-default line-spacing 0.3
+              window-resize-pixelwise t
+              frame-resize-pixelwise t)
+
+(after! frame
+  (setq window-divider-default-bottom-width 0
+        window-divider-default-right-width 0))
+
+(remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
 
 ;; (use-package! tree-sitter
 ;;   :config
@@ -2599,7 +2604,6 @@ SQL can be either the emacsql vector representation, or a string."
 
 (use-package pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
-  :hook (pdf-tools-enabled . hide-mode-line-mode)
   :config
   (setq pdf-view-resize-factor 1.1)
   (setq-default pdf-view-display-size 'fit-page))
@@ -2876,7 +2880,7 @@ This is done according to `org-latex-feature-implementations'"
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 
 (after! ox-latex
-  (setq org-latex-default-class "cb-doc"
+  (setq org-latex-default-class "chameleon"
         org-latex-tables-booktabs t
         org-latex-hyperref-template "\\colorlet{greenyblue}{blue!70!green}
 \\colorlet{blueygreen}{blue!40!green}
@@ -3089,6 +3093,133 @@ This is done according to `org-latex-feature-implementations'"
 
 (setq org-export-with-sub-superscripts '{})
 
+(after! ox-latex
+(defvar org-latex-default-fontset 'alegreya
+  "Fontset from `org-latex-fontsets' to use by default.
+As cm (computer modern) is TeX's default, that causes nothing
+to be added to the document.
+
+If \"nil\" no custom fonts will ever be used.")
+(eval '(cl-pushnew '(:latex-font-set nil "fontset" org-latex-default-fontset)
+                   (org-export-backend-options (org-export-get-backend 'latex)))))
+
+(after! ox-latex
+(defun org-latex-fontset-entry ()
+  "Get the fontset spec of the current file.
+Has format \"name\" or \"name-style\" where 'name' is one of
+the cars in `org-latex-fontsets'."
+  (let ((fontset-spec
+         (symbol-name
+          (or (car (delq nil
+                         (mapcar
+                          (lambda (opt-line)
+                            (plist-get (org-export--parse-option-keyword opt-line 'latex)
+                                       :latex-font-set))
+                          (cdar (org-collect-keywords '("OPTIONS"))))))
+              org-latex-default-fontset))))
+    (cons (intern (car (split-string fontset-spec "-")))
+          (when (cadr (split-string fontset-spec "-"))
+            (intern (concat ":" (cadr (split-string fontset-spec "-"))))))))
+
+(defun org-latex-fontset (&rest desired-styles)
+  "Generate a LaTeX preamble snippet which applies the current fontset for DESIRED-STYLES."
+  (let* ((fontset-spec (org-latex-fontset-entry))
+         (fontset (alist-get (car fontset-spec) org-latex-fontsets)))
+    (if fontset
+        (concat
+         (mapconcat
+          (lambda (style)
+            (when (plist-get fontset style)
+              (concat (plist-get fontset style) "\n")))
+          desired-styles
+          "")
+         (when (memq (cdr fontset-spec) desired-styles)
+           (pcase (cdr fontset-spec)
+             (:serif "\\renewcommand{\\familydefault}{\\rmdefault}\n")
+             (:sans "\\renewcommand{\\familydefault}{\\sfdefault}\n")
+             (:mono "\\renewcommand{\\familydefault}{\\ttdefault}\n"))))
+      (error "Font-set %s is not provided in org-latex-fontsets" (car fontset-spec))))))
+
+(after! ox-latex
+(add-to-list 'org-latex-conditional-features '(org-latex-default-fontset . custom-font) t)
+(add-to-list 'org-latex-feature-implementations '(custom-font :snippet (org-latex-fontset :serif :sans :mono) :order 0) t)
+(add-to-list 'org-latex-feature-implementations '(.custom-maths-font :eager t :when (custom-font maths) :snippet (org-latex-fontset :maths) :order 0.3) t))
+
+(after! ox-latex
+(defvar org-latex-fontsets
+  '((cm nil) ; computer modern
+    (## nil) ; no font set
+    (alegreya
+     :serif "\\usepackage[osf]{Alegreya}"
+     :sans "\\usepackage{AlegreyaSans}"
+     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
+     :maths "\\usepackage[varbb]{newpxmath}")
+    (biolinum
+     :serif "\\usepackage[osf]{libertineRoman}"
+     :sans "\\usepackage[sfdefault,osf]{biolinum}"
+     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
+     :maths "\\usepackage[libertine,varvw]{newtxmath}")
+    (fira
+     :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
+     :mono "\\usepackage[scale=0.80]{FiraMono}"
+     :maths "\\usepackage{newtxsf} % change to firamath in future?")
+    (kp
+     :serif "\\usepackage{kpfonts}")
+    (newpx
+     :serif "\\usepackage{newpxtext}"
+     :sans "\\usepackage{gillius}"
+     :mono "\\usepackage[scale=0.9]{sourcecodepro}"
+     :maths "\\usepackage[varbb]{newpxmath}")
+    (noto
+     :serif "\\usepackage[osf]{noto-serif}"
+     :sans "\\usepackage[osf]{noto-sans}"
+     :mono "\\usepackage[scale=0.96]{noto-mono}"
+     :maths "\\usepackage{notomath}")
+    (plex
+     :serif "\\usepackage{plex-serif}"
+     :sans "\\usepackage{plex-sans}"
+     :mono "\\usepackage[scale=0.95]{plex-mono}"
+     :maths "\\usepackage{newtxmath}") ; may be plex-based in future
+    (source
+     :serif "\\usepackage[osf]{sourceserifpro}"
+     :sans "\\usepackage[osf]{sourcesanspro}"
+     :mono "\\usepackage[scale=0.95]{sourcecodepro}"
+     :maths "\\usepackage{newtxmath}") ; may be sourceserifpro-based in future
+    (times
+     :serif "\\usepackage{newtxtext}"
+     :maths "\\usepackage{newtxmath}"))
+  "Alist of fontset specifications.
+Each car is the name of the fontset (which cannot include \"-\").
+
+Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
+A key's value is a LaTeX snippet which loads such a font."))
+
+(after! ox-latex
+(add-to-list 'org-latex-conditional-features '((string= (car (org-latex-fontset-entry)) "alegreya") . alegreya-typeface))
+(add-to-list 'org-latex-feature-implementations '(alegreya-typeface) t)
+(add-to-list 'org-latex-feature-implementations'(.alegreya-tabular-figures :eager t :when (alegreya-typeface table) :order 0.5 :snippet "
+\\makeatletter
+% tabular lining figures in tables
+\\renewcommand{\\tabular}{\\AlegreyaTLF\\let\\@halignto\\@empty\\@tabular}
+\\makeatother\n") t))
+
+(after! ox-latex
+(add-to-list 'org-latex-conditional-features '("LaTeX" . latex-symbol))
+(add-to-list 'org-latex-feature-implementations '(latex-symbol :when alegreya-typeface :order 0.5 :snippet "
+\\makeatletter
+% Kerning around the A needs adjusting
+\\DeclareRobustCommand{\\LaTeX}{L\\kern-.24em%
+        {\\sbox\\z@ T%
+         \\vbox to\\ht\\z@{\\hbox{\\check@mathfonts
+                              \\fontsize\\sf@size\\z@
+                              \\math@fontsfalse\\selectfont
+                              A}%
+                        \\vss}%
+        }%
+        \\kern-.10em%
+        \\TeX}
+\\makeatother\n") t))
+
 (map! :map calc-mode-map
       :after calc
       :localleader
@@ -3132,140 +3263,3 @@ This is done according to `org-latex-feature-implementations'"
                (split-window-horizontally (- (/ (window-width) 2))))))
       (switch-to-buffer "*Calculator*")
       (select-window main-window))))
-
-(setq mu4e-update-interval 300)
-
-(set-email-account! "shaunsingh0207"
-  '((mu4e-sent-folder       . "/Sent Mail")
-    (mu4e-drafts-folder     . "/Drafts")
-    (mu4e-trash-folder      . "/Trash")
-    (mu4e-refile-folder     . "/All Mail")
-    (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
-
-;; don't need to run cleanup after indexing for gmail
-(setq mu4e-index-cleanup nil
-      mu4e-index-lazy-check t)
-
-(after! mu4e
-  (setq mu4e-headers-fields
-        '((:flags . 6)
-          (:account-stripe . 2)
-          (:from-or-to . 25)
-          (:folder . 10)
-          (:recipnum . 2)
-          (:subject . 80)
-          (:human-date . 8))
-        +mu4e-min-header-frame-width 142
-        mu4e-headers-date-format "%d/%m/%y"
-        mu4e-headers-time-format "⧖ %H:%M"
-        mu4e-headers-results-limit 1000
-        mu4e-index-cleanup t)
-
-  (add-to-list 'mu4e-bookmarks
-               '(:name "Yesterday's messages" :query "date:2d..1d" :key ?y) t)
-
-  (defvar +mu4e-header--folder-colors nil)
-  (appendq! mu4e-header-info-custom
-            '((:folder .
-               (:name "Folder" :shortname "Folder" :help "Lowest level folder" :function
-                (lambda (msg)
-                  (+mu4e-colorize-str
-                   (replace-regexp-in-string "\\`.*/" "" (mu4e-message-field msg :maildir))
-                   '+mu4e-header--folder-colors)))))))
-
-(after! mu4e
-  (setq sendmail-program "msmtp"
-        send-mail-function #'smtpmail-send-it
-        message-sendmail-f-is-evil t
-        message-sendmail-extra-arguments '("--read-envelope-from")
-        message-send-mail-function #'message-send-mail-with-sendmail))
-
-(setq alert-default-style 'osx-notifier)
-
-(after! circe
-  (setq-default circe-use-tls t)
-  (setq circe-notifications-alert-icon "/usr/share/icons/breeze/actions/24/network-connect.svg"
-        lui-logging-directory "~/.emacs.d/.local/etc/irc"
-        lui-logging-file-format "{buffer}/%Y/%m-%d.txt"
-        circe-format-self-say "{nick:+13s} ┃ {body}")
-
-  (custom-set-faces!
-    '(circe-my-message-face :weight unspecified))
-
-  (enable-lui-logging-globally)
-  (enable-circe-display-images)
-
-  (defun lui-org-to-irc ()
-    "Examine a buffer with simple org-mode formatting, and converts the empasis:
-  *bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
-  =code= is converted to inverse (highlighted) text."
-    (goto-char (point-min))
-    (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
-      (replace-match
-       (concat (pcase (match-string 1)
-                 ("*" "")
-                 ("/" "")
-                 ("_" "")
-                 ("=" ""))
-               (match-string 2)
-               "") nil nil)))
-  
-  (add-hook 'lui-pre-input-hook #'lui-org-to-irc)
-
-  (defun named-circe-prompt ()
-    (lui-set-prompt
-     (concat (propertize (format "%13s > " (circe-nick))
-                         'face 'circe-prompt-face)
-             "")))
-  (add-hook 'circe-chat-mode-hook #'named-circe-prompt)
-
-  (appendq! all-the-icons-mode-icon-alist
-            '((circe-channel-mode all-the-icons-material "message" :face all-the-icons-lblue)
-              (circe-server-mode all-the-icons-material "chat_bubble_outline" :face all-the-icons-purple))))
-
-(defun auth-server-pass (server)
-  (if-let ((secret (plist-get (car (auth-source-search :host server)) :secret)))
-      (if (functionp secret)
-          (funcall secret) secret)
-    (error "Could not fetch password for host %s" server)))
-
-(defun register-irc-auths ()
-  (require 'circe)
-  (require 'dash)
-  (let ((accounts (-filter (lambda (a) (string= "irc" (plist-get a :for)))
-                           (auth-source-search :require '(:for) :max 10))))
-    (appendq! circe-network-options
-              (mapcar (lambda (entry)
-                        (let* ((host (plist-get entry :host))
-                               (label (or (plist-get entry :label) host))
-                               (_ports (mapcar #'string-to-number
-                                               (s-split "," (plist-get entry :port))))
-                               (port (if (= 1 (length _ports)) (car _ports) _ports))
-                               (user (plist-get entry :user))
-                               (nick (or (plist-get entry :nick) user))
-                               (channels (mapcar (lambda (c) (concat "#" c))
-                                                 (s-split "," (plist-get entry :channels)))))
-                          `(,label
-                            :host ,host :port ,port :nick ,nick
-                            :sasl-username ,user :sasl-password auth-server-pass
-                            :channels ,channels)))
-                      accounts))))
-
-(add-transient-hook! #'=irc (register-irc-auths))
-
-(defun lui-org-to-irc ()
-  "Examine a buffer with simple org-mode formatting, and converts the empasis:
-*bold*, /italic/, and _underline_ to IRC semi-standard escape codes.
-=code= is converted to inverse (highlighted) text."
-  (goto-char (point-min))
-  (while (re-search-forward "\\_<\\(?1:[*/_=]\\)\\(?2:[^[:space:]]\\(?:.*?[^[:space:]]\\)?\\)\\1\\_>" nil t)
-    (replace-match
-     (concat (pcase (match-string 1)
-               ("*" "")
-               ("/" "")
-               ("_" "")
-               ("=" ""))
-             (match-string 2)
-             "") nil nil)))
-
-(add-hook 'lui-pre-input-hook #'lui-org-to-irc)
