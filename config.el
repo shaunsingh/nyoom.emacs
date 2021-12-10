@@ -34,9 +34,6 @@
         '((lambda (path)
             (magit-status path)))))
 
-(after! magit
-   (magit-delta-mode +1))
-
 (setq +ligatures-in-modes t)
 (setq +ligatures-extras-in-modes '(org-mode emacs-lisp-mode))
 
@@ -419,7 +416,8 @@ Return nil otherwise."
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 
-(setq-default window-resize-pixelwise t
+(setq-default line-spacing 0.3
+              window-resize-pixelwise t
               frame-resize-pixelwise t)
 
 (after! frame
@@ -427,7 +425,6 @@ Return nil otherwise."
         window-divider-default-right-width 0))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
-(setq line-spacing 0.24)
 
 (use-package! selectric-mode
   :commands selectric-mode)
@@ -2075,17 +2072,6 @@ is selected, only the bare key is returned."
         ("DEPRECATED" nano-face-salient)
         ("BUG" nano-face-critical)
         ("XXX" nano-face-salient))))
-
-(custom-set-faces!
-  '(org-document-title :height 1.2)
-  '(outline-1 :weight extra-bold :height 1.25)
-  '(outline-2 :weight bold :height 1.15)
-  '(outline-3 :weight bold :height 1.12)
-  '(outline-4 :weight semi-bold :height 1.09)
-  '(outline-5 :weight semi-bold :height 1.06)
-  '(outline-6 :weight semi-bold :height 1.03)
-  '(outline-8 :weight semi-bold)
-  '(outline-9 :weight semi-bold))
 
 (setq org-agenda-deadline-faces
       '((1.0 . error)

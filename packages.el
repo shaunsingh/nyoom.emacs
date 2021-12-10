@@ -38,7 +38,6 @@
 
 ;;emacs additions
 (package! lexic)
-(package! magit-delta)
 
 ;;lsp
 (unpin! lsp-ui)

@@ -43,13 +43,13 @@
 
 (defun selectric-type ()
   "Make the sound of the printing element hitting the paper."
-  (selectric-play "selectric-type.wav")
+  (selectric-play (concat "selectric-" (number-to-string (random 6)) ".wav"))
   (when (= (current-column) (current-fill-column))
     (selectric-play "ping.wav")))
 
 (defun selectric-move ()
   "Make the carriage movement sound."
-  (selectric-play "selectric-move.wav"))
+  (selectric-play (concat "selectric-" (number-to-string (random 2)) ".wav")))
 
 (defun selectric-post-command ()
   "Added to `post-command-hook' to decide what sound to play."

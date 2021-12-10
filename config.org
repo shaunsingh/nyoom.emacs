@@ -564,7 +564,6 @@ Emacs is missing just a few packages that I need to make it my OS
 #+name: emacs
 #+begin_src emacs-lisp
 (package! lexic)
-(package! magit-delta)
 #+end_src
 
 **** LSP:
@@ -657,12 +656,6 @@ Useful functions for the shell-side integration provided by vterm.
   (setf (alist-get "magit-status" vterm-eval-cmds nil nil #'equal)
         '((lambda (path)
             (magit-status path)))))
-#+end_src
-
-I also want to hook Delta into Magit
-#+begin_src emacs-lisp
-(after! magit
-   (magit-delta-mode +1))
 #+end_src
 
 **** Ligatures
@@ -1171,7 +1164,8 @@ When im doing regexes, its usually with /g anyways, lets make that the default
 
 And just some simple visual tweaks
 #+begin_src emacs-lisp
-(setq-default window-resize-pixelwise t
+(setq-default line-spacing 0.3
+              window-resize-pixelwise t
               frame-resize-pixelwise t)
 
 (after! frame
@@ -1179,16 +1173,12 @@ And just some simple visual tweaks
         window-divider-default-right-width 0))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
-(setq line-spacing 0.24)
 #+end_src
 
 ** +Selectric+ NK-Creams mode
 Instead of using the regular selectric-mode, I modified it with a few notable tweaks, mainly:
  1. Support for EVIL mode
  2. It uses NK Cream sounds instead of the typewritter ones
-The samples used here are taken from monketype, but heres a similar board
-[[yt:WmE4iwZy08g]]
-
 #+begin_src emacs-lisp
 (use-package! selectric-mode
   :commands selectric-mode)
@@ -1196,7 +1186,7 @@ The samples used here are taken from monketype, but heres a similar board
 
 ** Monkeytype
 Now that we have some nice keyboard sounds, lets test that keyboard with an elisp clone of Monkeytype!
-Notabable here we want to start in insert mode.
+Notably here we want to start in insert mode.
 #+begin_src emacs-lisp
 (use-package! monkeytype
   :commands (monkeytype-region monkeytype-buffer monkeytype-region-as-words)
@@ -3014,20 +3004,6 @@ Lets adjust the the keyword faces a bit
         ("XXX" nano-face-salient))))
 #+end_src
 
-Let's make headings a bit bigger
-#+begin_src emacs-lisp
-(custom-set-faces!
-  '(org-document-title :height 1.2)
-  '(outline-1 :weight extra-bold :height 1.25)
-  '(outline-2 :weight bold :height 1.15)
-  '(outline-3 :weight bold :height 1.12)
-  '(outline-4 :weight semi-bold :height 1.09)
-  '(outline-5 :weight semi-bold :height 1.06)
-  '(outline-6 :weight semi-bold :height 1.03)
-  '(outline-8 :weight semi-bold)
-  '(outline-9 :weight semi-bold))
-#+end_src
-
 It seems reasonable to have deadlines in the error face when they're passed.
 #+begin_src emacs-lisp
 (setq org-agenda-deadline-faces
@@ -3042,6 +3018,7 @@ We can then have quote blocks stand out a bit more by making them /italic/.
 (setq org-fontify-quote-and-verse-blocks t)
 #+end_src
 
+And lets conceal *those* /syntax/ +markers+.
 #+begin_src emacs-lisp
 (use-package! org-appear
   :hook (org-mode . org-appear-mode)
@@ -4418,3 +4395,4 @@ Let's do our *bold*, /italic/, and _underline_ in org-syntax, using IRC control 
 - Dr. Elken - For his EXWM Module and help on the DOOM Server
 - Henrik - For making Doom Emacs in the first place
 - Rougier - For his work on NANO Emacs.
+- Glarses - For the NK Cream sounds used in =selectric-mode=
