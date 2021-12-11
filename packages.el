@@ -42,6 +42,8 @@
 
 ;;emacs additions
 (package! lexic)
+(unpin! tree-sitter)
+(unpin! tree-sitter-langs)
 
 ;;lsp
 (unpin! lsp-ui)

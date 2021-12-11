@@ -227,10 +227,10 @@ Return nil otherwise."
 (use-package! lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-sideline-enable t
+  (setq lsp-ui-sideline-enable nil
         lsp-lens-enable t
         lsp-ui-doc-enable t
-        lsp-headerline-breadcrumb-enable t
+        lsp-headerline-breadcrumb-enable nil
         lsp-ui-peek-enable t
         lsp-ui-peek-fontify 'on-demand
         lsp-enable-symbol-highlighting nil))
@@ -344,7 +344,7 @@ Return nil otherwise."
         monkeytype-delete-trailing-whitespace t
         monkeytype-excluded-chars-regexp "[^[:alnum:]']"))
 
-(setq-default line-spacing 0.3
+(setq-default line-spacing 0.24
               window-resize-pixelwise t
               frame-resize-pixelwise t)
 
@@ -356,12 +356,12 @@ Return nil otherwise."
 
 (setq inhibit-compacting-font-caches t)
 
-;; (use-package! tree-sitter
-;;   :config
-;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-;;   (require 'tree-sitter-langs)
-;;   (global-tree-sitter-mode)
-;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+(use-package! tree-sitter
+  :config
+  (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (setq doom-theme 'nil)
 
