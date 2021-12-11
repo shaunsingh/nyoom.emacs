@@ -365,7 +365,7 @@ ophints                      ; highlight the region an operation acts on
 ;;  +centaur-tabs)           ; ... with prettier tabs
 ;;treemacs                   ; a project drawer, like neotree but cooler
 ;;unicode                    ; extended unicode support for various languages
-vc-gutter                    ; vcs diff in the fringe
+;;vc-gutter                  ; vcs diff in the fringe
 ;;vi-tilde-fringe            ; fringe tildes to mark beyond EOB
 ;;(window-select +numbers)   ; visually switch windows
 workspaces                   ; tab emulation, persistence & separate workspaces
@@ -438,7 +438,7 @@ pdf                          ; pdf enhancements
 ;;taskrunner                 ; taskrunner for all your projects
 ;;terraform                  ; infrastructure as code
 ;;tmux                       ; an API for interacting with tmux
-tree-sitter                  ; ... sitting in a tree
+;;tree-sitter                ; ... sitting in a tree
 ;;upload                     ; map local to remote projects via ssh/ftp
 #+end_src
 
@@ -480,7 +480,7 @@ emacs-lisp                   ; drown in parentheses
 ;;hy                         ; readability of scheme w/ speed of python
 ;;idris                      ;
 ;;json                       ; At least it ain't XML
-(java +lsp +tree-sitter)     ; the poster child for carpal tunnel syndrome
+;;(java +lsp +tree-sitter)   ; the poster child for carpal tunnel syndrome
 ;;(javascript +lsp)          ; all(hope(abandon(ye(who(enter(here))))))
 ;;(julia +lsp)               ; Python, R, and MATLAB in a blender
 ;;(kotlin +lsp)              ; a better, slicker Java(Script)
@@ -514,15 +514,15 @@ nix                          ; I hereby declare "nix geht mehr!"
 ;;purescript                 ; javascript, but functional
 (python                      ; beautiful is better than ugly
  +lsp 
- +pyright 
- +tree-sitter)              
+ +pyright)
+;; +tree-sitter)              
 ;;qt                         ; the 'cutest' gui framework ever
 ;;racket                     ; a DSL for DSLs
 ;;raku                       ; the artist formerly known as perl6
 ;;rest                       ; Emacs as a REST client
 ;;rst                        ; ReST in peace
 ;;(ruby +rails)              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-(rust +lsp +tree-sitter)     ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+(rust +lsp)                  ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
 ;;scala                      ; java, but good
 ;;scheme                     ; a fully conniving family of lisps
 sh                           ; she sells {ba,z,fi}sh shells on the C xor
@@ -644,7 +644,9 @@ Making emacs look good is first priority, actually working in it is second
 #+name: looks
 #+begin_src emacs-lisp
 (package! solaire-mode :disable t)
-(package! nano-integration :recipe (:local-repo "lisp/nano-integration"))
+(package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
+(package! nano-agenda :recipe (:host github :repo "rougier/nano-agenda"))
+(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
 #+end_src
 
@@ -653,8 +655,8 @@ Emacs is missing just a few packages that I need to make it my OS
 #+name: emacs
 #+begin_src emacs-lisp
 (package! lexic)
-(unpin! tree-sitter)
-(unpin! tree-sitter-langs)
+;; (unpin! tree-sitter)
+;; (unpin! tree-sitter-langs)
 #+end_src
 
 **** LSP:
@@ -1035,11 +1037,6 @@ fix it
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 #+end_src
 
-Instead of fundamental mode, =org-mode= seems much more useful
-#+begin_src emacs-lisp
-(setq doom-scratch-initial-major-mode 'org-mode)
-#+end_src
-
 *** EVIL
 The default bindings of doom are pretty good. I'm not so good with motions though, so lets make life easier with avy
 #+begin_src emacs-lisp
@@ -1178,12 +1175,12 @@ Nvim-treesitter is based on three interlocking features: language parsers, queri
 
 Since I use an apple silicon mac, I prefer if nix handles compiling the parsers for me
 #+begin_src emacs-lisp
-(use-package! tree-sitter
-  :config
-  (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+;; (use-package! tree-sitter
+;;   :config
+;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
+;;   (require 'tree-sitter-langs)
+;;   (global-tree-sitter-mode)
+;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 #+end_src
 
 ** Nano
@@ -1191,213 +1188,42 @@ I prefer the nano look and feel over the default doom one. Lets integrate it wit
 
 Doom themes collides with the themes provided by nano, so lets remove that
 #+begin_src emacs-lisp
+(setq default-frame-alist
+      (append (list
+           '(min-height . 1)
+               '(height     . 45)
+           '(min-width  . 1)
+               '(width      . 81)
+               '(vertical-scroll-bars . nil)
+               '(internal-border-width . 24)
+               '(left-fringe    . 1)
+               '(right-fringe   . 1)
+               '(tool-bar-lines . 0)
+               '(menu-bar-lines . 0))))
+
 (setq doom-theme 'nil)
 #+end_src
 
 Now we can load the nano modules themselves
 #+begin_src emacs-lisp
-(require 'nano-layout)
-(require 'nano-modeline)
-(require 'nano-theme-light)
-(require 'nano-theme)
-(require 'nano-colors)
-(require 'nano-faces)
-(nano-faces)
-(nano-theme)
+(use-package! nano-theme
+  :hook (after-init . nano-dark))
+
+(use-package! nano-modeline
+  :hook (after-init . nano-modeline-mode))
 #+end_src
 
-And because we use doom emacs, lets add some extra faces
+And of course, =nano-agenda=
 #+begin_src emacs-lisp
-(after! flycheck
-  (set-face-attribute 'flycheck-error nil
-                      :underline
-                      '(:color "#9C2F18" :style wave  ))
-  (set-face-attribute 'flycheck-warning nil
-                      :underline
-                      '(:color "#AB9D27" :style wave  )))
-(after! nano-faces
-  (set-face-attribute 'nano-face-critical nil
-                      :foreground dn-critical
-                      :background dn-background                   )
-  (set-face-attribute 'nano-face-tag-critical nil
-                      :foreground dn-critical
-                      :background dn-background                   ))
-(set-face-attribute 'help-key-binding nil
-                    :foreground dn-foreground
-                    :background dn-background
-                    :weight 'bold
-                    :box nil                                    )
-(after! eros
-  (set-face-attribute 'eros-result-overlay-face nil
-                      :foreground dn-foreground
-                      :background dn-background
-                      :weight 'bold
-                      :box t                                     ))
-(after! avy
-  (set-face-attribute 'avy-lead-face nil
-                      :foreground dn-foreground
-                      :background dn-subtle
-                      :underline t                               )
-  (set-face-attribute 'avy-lead-face-1 nil
-                      :foreground dn-foreground
-                      :background dn-subtle
-                      :underline t                               )
-  (set-face-attribute 'avy-lead-face-0 nil
-                      :foreground dn-foreground
-                      :background dn-subtle
-                      :underline t                               ))
-(after! lsp-ui
-  (set-face-attribute 'lsp-ui-doc-url nil
-                      :background dn-contrast
-                      :inherit nil
-                      :underline t                              )
-  (set-face-attribute 'lsp-ui-doc-background nil
-                      :background dn-contrast
-                      :inherit nil
-                      :box t                                    ))
-(after! lsp-mode
-  (set-face-attribute 'lsp-signature-face nil
-                      :background dn-contrast
-                      :inherit nil                              )
-  (set-face-attribute 'lsp-face-highlight-read nil
-                      :background dn-contrast
-                      :underline nil
-                      :inherit nil                              )
-  (set-face-attribute 'lsp-face-highlight-write nil
-                      :background dn-contrast
-                      :underline t
-                      :inherit nil                              ))
-(after! git-gutter-fringe
-  (set-face-attribute 'git-gutter-fr:added nil
-                      :foreground dn-popout
-                      :weight 'bold )
-  (set-face-attribute 'git-gutter:modified nil
-                      :foreground dn-attention
-                      :weight 'bold)
-  (set-face-attribute 'git-gutter-fr:modified nil
-                      :foreground dn-attention
-                      :weight 'bold))
-(after! magit
-  (set-face-attribute 'magit-diff-hunk-heading-highlight nil
-                      :background dn-medium
-                      :box nil
-                      :underline t                              )
-  (set-face-attribute 'magit-diff-hunk-heading nil
-                      :background dn-medium                     )
-  (set-face-attribute 'magit-diff-context-highlight nil
-                      :foreground dn-foreground
-                      :background dn-background                 )
-  (set-face-attribute 'magit-diff-added-highlight nil
-                      :foreground dn-popout
-                      :background dn-background
-                      :weight 'bold)
-  (set-face-attribute 'magit-diff-added nil
-                      :foreground dn-popout
-                      :background dn-background                 )
-  (set-face-attribute 'magit-diff-removed-highlight nil
-                      :foreground dn-critical
-                      :background dn-background
-                      :weight 'bold                 )
-  (set-face-attribute 'magit-diff-removed nil
-                      :foreground dn-critical
-                      :background dn-background                 )
-  (set-face-attribute 'magit-hash nil
-                      :foreground dn-grey
-                      :weight 'bold)
-  (set-face-attribute 'magit-section-highlight nil
-                      :background dn-contrast
-                      :inherit nil                              ))
-(after! info
-  (set-face-attribute 'info-xref-visited nil
-                      :foreground dn-violet                      )
-  (set-face-attribute 'info-menu-star nil
-                      :foreground dn-foreground                  ))
-(after! popup
-  (set-face-attribute 'popup-tip-face nil
-                      :background dn-contrast                    ))
-(set-face-attribute 'link nil
-                    :underline  t                               )
-(set-face-attribute 'button nil
-                    :underline  t                               )
-(after! hl-line
-  (set-face-attribute 'hl-line nil :background dn-subtle          ))
-(set-face-attribute 'cursor nil
-                    :background dn-subtle )
-(after! company
-  (set-face-attribute 'company-tooltip-search nil
-                      :background dn-medium                      )
-  (set-face-attribute 'company-tooltip-common nil
-                      :background dn-medium                      )
-  (set-face-attribute 'company-tooltip-annotation nil
-                      :background dn-medium                      )
-  (set-face-attribute 'company-scrollbar-bg nil
-                      :background dn-medium                      )
-  (set-face-attribute 'company-scrollbar-fg nil
-                      :background dn-medium                      ))
-(after! diredfl
-  (set-face-attribute 'diredfl-dir-heading nil
-                      :foreground dn-faded
-                      :background nil
-                      :weight 'bold
-                      :underline  t                              )
-  (set-face-attribute 'diredfl-dir-name nil
-                      :foreground dn-salient
-                      :background nil                            )
-  (set-face-attribute 'diredfl-compressed-file-suffix nil
-                      :foreground dn-salient
-                      :background nil                            )
-  (set-face-attribute 'diredfl-file-name nil
-                      :foreground dn-foreground                  )
-  (set-face-attribute 'diredfl-deletion nil
-                      :foreground dn-critical
-                      :background dn-background                    )
-  :weight 'bold
-  (set-face-attribute 'diredfl-deletion-file-name nil
-                      :foreground dn-critical                    )
-  (set-face-attribute 'diredfl-file-suffix nil
-                      :foreground dn-faded                       ))
-(set-face-attribute 'font-lock-builtin-face nil
-                    :foreground dn-violet                       )
-(defun vterm-faces
-    (                                            )
-  (set-face-attribute 'vterm-color-red nil
-                      :foreground dn-critical
-                      :background nil                            )
-  (set-face-attribute 'vterm-color-yellow nil
-                      :foreground dn-attention
-                      :background nil                            )
-  (set-face-attribute 'vterm-color-blue nil
-                      :foreground dn-blue
-                      :background nil                            )
-  (set-face-attribute 'vterm-color-magenta nil
-                      :foreground dn-violet
-                      :background nil                            )
-  (set-face-attribute 'vterm-color-green nil
-                      :foreground dn-popout
-                      :background nil                            ))
-(add-hook 'vterm-mode-hook #'vterm-faces                        )
-(after! hydra
-  (set-face-attribute 'hydra-face-red nil
-                      :foreground dn-critical
-                      :weight 'bold                              ))
-(after! smartparens
-  (set-face-attribute 'show-paren-match nil
-                      :foreground dn-violet
-                      :background dn-blue-green
-                      :weight 'bold
-                      :inverse-video t                           )
-  (set-face-attribute 'sp-show-pair-match-face nil
-                      :foreground dn-violet
-                      :background dn-blue-green
-                      :weight 'bold
-                      :inverse-video t                           ))
+(use-package! nano-agenda
+  :commands nano-agenda)
 #+end_src
 
 ** Splash
 Gura :emma:
 #+begin_src emacs-lisp
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
-(setq +doom-dashboard-banner-padding '(0 . 0))
+(setq +doom-dashboard-banner-padding '(0 . 1))
 #+end_src
 
 Add random quotes to the splash screen

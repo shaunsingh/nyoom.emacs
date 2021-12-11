@@ -37,13 +37,15 @@
 
 ;;looks
 (package! solaire-mode :disable t)
-(package! nano-integration :recipe (:local-repo "lisp/nano-integration"))
+(package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
+(package! nano-agenda :recipe (:host github :repo "rougier/nano-agenda"))
+(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
 
 ;;emacs additions
 (package! lexic)
-(unpin! tree-sitter)
-(unpin! tree-sitter-langs)
+;; (unpin! tree-sitter)
+;; (unpin! tree-sitter-langs)
 
 ;;lsp
 (unpin! lsp-ui)
