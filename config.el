@@ -37,9 +37,9 @@
 ;;fonts
 (setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
-      doom-variable-pitch-font (font-spec :family "Overpass" :size 16)
+      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 16)
       doom-unicode-font (font-spec :family "Liga SFMono Nerd Font")
-      doom-serif-font (font-spec :family "Alegreya Sans" :size 16 :weight 'light))
+      doom-serif-font (font-spec :family "Fira Sans" :size 16 :weight 'medium))
 
 ;;mixed pitch modes
 (defvar mixed-pitch-modes '(org-mode LaTeX-mode markdown-mode gfm-mode Info-mode)
@@ -61,16 +61,13 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
     "A variable-pitch face with serifs."
     :group 'basic-faces)
   (setq mixed-pitch-set-height t)
-  (setq variable-pitch-serif-font (font-spec :family "Alegreya Sans" :size 16 :weight 'Medium))
+  (setq variable-pitch-serif-font (font-spec :family "Fira Sans" :size 16))
   (set-face-attribute 'variable-pitch-serif nil :font variable-pitch-serif-font)
   (defun mixed-pitch-serif-mode (&optional arg)
     "Change the default face of the current buffer to a serifed variable pitch, while keeping some faces fixed pitch."
     (interactive)
     (let ((mixed-pitch-face 'variable-pitch-serif))
       (mixed-pitch-mode (or arg 'toggle)))))
-
-(set-char-table-range composition-function-table ?f '(["\\(?:ff?[fijlt]\\)" 0 font-shape-gstring]))
-(set-char-table-range composition-function-table ?T '(["\\(?:Th\\)" 0 font-shape-gstring]))
 
 (after! company
    (setq company-idle-delay 0.1
@@ -230,11 +227,10 @@ Return nil otherwise."
 (use-package! lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-sideline-enable nil; not anymore useful than flycheck
+  (setq lsp-ui-sideline-enable t
         lsp-lens-enable t
         lsp-ui-doc-enable t
-        lsp-tex-server 'digestif
-        lsp-headerline-breadcrumb-enable nil
+        lsp-headerline-breadcrumb-enable t
         lsp-ui-peek-enable t
         lsp-ui-peek-fontify 'on-demand
         lsp-enable-symbol-highlighting nil))
@@ -357,6 +353,8 @@ Return nil otherwise."
         window-divider-default-right-width 0))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
+
+(setq inhibit-compacting-font-caches t)
 
 ;; (use-package! tree-sitter
 ;;   :config
@@ -1857,7 +1855,7 @@ is selected, only the bare key is returned."
 
 ;;make bullets look better
 (after! org-superstar
-  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
+  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
         org-superstar-prettify-item-bullets t ))
 
 (setq org-ellipsis " ▾ "
@@ -2468,14 +2466,12 @@ SQL can be either the emacsql vector representation, or a string."
          current-prefix-arg))
   (lexic-search identifier nil nil t))
 
-(setq +latex-viewers '(pdf-tools evince zathura okular skim sumatrapdf))
-
-(after! org
-  (setq org-highlight-latex-and-related '(native script entities))
-  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
-
-(after! org
-  (plist-put org-format-latex-options :background "Transparent"))
+(use-package org-latex-impatient
+  :defer t
+  :hook (org-mode . org-latex-impatient-mode)
+  :init
+  (setq org-latex-impatient-tex2svg-bin "~/node_modules/mathjax-node-cli/bin/tex2svg"
+        org-latex-impatient-border-width 0))
 
 (after! org
   (add-hook 'org-mode-hook 'turn-on-org-cdlatex))
@@ -2491,74 +2487,11 @@ SQL can be either the emacsql vector representation, or a string."
 (use-package! org-fragtog
   :hook (org-mode . org-fragtog-mode))
 
-(setq org-format-latex-header "\\documentclass{article}
-\\usepackage[usenames]{xcolor}
-
-\\usepackage[T1]{fontenc}
-
-\\usepackage{booktabs}
-
-\\pagestyle{empty}             % do not remove
-% The settings below are copied from fullpage.sty
-\\setlength{\\textwidth}{\\paperwidth}
-\\addtolength{\\textwidth}{-3cm}
-\\setlength{\\oddsidemargin}{1.5cm}
-\\addtolength{\\oddsidemargin}{-2.54cm}
-\\setlength{\\evensidemargin}{\\oddsidemargin}
-\\setlength{\\textheight}{\\paperheight}
-\\addtolength{\\textheight}{-\\headheight}
-\\addtolength{\\textheight}{-\\headsep}
-\\addtolength{\\textheight}{-\\footskip}
-\\addtolength{\\textheight}{-3cm}
-\\setlength{\\topmargin}{1.5cm}
-\\addtolength{\\topmargin}{-2.54cm}
-")
-
 (use-package pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
   :config
   (setq pdf-view-resize-factor 1.1)
   (setq-default pdf-view-display-size 'fit-page))
-
-(defvar org-latex-italic-quotes t
-  "Make \"quote\" environments italic.")
-(defvar org-latex-par-sep t
-  "Vertically seperate paragraphs, and remove indentation.")
-
-(defvar org-latex-conditional-features
-  '(("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]\\|\\\\\\]\\)+?\\.\\(?:eps\\|pdf\\|png\\|jpeg\\|jpg\\|jbig2\\)\\]\\]" . image)
-    ("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]+?\\|\\\\\\]\\)\\.svg\\]\\]" . svg)
-    ("^[ \t]*|" . table)
-    ("cref:\\|\\cref{\\|\\[\\[[^\\]]+\\]\\]" . cleveref)
-    ("[;\\\\]?\\b[A-Z][A-Z]+s?[^A-Za-z]" . acronym)
-    ("\\+[^ ].*[^ ]\\+\\|_[^ ].*[^ ]_\\|\\\\uu?line\\|\\\\uwave\\|\\\\sout\\|\\\\xout\\|\\\\dashuline\\|\\dotuline\\|\\markoverwith" . underline)
-    (":float wrap" . float-wrap)
-    (":float sideways" . rotate)
-    ("^[ \t]*#\\+caption:\\|\\\\caption" . caption)
-    ("\\[\\[xkcd:" . (image caption))
-    ((and org-latex-italic-quotes "^[ \t]*#\\+begin_quote\\|\\\\begin{quote}") . italic-quotes)
-    (org-latex-par-sep . par-sep)
-    ("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\|[A-Za-z]+[.)]\\) \\[[ -X]\\]" . checkbox)
-    ("^[ \t]*#\\+begin_warning\\|\\\\begin{warning}" . box-warning)
-    ("^[ \t]*#\\+begin_info\\|\\\\begin{info}"       . box-info)
-    ("^[ \t]*#\\+begin_success\\|\\\\begin{success}" . box-success)
-    ("^[ \t]*#\\+begin_error\\|\\\\begin{error}"     . box-error))
-  "Org feature tests and associated LaTeX feature flags.
-
-Alist where the car is a test for the presense of the feature,
-and the cdr is either a single feature symbol or list of feature symbols.
-
-When a string, it is used as a regex search in the buffer.
-The feature is registered as present when there is a match.
-
-The car can also be a
-- symbol, the value of which is fetched
-- function, which is called with info as an argument
-- list, which is `eval'uated
-
-If the symbol, function, or list produces a string: that is used as a regex
-search in the buffer. Otherwise any non-nil return value will indicate the
-existance of the feature.")
 
 (defvar org-latex-caption-preamble "
 \\usepackage{subcaption}
@@ -2595,6 +2528,76 @@ existance of the feature.")
 "
   "Preamble that provides a macro for custom boxes.")
 
+(defadvice! +org-latex-link (orig-fn link desc info)
+  "Acts as `org-latex-link', but supports remote images."
+  :around #'org-latex-link
+  (setq o-link link
+        o-desc desc
+        o-info info)
+  (if (and (member (plist-get (cadr link) :type) '("http" "https"))
+           (member (file-name-extension (plist-get (cadr link) :path))
+                   '("png" "jpg" "jpeg" "pdf" "svg")))
+      (org-latex-link--remote link desc info)
+    (funcall orig-fn link desc info)))
+
+(defun org-latex-link--remote (link _desc info)
+  (let* ((url (plist-get (cadr link) :raw-link))
+         (ext (file-name-extension url))
+         (target (format "%s%s.%s"
+                         (temporary-file-directory)
+                         (replace-regexp-in-string "[./]" "-"
+                                                   (file-name-sans-extension (substring (plist-get (cadr link) :path) 2)))
+                         ext)))
+    (unless (file-exists-p target)
+      (url-copy-file url target))
+    (setcdr link (--> (cadr link)
+                   (plist-put it :type "file")
+                   (plist-put it :path target)
+                   (plist-put it :raw-link (concat "file:" target))
+                   (list it)))
+    (concat "% fetched from " url "\n"
+            (org-latex--inline-image link info))))
+
+(defvar org-latex-italic-quotes t
+  "Make \"quote\" environments italic.")
+(defvar org-latex-par-sep t
+  "Vertically seperate paragraphs, and remove indentation.")
+
+(defvar org-latex-conditional-features
+  '(("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]\\|\\\\\\]\\)+?\\.\\(?:eps\\|pdf\\|png\\|jpeg\\|jpg\\|jbig2\\)\\]\\]" . image)
+    ("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]+?\\|\\\\\\]\\)\\.svg\\]\\]\\|\\\\includesvg" . svg)
+    ("^[ \t]*|" . table)
+    ("cref:\\|\\cref{\\|\\[\\[[^\\]]+\\]\\]" . cleveref)
+    ("[;\\\\]?\\b[A-Z][A-Z]+s?[^A-Za-z]" . acronym)
+    ("\\+[^ ].*[^ ]\\+\\|_[^ ].*[^ ]_\\|\\\\uu?line\\|\\\\uwave\\|\\\\sout\\|\\\\xout\\|\\\\dashuline\\|\\dotuline\\|\\markoverwith" . underline)
+    (":float wrap" . float-wrap)
+    (":float sideways" . rotate)
+    ("^[ \t]*#\\+caption:\\|\\\\caption" . caption)
+    ("\\[\\[xkcd:" . (image caption))
+    ((and org-latex-italic-quotes "^[ \t]*#\\+begin_quote\\|\\\\begin{quote}") . italic-quotes)
+    (org-latex-par-sep . par-sep)
+    ("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\|[A-Za-z]+[.)]\\) \\[[ -X]\\]" . checkbox)
+    ("^[ \t]*#\\+begin_warning\\|\\\\begin{warning}" . box-warning)
+    ("^[ \t]*#\\+begin_info\\|\\\\begin{info}"       . box-info)
+    ("^[ \t]*#\\+begin_success\\|\\\\begin{success}" . box-success)
+    ("^[ \t]*#\\+begin_error\\|\\\\begin{error}"     . box-error))
+  "Org feature tests and associated LaTeX feature flags.
+
+Alist where the car is a test for the presense of the feature,
+and the cdr is either a single feature symbol or list of feature symbols.
+
+When a string, it is used as a regex search in the buffer.
+The feature is registered as present when there is a match.
+
+The car can also be a
+- symbol, the value of which is fetched
+- function, which is called with info as an argument
+- list, which is `eval'uated
+
+If the symbol, function, or list produces a string: that is used as a regex
+search in the buffer. Otherwise any non-nil return value will indicate the
+existance of the feature.")
+
 (defvar org-latex-feature-implementations
   '((image         :snippet "\\usepackage{graphicx}" :order 2)
     (svg           :snippet "\\usepackage{svg}" :order 2)
@@ -2604,7 +2607,7 @@ existance of the feature.")
     (float-wrap    :snippet "\\usepackage{wrapfig}" :order 2)
     (rotate        :snippet "\\usepackage{rotating}" :order 2)
     (caption       :snippet org-latex-caption-preamble :order 2.1)
-    (acronym       :snippet "\\newcommand{\\acr}[1]{\\protect\\textls*[110]{\\scshape #1}}\n\\newcommand{\\acrs}{\\protect\\scalebox{.91}[.84]\\hspace{0.15ex}s}" :order 0.4)
+    (acronym       :snippet "\\newcommand{\\acr}[1]{\\protect\\textls*[110]{\\scshape #1}}\n\\newcommand{\\acrs}{\\protect\\scalebox{.91}[.84]{\\hspace{0.15ex}s}}" :order 0.4)
     (italic-quotes :snippet "\\renewcommand{\\quote}{\\list{}{\\rightmargin\\leftmargin}\\item\\relax\\em}\n" :order 0.5)
     (par-sep       :snippet "\\setlength{\\parskip}{\\baselineskip}\n\\setlength{\\parindent}{0pt}\n" :order 0.5)
     (.pifont       :snippet "\\usepackage{pifont}")
@@ -2725,56 +2728,9 @@ This is done according to `org-latex-feature-implementations'"
               (org-latex-generate-features-preamble (org-latex-detect-features nil info--tmp))
               "\n"))))
 
-(defadvice! +org-latex-link (orig-fn link desc info)
-  "Acts as `org-latex-link', but supports remote images."
-  :around #'org-latex-link
-  (setq o-link link
-        o-desc desc
-        o-info info)
-  (if (and (member (plist-get (cadr link) :type) '("http" "https"))
-           (member (file-name-extension (plist-get (cadr link) :path))
-                   '("png" "jpg" "jpeg" "pdf" "svg")))
-      (org-latex-link--remote link desc info)
-    (funcall orig-fn link desc info)))
+(setq-default org-latex-pdf-process '("tectonic -Z shell-escape --outdir=%o %f"))
 
-(defun org-latex-link--remote (link _desc info)
-  (let* ((url (plist-get (cadr link) :raw-link))
-         (ext (file-name-extension url))
-         (target (format "%s%s.%s"
-                         (temporary-file-directory)
-                         (replace-regexp-in-string "[./]" "-"
-                                                   (file-name-sans-extension (substring (plist-get (cadr link) :path) 2)))
-                         ext)))
-    (unless (file-exists-p target)
-      (url-copy-file url target))
-    (setcdr link (--> (cadr link)
-                   (plist-put it :type "file")
-                   (plist-put it :path target)
-                   (plist-put it :raw-link (concat "file:" target))
-                   (list it)))
-    (concat "% fetched from " url "\n"
-            (org-latex--inline-image link info))))
-
-(setq org-latex-pdf-process (list "latexmk -f -pdflatex='xelatex -shell-escape -interaction nonstopmode' -pdf -output-directory=%o %f"))
-
-(setq xdvsvgm
-        '(xdvsvgm
-          :programs ("xelatex" "dvisvgm")
-          :description "xdv > svg"
-          :message "you need to install the programs: xelatex and dvisvgm."
-          :use-xcolor t
-          :image-input-type "xdv"
-          :image-output-type "svg"
-          :image-size-adjust (1.7 . 1.5)
-          :latex-compiler ("xelatex -no-pdf -interaction nonstopmode -output-directory %o %f")
-          :image-converter ("dvisvgm %f -n -b min -c %S -o %O")))
-
-(after! org
-    (add-to-list 'org-preview-latex-process-alist xdvsvgm)
-    (setq org-format-latex-options
-      (plist-put org-format-latex-options :scale 1.4))
-    (setq org-preview-latex-default-process 'xdvsvgm))
-
+(setq-default org-latex-pdf-process '("tectonic -Z shell-escape --outdir=%o %f"))
 (setq TeX-save-query nil
       TeX-show-compilation t
       TeX-command-extra-options "-shell-escape")
@@ -2830,15 +2786,18 @@ This is done according to `org-latex-feature-implementations'"
         ("" "textcomp" t)
         ("" "amssymb" t)
         ("" "capt-of" nil)
+        ("" "firamath-otf" t)
         ("dvipsnames" "xcolor" nil)
         ("colorlinks=true, linkcolor=Blue, citecolor=BrickRed, urlcolor=PineGreen" "hyperref" nil)
-    ("" "indentfirst" nil)))
+    ("" "indentfirst" nil)
+    ""
+    "\\setmonofont{Liga SFMono Nerd Font}"
+    "\\setmainfont{Fira Sans}"))
 
 (use-package! engrave-faces-latex
   :after ox-latex
   :config
-  (setq org-latex-listings 'engraved
-        engrave-faces-preset-styles (engrave-faces-generate-preset)))
+  (setq org-latex-listings 'engraved))
 
 (defadvice! org-latex-src-block-engraved (orig-fn src-block contents info)
   "Like `org-latex-src-block', but supporting an engraved backend"
@@ -2999,138 +2958,9 @@ This is done according to `org-latex-feature-implementations'"
       output-block)))
 
 (use-package! ox-chameleon
-  :after ox
-  :config
-  (setq ox-chameleon-snap-fgbg-to-bw nil))
+  :after ox)
 
 (setq org-export-with-sub-superscripts '{})
-
-(after! ox-latex
-(defvar org-latex-default-fontset 'fira
-  "Fontset from `org-latex-fontsets' to use by default.
-As cm (computer modern) is TeX's default, that causes nothing
-to be added to the document.
-
-If \"nil\" no custom fonts will ever be used.")
-(eval '(cl-pushnew '(:latex-font-set nil "fontset" org-latex-default-fontset)
-                   (org-export-backend-options (org-export-get-backend 'latex)))))
-
-(after! ox-latex
-(defun org-latex-fontset-entry ()
-  "Get the fontset spec of the current file.
-Has format \"name\" or \"name-style\" where 'name' is one of
-the cars in `org-latex-fontsets'."
-  (let ((fontset-spec
-         (symbol-name
-          (or (car (delq nil
-                         (mapcar
-                          (lambda (opt-line)
-                            (plist-get (org-export--parse-option-keyword opt-line 'latex)
-                                       :latex-font-set))
-                          (cdar (org-collect-keywords '("OPTIONS"))))))
-              org-latex-default-fontset))))
-    (cons (intern (car (split-string fontset-spec "-")))
-          (when (cadr (split-string fontset-spec "-"))
-            (intern (concat ":" (cadr (split-string fontset-spec "-"))))))))
-
-(defun org-latex-fontset (&rest desired-styles)
-  "Generate a LaTeX preamble snippet which applies the current fontset for DESIRED-STYLES."
-  (let* ((fontset-spec (org-latex-fontset-entry))
-         (fontset (alist-get (car fontset-spec) org-latex-fontsets)))
-    (if fontset
-        (concat
-         (mapconcat
-          (lambda (style)
-            (when (plist-get fontset style)
-              (concat (plist-get fontset style) "\n")))
-          desired-styles
-          "")
-         (when (memq (cdr fontset-spec) desired-styles)
-           (pcase (cdr fontset-spec)
-             (:serif "\\renewcommand{\\familydefault}{\\rmdefault}\n")
-             (:sans "\\renewcommand{\\familydefault}{\\sfdefault}\n")
-             (:mono "\\renewcommand{\\familydefault}{\\ttdefault}\n"))))
-      (error "Font-set %s is not provided in org-latex-fontsets" (car fontset-spec))))))
-
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '(org-latex-default-fontset . custom-font) t)
-(add-to-list 'org-latex-feature-implementations '(custom-font :snippet (org-latex-fontset :serif :sans :mono) :order 0) t)
-(add-to-list 'org-latex-feature-implementations '(.custom-maths-font :eager t :when (custom-font maths) :snippet (org-latex-fontset :maths) :order 0.3) t))
-
-(after! ox-latex
-(defvar org-latex-fontsets
-  '((cm nil) ; computer modern
-    (## nil) ; no font set
-    (alegreya
-     :serif "\\usepackage[osf]{Alegreya}"
-     :sans "\\usepackage{AlegreyaSans}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (biolinum
-     :serif "\\usepackage[osf]{libertineRoman}"
-     :sans "\\usepackage[sfdefault,osf]{biolinum}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[libertine,varvw]{newtxmath}")
-    (fira
-     :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
-     :mono "\\usepackage[scale=0.80]{FiraMono}"
-     :maths "\\usepackage[fakebold]{firamath-otf}")
-    (kp
-     :serif "\\usepackage{kpfonts}")
-    (newpx
-     :serif "\\usepackage{newpxtext}"
-     :sans "\\usepackage{gillius}"
-     :mono "\\usepackage[scale=0.9]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (noto
-     :serif "\\usepackage[osf]{noto-serif}"
-     :sans "\\usepackage[osf]{noto-sans}"
-     :mono "\\usepackage[scale=0.96]{noto-mono}"
-     :maths "\\usepackage{notomath}")
-    (plex
-     :serif "\\usepackage{plex-serif}"
-     :sans "\\usepackage{plex-sans}"
-     :mono "\\usepackage[scale=0.95]{plex-mono}"
-     :maths "\\usepackage{newtxmath}") ; may be plex-based in future
-    (source
-     :serif "\\usepackage[osf]{sourceserifpro}"
-     :sans "\\usepackage[osf]{sourcesanspro}"
-     :mono "\\usepackage[scale=0.95]{sourcecodepro}"
-     :maths "\\usepackage{newtxmath}") ; may be sourceserifpro-based in future
-    (times
-     :serif "\\usepackage{newtxtext}"
-     :maths "\\usepackage{newtxmath}"))
-  "Alist of fontset specifications.
-Each car is the name of the fontset (which cannot include \"-\").
-
-Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
-A key's value is a LaTeX snippet which loads such a font."))
-
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '((string= (car (org-latex-fontset-entry)) "alegreya") . alegreya-typeface))
-(add-to-list 'org-latex-feature-implementations '(alegreya-typeface) t)
-(add-to-list 'org-latex-feature-implementations'(.alegreya-tabular-figures :eager t :when (alegreya-typeface table) :order 0.5 :snippet "
-\\makeatletter
-% tabular lining figures in tables
-\\renewcommand{\\tabular}{\\AlegreyaTLF\\let\\@halignto\\@empty\\@tabular}
-\\makeatother\n") t))
-
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '("LaTeX" . latex-symbol))
-(add-to-list 'org-latex-feature-implementations '(latex-symbol :when alegreya-typeface :order 0.5 :snippet "
-\\makeatletter
-% Kerning around the A needs adjusting
-\\DeclareRobustCommand{\\LaTeX}{L\\kern-.24em%
-        {\\sbox\\z@ T%
-         \\vbox to\\ht\\z@{\\hbox{\\check@mathfonts
-                              \\fontsize\\sf@size\\z@
-                              \\math@fontsfalse\\selectfont
-                              A}%
-                        \\vss}%
-        }%
-        \\kern-.10em%
-        \\TeX}
-\\makeatother\n") t))
 
 (map! :map calc-mode-map
       :after calc

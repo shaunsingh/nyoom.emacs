@@ -102,8 +102,80 @@ users the power to bridge this gap.
 ** Notes for the unwary adventurer
 The lovely ~doom doctor~ is good at diagnosing most missing things, but a few extras packages might be needed. You can find most of them in the =flake.nix= and =shell.nix= files.
 
-#+include: "./flake.nix" src nix
-#+include: "./shell.nix" src nix
+#+begin_src nix :tangle "flake.nix"
+{
+  description = "Shuarya Singh's Doom-emacs config";
+
+  nixConfig.extra-substituters = "https://nix-community.cachix.org";
+  nixConfig.extra-trusted-public-keys =
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    emacs = {
+      url = "github:shaunsingh/emacs";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    doom-emacs.url = "github:hlissner/doom-emacs/develop";
+    doom-emacs.flake = false;
+  };
+
+  outputs = { self, nixpkgs, flake-utils, emacs, doom-emacs }:
+    flake-utils.lib.simpleFlake {
+      inherit self nixpkgs;
+      name = "doom-emacs";
+      preOverlays = [
+        emacs.overlay
+        (final: prev: { doomEmacsRevision = doom-emacs.rev; })
+      ];
+      shell = ./shell.nix;
+      systems = [ "aarch64-darwin" ];
+    };
+}
+#+end_src
+
+#+begin_src nix :tangle "shell.nix"
+{ pkgs ? import <nixpkgs> {
+  overlays = [
+    (import (builtins.fetchTarball {
+      url =
+        "https://github.com/shaunsingh/emacs/archive/master.tar.gz";
+    }))
+  ];
+} }:
+with pkgs;
+mkShell {
+  buildInputs = [
+    # Emacs deps
+    emacs
+    (ripgrep.override { withPCRE2 = true; })
+    sqlite
+    gnuplot
+    # pandoc
+    # sdcv
+    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
+    tectonic
+    # languagetool
+    nixfmt
+    fd
+    sassc
+  ];
+  shellHook = ''
+    if [ ! -d $HOME/.config/emacs/.git ]; then
+      mkdir -p $HOME/.config/emacs
+      git -C $HOME/.config/emacs init
+    fi
+    if [ $(git -C $HOME/.config/emacs rev-parse HEAD) != ${pkgs.doomEmacsRevision} ]; then
+      git -C $HOME/.config/emacs fetch https://github.com/hlissner/doom-emacs.git || true
+      git -C $HOME/.config/emacs checkout ${pkgs.doomEmacsRevision} || true
+    fi
+  '';
+}
+#+end_src
 
 Installing =nix= followed by running =nix develop= will
 + Install all the required dependencies (excluding fonts)
@@ -515,6 +587,10 @@ tweaking org then
 (package! citeproc)
 (package! org-appear)
 (package! org-roam-ui)
+(package! org-latex-impatient)
+(package! org-latex-impatient
+  :recipe (:host github
+           :repo "shaunsingh/org-latex-impatient"))
 (package! org-cite-csl-activate
   :recipe (:host github
            :repo "andras-simonyi/org-cite-csl-activate"))
@@ -658,17 +734,17 @@ Use ligatures from within vterm (and eshell), we do this by redefining the varia
 [[xkcd:590]]
 
 I like the apple fonts for programming, so I'll go with Liga SFMono Nerd Font. I
-prefer a rounder font for plain text, so I'll go with Overpass for that. I have a retina display as well, so lets keep the fonts light.
+prefer a rounder font for plain text, so I'll go with Fira Sans for that. I have a retina display as well, so lets keep the fonts light.
 #+begin_src emacs-lisp
 ;;fonts
 (setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
-      doom-variable-pitch-font (font-spec :family "Overpass" :size 16)
+      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 16)
       doom-unicode-font (font-spec :family "Liga SFMono Nerd Font")
-      doom-serif-font (font-spec :family "Alegreya Sans" :size 16 :weight 'light))
+      doom-serif-font (font-spec :family "Fira Sans" :size 16 :weight 'medium))
 #+end_src
 
-For mixed pitch, I would go with something comfier. I like Alegreya Sans for a minimalist feel, so lets go with that
+For mixed pitch, I would go with something comfier. I like Fira Sans once again for a minimalist feel, so lets go with that
 #+begin_src emacs-lisp
 ;;mixed pitch modes
 (defvar mixed-pitch-modes '(org-mode LaTeX-mode markdown-mode gfm-mode Info-mode)
@@ -690,20 +766,13 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
     "A variable-pitch face with serifs."
     :group 'basic-faces)
   (setq mixed-pitch-set-height t)
-  (setq variable-pitch-serif-font (font-spec :family "Alegreya Sans" :size 16 :weight 'Medium))
+  (setq variable-pitch-serif-font (font-spec :family "Fira Sans" :size 16))
   (set-face-attribute 'variable-pitch-serif nil :font variable-pitch-serif-font)
   (defun mixed-pitch-serif-mode (&optional arg)
     "Change the default face of the current buffer to a serifed variable pitch, while keeping some faces fixed pitch."
     (interactive)
     (let ((mixed-pitch-face 'variable-pitch-serif))
       (mixed-pitch-mode (or arg 'toggle)))))
-#+end_src
-
-Harfbuzz is missing the beautiful ligatures,
-lets add those back in with the help of composition-function-table
-#+begin_src emacs-lisp
-(set-char-table-range composition-function-table ?f '(["\\(?:ff?[fijlt]\\)" 0 font-shape-gstring]))
-(set-char-table-range composition-function-table ?T '(["\\(?:Th\\)" 0 font-shape-gstring]))
 #+end_src
 
 ** Company
@@ -901,11 +970,10 @@ I think the LSP is a bit intrusive (especially with inline suggestions), so lets
 (use-package! lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-sideline-enable nil; not anymore useful than flycheck
+  (setq lsp-ui-sideline-enable t
         lsp-lens-enable t
         lsp-ui-doc-enable t
-        lsp-tex-server 'digestif
-        lsp-headerline-breadcrumb-enable nil
+        lsp-headerline-breadcrumb-enable t
         lsp-ui-peek-enable t
         lsp-ui-peek-fontify 'on-demand
         lsp-enable-symbol-highlighting nil))
@@ -1086,6 +1154,8 @@ Just some simple visual tweaks. Lets give the text some more room to breathe, an
         window-divider-default-right-width 0))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
+
+(setq inhibit-compacting-font-caches t)
 #+end_src
 
 ** Treesitter
@@ -1763,10 +1833,7 @@ To actually read the ebooks we use =nov=.
 
 * Org
 ** Org-Mode
-Org mode is the best writing format, no contest. The defaults are more
-terminal-oriented, so lets make it look a little better
-
-Sadly I can't always work in org, but I can import stuff into it!
+Org mode is the best writing format, no contest. The defaults are very bland, so lets make it look a little better. Sadly I can't always work in org, but I can import stuff into it!
 #+begin_src emacs-lisp
 (use-package! org-pandoc-import
   :after org)
@@ -1817,6 +1884,7 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
 #+end_src
 
 *** HTML
+Ox-GFM helps with our org export for markdown and html, so lets enable that
 #+begin_src emacs-lisp
 (use-package! ox-gfm
   :after org)
@@ -1825,7 +1893,7 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
 :PROPERTIES:
 :header-args:emacs-lisp: :noweb-ref ox-html-conf
 :END:
-For some reason this only works if you have org first
+Now to borrow Tecosaurs excellent HTML export config
 #+begin_src emacs-lisp
 (after! ox-html
   (define-minor-mode org-fancy-html-export-mode
@@ -2649,7 +2717,6 @@ is selected, only the bare key is returned."
 
 Org-capture is rather nice, but I'd be nicer with a smaller frame, and
 no modeline.
-
 #+begin_src emacs-lisp
 (setf (alist-get 'height +org-capture-frame-parameters) 15)
 (setq +org-capture-fn
@@ -2734,7 +2801,7 @@ Firstly, I dislike the default stars for org-mode, so lets improve that
 #+begin_src emacs-lisp
 ;;make bullets look better
 (after! org-superstar
-  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
+  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
         org-superstar-prettify-item-bullets t ))
 #+end_src
 
@@ -3419,19 +3486,14 @@ same time its hard to write, hard to understand, and very slow. The solution:
 write everything in org and then export it to tex. Best of both worlds!
 
 ** Basic configuration
-First of all, lets use pdf-tools to preview pdfs by defaults
+Since I'm using tectonic, lets use mathjax to render tex previews.
 #+begin_src emacs-lisp
-(setq +latex-viewers '(pdf-tools evince zathura okular skim sumatrapdf))
-#+end_src
-
-I also want to adjust the look of those previews
-#+begin_src emacs-lisp
-(after! org
-  (setq org-highlight-latex-and-related '(native script entities))
-  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
-
-(after! org
-  (plist-put org-format-latex-options :background "Transparent"))
+(use-package org-latex-impatient
+  :defer t
+  :hook (org-mode . org-latex-impatient-mode)
+  :init
+  (setq org-latex-impatient-tex2svg-bin "~/node_modules/mathjax-node-cli/bin/tex2svg"
+        org-latex-impatient-border-width 0))
 #+end_src
 
 Lets add cdlatex org mode integration
@@ -3457,32 +3519,6 @@ Obviously we can't edit a png though. Let use org-fragtog to toggle between prev
   :hook (org-mode . org-fragtog-mode))
 #+end_src
 
-Here's just my private LaTeX config.
-#+begin_src emacs-lisp
-(setq org-format-latex-header "\\documentclass{article}
-\\usepackage[usenames]{xcolor}
-
-\\usepackage[T1]{fontenc}
-
-\\usepackage{booktabs}
-
-\\pagestyle{empty}             % do not remove
-% The settings below are copied from fullpage.sty
-\\setlength{\\textwidth}{\\paperwidth}
-\\addtolength{\\textwidth}{-3cm}
-\\setlength{\\oddsidemargin}{1.5cm}
-\\addtolength{\\oddsidemargin}{-2.54cm}
-\\setlength{\\evensidemargin}{\\oddsidemargin}
-\\setlength{\\textheight}{\\paperheight}
-\\addtolength{\\textheight}{-\\headheight}
-\\addtolength{\\textheight}{-\\headsep}
-\\addtolength{\\textheight}{-\\footskip}
-\\addtolength{\\textheight}{-3cm}
-\\setlength{\\topmargin}{1.5cm}
-\\addtolength{\\topmargin}{-2.54cm}
-")
-#+end_src
-
 ** PDF-Tools
 DocView gives me a headache, but pdf-tools can be improved, lets configure it a little more
 #+begin_src emacs-lisp
@@ -3493,50 +3529,10 @@ DocView gives me a headache, but pdf-tools can be improved, lets configure it a 
   (setq-default pdf-view-display-size 'fit-page))
 #+end_src
 
-** Export
-*** Conditional features
-#+begin_src emacs-lisp
-(defvar org-latex-italic-quotes t
-  "Make \"quote\" environments italic.")
-(defvar org-latex-par-sep t
-  "Vertically seperate paragraphs, and remove indentation.")
-
-(defvar org-latex-conditional-features
-  '(("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]\\|\\\\\\]\\)+?\\.\\(?:eps\\|pdf\\|png\\|jpeg\\|jpg\\|jbig2\\)\\]\\]" . image)
-    ("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]+?\\|\\\\\\]\\)\\.svg\\]\\]" . svg)
-    ("^[ \t]*|" . table)
-    ("cref:\\|\\cref{\\|\\[\\[[^\\]]+\\]\\]" . cleveref)
-    ("[;\\\\]?\\b[A-Z][A-Z]+s?[^A-Za-z]" . acronym)
-    ("\\+[^ ].*[^ ]\\+\\|_[^ ].*[^ ]_\\|\\\\uu?line\\|\\\\uwave\\|\\\\sout\\|\\\\xout\\|\\\\dashuline\\|\\dotuline\\|\\markoverwith" . underline)
-    (":float wrap" . float-wrap)
-    (":float sideways" . rotate)
-    ("^[ \t]*#\\+caption:\\|\\\\caption" . caption)
-    ("\\[\\[xkcd:" . (image caption))
-    ((and org-latex-italic-quotes "^[ \t]*#\\+begin_quote\\|\\\\begin{quote}") . italic-quotes)
-    (org-latex-par-sep . par-sep)
-    ("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\|[A-Za-z]+[.)]\\) \\[[ -X]\\]" . checkbox)
-    ("^[ \t]*#\\+begin_warning\\|\\\\begin{warning}" . box-warning)
-    ("^[ \t]*#\\+begin_info\\|\\\\begin{info}"       . box-info)
-    ("^[ \t]*#\\+begin_success\\|\\\\begin{success}" . box-success)
-    ("^[ \t]*#\\+begin_error\\|\\\\begin{error}"     . box-error))
-  "Org feature tests and associated LaTeX feature flags.
-
-Alist where the car is a test for the presense of the feature,
-and the cdr is either a single feature symbol or list of feature symbols.
-
-When a string, it is used as a regex search in the buffer.
-The feature is registered as present when there is a match.
-
-The car can also be a
-- symbol, the value of which is fetched
-- function, which is called with info as an argument
-- list, which is `eval'uated
-
-If the symbol, function, or list produces a string: that is used as a regex
-search in the buffer. Otherwise any non-nil return value will indicate the
-existance of the feature.")
-#+end_src
-
+** LaTeX
+A necessary evil. I hate it, it hates me, but it makes my PDF documents look nice.
+*** Preambles
+Various preamble setups to improve the overall look of several items
 #+begin_src emacs-lisp
 (defvar org-latex-caption-preamble "
 \\usepackage{subcaption}
@@ -3572,146 +3568,6 @@ existance of the feature.")
 }
 "
   "Preamble that provides a macro for custom boxes.")
-#+end_src
-
-#+begin_src emacs-lisp
-(defvar org-latex-feature-implementations
-  '((image         :snippet "\\usepackage{graphicx}" :order 2)
-    (svg           :snippet "\\usepackage{svg}" :order 2)
-    (table         :snippet "\\usepackage{longtable}\n\\usepackage{booktabs}" :order 2)
-    (cleveref      :snippet "\\usepackage[capitalize]{cleveref}" :order 1)
-    (underline     :snippet "\\usepackage[normalem]{ulem}" :order 0.5)
-    (float-wrap    :snippet "\\usepackage{wrapfig}" :order 2)
-    (rotate        :snippet "\\usepackage{rotating}" :order 2)
-    (caption       :snippet org-latex-caption-preamble :order 2.1)
-    (acronym       :snippet "\\newcommand{\\acr}[1]{\\protect\\textls*[110]{\\scshape #1}}\n\\newcommand{\\acrs}{\\protect\\scalebox{.91}[.84]\\hspace{0.15ex}s}" :order 0.4)
-    (italic-quotes :snippet "\\renewcommand{\\quote}{\\list{}{\\rightmargin\\leftmargin}\\item\\relax\\em}\n" :order 0.5)
-    (par-sep       :snippet "\\setlength{\\parskip}{\\baselineskip}\n\\setlength{\\parindent}{0pt}\n" :order 0.5)
-    (.pifont       :snippet "\\usepackage{pifont}")
-    (checkbox      :requires .pifont :order 3
-                   :snippet (concat (unless (memq 'maths features)
-                                      "\\usepackage{amssymb} % provides \\square")
-                                    org-latex-checkbox-preamble))
-    (.fancy-box    :requires .pifont    :snippet org-latex-box-preamble :order 3.9)
-    (box-warning   :requires .fancy-box :snippet "\\defsimplebox{warning}{e66100}{\\ding{68}}{Warning}" :order 4)
-    (box-info      :requires .fancy-box :snippet "\\defsimplebox{info}{3584e4}{\\ding{68}}{Information}" :order 4)
-    (box-success   :requires .fancy-box :snippet "\\defsimplebox{success}{26a269}{\\ding{68}}{\\vspace{-\\baselineskip}}" :order 4)
-    (box-error     :requires .fancy-box :snippet "\\defsimplebox{error}{c01c28}{\\ding{68}}{Important}" :order 4))
-  "LaTeX features and details required to implement them.
-
-List where the car is the feature symbol, and the rest forms a plist with the
-following keys:
-- :snippet, which may be either
-  - a string which should be included in the preamble
-  - a symbol, the value of which is included in the preamble
-  - a function, which is evaluated with the list of feature flags as its
-    single argument. The result of which is included in the preamble
-  - a list, which is passed to `eval', with a list of feature flags available
-    as \"features\"
-
-- :requires, a feature or list of features that must be available
-- :when, a feature or list of features that when all available should cause this
-    to be automatically enabled.
-- :prevents, a feature or list of features that should be masked
-- :order, for when ordering is important. Lower values appear first.
-    The default is 0.
-
-Features that start with ! will be eagerly loaded, i.e. without being detected.")
-#+end_src
-
-#+begin_src emacs-lisp
-(defun org-latex-detect-features (&optional buffer info)
-  "List features from `org-latex-conditional-features' detected in BUFFER."
-  (let ((case-fold-search nil))
-    (with-current-buffer (or buffer (current-buffer))
-      (delete-dups
-       (mapcan (lambda (construct-feature)
-                 (when (let ((out (pcase (car construct-feature)
-                                    ((pred stringp) (car construct-feature))
-                                    ((pred functionp) (funcall (car construct-feature) info))
-                                    ((pred listp) (eval (car construct-feature)))
-                                    ((pred symbolp) (symbol-value (car construct-feature)))
-                                    (_ (user-error "org-latex-conditional-features key %s unable to be used" (car construct-feature))))))
-                         (if (stringp out)
-                             (save-excursion
-                               (goto-char (point-min))
-                               (re-search-forward out nil t))
-                           out))
-                   (if (listp (cdr construct-feature)) (cdr construct-feature) (list (cdr construct-feature)))))
-               org-latex-conditional-features)))))
-#+end_src
-
-#+begin_src emacs-lisp
-(defun org-latex-expand-features (features)
-  "For each feature in FEATURES process :requires, :when, and :prevents keywords and sort according to :order."
-  (dolist (feature features)
-    (unless (assoc feature org-latex-feature-implementations)
-      (error "Feature %s not provided in org-latex-feature-implementations" feature)))
-  (setq current features)
-  (while current
-    (when-let ((requirements (plist-get (cdr (assq (car current) org-latex-feature-implementations)) :requires)))
-      (setcdr current (if (listp requirements)
-                          (append requirements (cdr current))
-                        (cons requirements (cdr current)))))
-    (setq current (cdr current)))
-  (dolist (potential-feature
-           (append features (delq nil (mapcar (lambda (feat)
-                                                (when (plist-get (cdr feat) :eager)
-                                                  (car feat)))
-                                              org-latex-feature-implementations))))
-    (when-let ((prerequisites (plist-get (cdr (assoc potential-feature org-latex-feature-implementations)) :when)))
-      (setf features (if (if (listp prerequisites)
-                             (cl-every (lambda (preq) (memq preq features)) prerequisites)
-                           (memq prerequisites features))
-                         (append (list potential-feature) features)
-                       (delq potential-feature features)))))
-  (dolist (feature features)
-    (when-let ((prevents (plist-get (cdr (assoc feature org-latex-feature-implementations)) :prevents)))
-      (setf features (cl-set-difference features (if (listp prevents) prevents (list prevents))))))
-  (sort (delete-dups features)
-        (lambda (feat1 feat2)
-          (if (< (or (plist-get (cdr (assoc feat1 org-latex-feature-implementations)) :order) 1)
-                 (or (plist-get (cdr (assoc feat2 org-latex-feature-implementations)) :order) 1))
-              t nil))))
-#+end_src
-
-#+begin_src emacs-lisp
-(defun org-latex-generate-features-preamble (features)
-  "Generate the LaTeX preamble content required to provide FEATURES.
-This is done according to `org-latex-feature-implementations'"
-  (let ((expanded-features (org-latex-expand-features features)))
-    (concat
-     (format "\n%% features: %s\n" expanded-features)
-     (mapconcat (lambda (feature)
-                  (when-let ((snippet (plist-get (cdr (assoc feature org-latex-feature-implementations)) :snippet)))
-                    (concat
-                     (pcase snippet
-                       ((pred stringp) snippet)
-                       ((pred functionp) (funcall snippet features))
-                       ((pred listp) (eval `(let ((features ',features)) (,@snippet))))
-                       ((pred symbolp) (symbol-value snippet))
-                       (_ (user-error "org-latex-feature-implementations :snippet value %s unable to be used" snippet)))
-                     "\n")))
-                expanded-features
-                "")
-     "% end features\n")))
-#+end_src
-
-#+begin_src emacs-lisp
-(defvar info--tmp nil)
-
-(defadvice! org-latex-save-info (info &optional t_ s_)
-  :before #'org-latex-make-preamble
-  (setq info--tmp info))
-
-(defadvice! org-splice-latex-header-and-generated-preamble-a (orig-fn tpl def-pkg pkg snippets-p &optional extra)
-  "Dynamically insert preamble content based on `org-latex-conditional-preambles'."
-  :around #'org-splice-latex-header
-  (let ((header (funcall orig-fn tpl def-pkg pkg snippets-p extra)))
-    (if snippets-p header
-      (concat header
-              (org-latex-generate-features-preamble (org-latex-detect-features nil info--tmp))
-              "\n"))))
 #+end_src
 
 *** Embed Externally Linked Images
@@ -3755,33 +3611,196 @@ export that!
             (org-latex--inline-image link info))))
 #+end_src
 
-*** LatexMK
-Tectonic is the hot new thing, which also means I can get rid of my tex
-installation. Dependencies are nice and auto-installed, and I don't need to
-bother with ascii stuff
-
-On the other hand, it still refuses to work with previews and just sucks with
-emacs overall. Back to LatexMK for me
+*** Conditional features
+Don't always need everything in LaTeX, so only add it what we need when we need it.
 #+begin_src emacs-lisp
-(setq org-latex-pdf-process (list "latexmk -f -pdflatex='xelatex -shell-escape -interaction nonstopmode' -pdf -output-directory=%o %f"))
+(defvar org-latex-italic-quotes t
+  "Make \"quote\" environments italic.")
+(defvar org-latex-par-sep t
+  "Vertically seperate paragraphs, and remove indentation.")
 
-(setq xdvsvgm
-        '(xdvsvgm
-          :programs ("xelatex" "dvisvgm")
-          :description "xdv > svg"
-          :message "you need to install the programs: xelatex and dvisvgm."
-          :use-xcolor t
-          :image-input-type "xdv"
-          :image-output-type "svg"
-          :image-size-adjust (1.7 . 1.5)
-          :latex-compiler ("xelatex -no-pdf -interaction nonstopmode -output-directory %o %f")
-          :image-converter ("dvisvgm %f -n -b min -c %S -o %O")))
+(defvar org-latex-conditional-features
+  '(("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]\\|\\\\\\]\\)+?\\.\\(?:eps\\|pdf\\|png\\|jpeg\\|jpg\\|jbig2\\)\\]\\]" . image)
+    ("\\[\\[\\(?:file\\|https?\\):\\(?:[^]]+?\\|\\\\\\]\\)\\.svg\\]\\]\\|\\\\includesvg" . svg)
+    ("^[ \t]*|" . table)
+    ("cref:\\|\\cref{\\|\\[\\[[^\\]]+\\]\\]" . cleveref)
+    ("[;\\\\]?\\b[A-Z][A-Z]+s?[^A-Za-z]" . acronym)
+    ("\\+[^ ].*[^ ]\\+\\|_[^ ].*[^ ]_\\|\\\\uu?line\\|\\\\uwave\\|\\\\sout\\|\\\\xout\\|\\\\dashuline\\|\\dotuline\\|\\markoverwith" . underline)
+    (":float wrap" . float-wrap)
+    (":float sideways" . rotate)
+    ("^[ \t]*#\\+caption:\\|\\\\caption" . caption)
+    ("\\[\\[xkcd:" . (image caption))
+    ((and org-latex-italic-quotes "^[ \t]*#\\+begin_quote\\|\\\\begin{quote}") . italic-quotes)
+    (org-latex-par-sep . par-sep)
+    ("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\|[A-Za-z]+[.)]\\) \\[[ -X]\\]" . checkbox)
+    ("^[ \t]*#\\+begin_warning\\|\\\\begin{warning}" . box-warning)
+    ("^[ \t]*#\\+begin_info\\|\\\\begin{info}"       . box-info)
+    ("^[ \t]*#\\+begin_success\\|\\\\begin{success}" . box-success)
+    ("^[ \t]*#\\+begin_error\\|\\\\begin{error}"     . box-error))
+  "Org feature tests and associated LaTeX feature flags.
 
-(after! org
-    (add-to-list 'org-preview-latex-process-alist xdvsvgm)
-    (setq org-format-latex-options
-      (plist-put org-format-latex-options :scale 1.4))
-    (setq org-preview-latex-default-process 'xdvsvgm))
+Alist where the car is a test for the presense of the feature,
+and the cdr is either a single feature symbol or list of feature symbols.
+
+When a string, it is used as a regex search in the buffer.
+The feature is registered as present when there is a match.
+
+The car can also be a
+- symbol, the value of which is fetched
+- function, which is called with info as an argument
+- list, which is `eval'uated
+
+If the symbol, function, or list produces a string: that is used as a regex
+search in the buffer. Otherwise any non-nil return value will indicate the
+existance of the feature.")
+
+(defvar org-latex-feature-implementations
+  '((image         :snippet "\\usepackage{graphicx}" :order 2)
+    (svg           :snippet "\\usepackage{svg}" :order 2)
+    (table         :snippet "\\usepackage{longtable}\n\\usepackage{booktabs}" :order 2)
+    (cleveref      :snippet "\\usepackage[capitalize]{cleveref}" :order 1)
+    (underline     :snippet "\\usepackage[normalem]{ulem}" :order 0.5)
+    (float-wrap    :snippet "\\usepackage{wrapfig}" :order 2)
+    (rotate        :snippet "\\usepackage{rotating}" :order 2)
+    (caption       :snippet org-latex-caption-preamble :order 2.1)
+    (acronym       :snippet "\\newcommand{\\acr}[1]{\\protect\\textls*[110]{\\scshape #1}}\n\\newcommand{\\acrs}{\\protect\\scalebox{.91}[.84]{\\hspace{0.15ex}s}}" :order 0.4)
+    (italic-quotes :snippet "\\renewcommand{\\quote}{\\list{}{\\rightmargin\\leftmargin}\\item\\relax\\em}\n" :order 0.5)
+    (par-sep       :snippet "\\setlength{\\parskip}{\\baselineskip}\n\\setlength{\\parindent}{0pt}\n" :order 0.5)
+    (.pifont       :snippet "\\usepackage{pifont}")
+    (checkbox      :requires .pifont :order 3
+                   :snippet (concat (unless (memq 'maths features)
+                                      "\\usepackage{amssymb} % provides \\square")
+                                    org-latex-checkbox-preamble))
+    (.fancy-box    :requires .pifont    :snippet org-latex-box-preamble :order 3.9)
+    (box-warning   :requires .fancy-box :snippet "\\defsimplebox{warning}{e66100}{\\ding{68}}{Warning}" :order 4)
+    (box-info      :requires .fancy-box :snippet "\\defsimplebox{info}{3584e4}{\\ding{68}}{Information}" :order 4)
+    (box-success   :requires .fancy-box :snippet "\\defsimplebox{success}{26a269}{\\ding{68}}{\\vspace{-\\baselineskip}}" :order 4)
+    (box-error     :requires .fancy-box :snippet "\\defsimplebox{error}{c01c28}{\\ding{68}}{Important}" :order 4))
+  "LaTeX features and details required to implement them.
+
+List where the car is the feature symbol, and the rest forms a plist with the
+following keys:
+- :snippet, which may be either
+  - a string which should be included in the preamble
+  - a symbol, the value of which is included in the preamble
+  - a function, which is evaluated with the list of feature flags as its
+    single argument. The result of which is included in the preamble
+  - a list, which is passed to `eval', with a list of feature flags available
+    as \"features\"
+
+- :requires, a feature or list of features that must be available
+- :when, a feature or list of features that when all available should cause this
+    to be automatically enabled.
+- :prevents, a feature or list of features that should be masked
+- :order, for when ordering is important. Lower values appear first.
+    The default is 0.
+
+Features that start with ! will be eagerly loaded, i.e. without being detected.")
+#+end_src
+
+First, we need to detect which features we actually need
+#+begin_src emacs-lisp
+(defun org-latex-detect-features (&optional buffer info)
+  "List features from `org-latex-conditional-features' detected in BUFFER."
+  (let ((case-fold-search nil))
+    (with-current-buffer (or buffer (current-buffer))
+      (delete-dups
+       (mapcan (lambda (construct-feature)
+                 (when (let ((out (pcase (car construct-feature)
+                                    ((pred stringp) (car construct-feature))
+                                    ((pred functionp) (funcall (car construct-feature) info))
+                                    ((pred listp) (eval (car construct-feature)))
+                                    ((pred symbolp) (symbol-value (car construct-feature)))
+                                    (_ (user-error "org-latex-conditional-features key %s unable to be used" (car construct-feature))))))
+                         (if (stringp out)
+                             (save-excursion
+                               (goto-char (point-min))
+                               (re-search-forward out nil t))
+                           out))
+                   (if (listp (cdr construct-feature)) (cdr construct-feature) (list (cdr construct-feature)))))
+               org-latex-conditional-features)))))
+#+end_src
+
+Then we need to expand them and sort them according to the above definitions
+#+begin_src emacs-lisp
+(defun org-latex-expand-features (features)
+  "For each feature in FEATURES process :requires, :when, and :prevents keywords and sort according to :order."
+  (dolist (feature features)
+    (unless (assoc feature org-latex-feature-implementations)
+      (error "Feature %s not provided in org-latex-feature-implementations" feature)))
+  (setq current features)
+  (while current
+    (when-let ((requirements (plist-get (cdr (assq (car current) org-latex-feature-implementations)) :requires)))
+      (setcdr current (if (listp requirements)
+                          (append requirements (cdr current))
+                        (cons requirements (cdr current)))))
+    (setq current (cdr current)))
+  (dolist (potential-feature
+           (append features (delq nil (mapcar (lambda (feat)
+                                                (when (plist-get (cdr feat) :eager)
+                                                  (car feat)))
+                                              org-latex-feature-implementations))))
+    (when-let ((prerequisites (plist-get (cdr (assoc potential-feature org-latex-feature-implementations)) :when)))
+      (setf features (if (if (listp prerequisites)
+                             (cl-every (lambda (preq) (memq preq features)) prerequisites)
+                           (memq prerequisites features))
+                         (append (list potential-feature) features)
+                       (delq potential-feature features)))))
+  (dolist (feature features)
+    (when-let ((prevents (plist-get (cdr (assoc feature org-latex-feature-implementations)) :prevents)))
+      (setf features (cl-set-difference features (if (listp prevents) prevents (list prevents))))))
+  (sort (delete-dups features)
+        (lambda (feat1 feat2)
+          (if (< (or (plist-get (cdr (assoc feat1 org-latex-feature-implementations)) :order) 1)
+                 (or (plist-get (cdr (assoc feat2 org-latex-feature-implementations)) :order) 1))
+              t nil))))
+#+end_src
+
+Finally, we can create the preamble to be inserted
+#+begin_src emacs-lisp
+(defun org-latex-generate-features-preamble (features)
+  "Generate the LaTeX preamble content required to provide FEATURES.
+This is done according to `org-latex-feature-implementations'"
+  (let ((expanded-features (org-latex-expand-features features)))
+    (concat
+     (format "\n%% features: %s\n" expanded-features)
+     (mapconcat (lambda (feature)
+                  (when-let ((snippet (plist-get (cdr (assoc feature org-latex-feature-implementations)) :snippet)))
+                    (concat
+                     (pcase snippet
+                       ((pred stringp) snippet)
+                       ((pred functionp) (funcall snippet features))
+                       ((pred listp) (eval `(let ((features ',features)) (,@snippet))))
+                       ((pred symbolp) (symbol-value snippet))
+                       (_ (user-error "org-latex-feature-implementations :snippet value %s unable to be used" snippet)))
+                     "\n")))
+                expanded-features
+                "")
+     "% end features\n")))
+#+end_src
+
+Last step, some advice to hook in all of the above to work
+#+begin_src emacs-lisp
+(defvar info--tmp nil)
+
+(defadvice! org-latex-save-info (info &optional t_ s_)
+  :before #'org-latex-make-preamble
+  (setq info--tmp info))
+
+(defadvice! org-splice-latex-header-and-generated-preamble-a (orig-fn tpl def-pkg pkg snippets-p &optional extra)
+  "Dynamically insert preamble content based on `org-latex-conditional-preambles'."
+  :around #'org-splice-latex-header
+  (let ((header (funcall orig-fn tpl def-pkg pkg snippets-p extra)))
+    (if snippets-p header
+      (concat header
+              (org-latex-generate-features-preamble (org-latex-detect-features nil info--tmp))
+              "\n"))))
+#+end_src
+
+*** Tectonic
+Tectonic is the hot new thing, which also means I can get rid of my tex installation.
+#+begin_src emacs-lisp
+(setq-default org-latex-pdf-process '("tectonic -Z shell-escape --outdir=%o %f"))
 #+end_src
 
 Looks crisp!
@@ -3793,6 +3812,7 @@ Looks crisp!
 
 **** Compilation
 #+begin_src emacs-lisp
+(setq-default org-latex-pdf-process '("tectonic -Z shell-escape --outdir=%o %f"))
 (setq TeX-save-query nil
       TeX-show-compilation t
       TeX-command-extra-options "-shell-escape")
@@ -3814,7 +3834,7 @@ Now for some class setup
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 #+end_src
 
-And some saner defaults for them
+And some saner default for them
 #+begin_src emacs-lisp
 (after! ox-latex
   (setq org-latex-default-class "cb-doc"
@@ -3841,8 +3861,7 @@ And some saner defaults for them
 #+end_src
 
 *** Packages
-Add some packages. I'm trying to keep it basic for now, Alegreya for
-non-monospace and SFMono for code
+Add some packages (also very likely to change)
 #+begin_src emacs-lisp
 (setq org-latex-default-packages-alist
       `(("AUTO" "inputenc" t
@@ -3860,19 +3879,23 @@ non-monospace and SFMono for code
         ("" "textcomp" t)
         ("" "amssymb" t)
         ("" "capt-of" nil)
+        ("" "firamath-otf" t)
         ("dvipsnames" "xcolor" nil)
         ("colorlinks=true, linkcolor=Blue, citecolor=BrickRed, urlcolor=PineGreen" "hyperref" nil)
-    ("" "indentfirst" nil)))
+    ("" "indentfirst" nil)
+    ""
+    "\\setmonofont{Liga SFMono Nerd Font}"
+    "\\setmainfont{Fira Sans}"))
 #+end_src
 
 *** Pretty code blocks
-Teco is the goto for this, so basically just ripping off him. Engrave faces ftw
+Teco is the goto for this, so basically just ripping off him.
+
 #+begin_src emacs-lisp
 (use-package! engrave-faces-latex
   :after ox-latex
   :config
-  (setq org-latex-listings 'engraved
-        engrave-faces-preset-styles (engrave-faces-generate-preset)))
+  (setq org-latex-listings 'engraved))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -4036,190 +4059,17 @@ Teco is the goto for this, so basically just ripping off him. Engrave faces ftw
 #+end_src
 
 *** ox-chameleon
-Nice little package to color stuff for us.
+Chameleons are cool, not having to touches faces is cooler (not the COVID kind)
+
 #+begin_src emacs-lisp
 (use-package! ox-chameleon
-  :after ox
-  :config
-  (setq ox-chameleon-snap-fgbg-to-bw nil))
+  :after ox)
 #+end_src
-
 *** (sub|super)script characters
 Annoying having to gate these, so let's fix that
 #+begin_src emacs-lisp
 (setq org-export-with-sub-superscripts '{})
 #+end_src
-
-*** Font collections
-Using the lovely conditional preamble, I'll define a number of font collections
-that can be used for LaTeX exports. Who knows, maybe I'll use it with other
-export formats too at some point.
-
-To start with I'll create a default state variable and register =fontset= as part
-of =#+options=.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(defvar org-latex-default-fontset 'fira
-  "Fontset from `org-latex-fontsets' to use by default.
-As cm (computer modern) is TeX's default, that causes nothing
-to be added to the document.
-
-If \"nil\" no custom fonts will ever be used.")
-(eval '(cl-pushnew '(:latex-font-set nil "fontset" org-latex-default-fontset)
-                   (org-export-backend-options (org-export-get-backend 'latex)))))
-#+end_src
-
-Then a function is needed to generate a LaTeX snippet which applies the fontset. It
-would be nice if this could be done for individual styles and use different
-styles as the main document font. If the individual typefaces for a fontset are
-defined individually as
-src_elisp{:serif}, src_elisp{:sans}, src_elisp{:mono}, and src_elisp{:maths}.
-I can use those to generate LaTeX for subsets of the full fontset. Then, if I
-don't let any fontset names have =-= in them, I can use =-sans= and =-mono= as
-suffixes that specify the document font to use.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(defun org-latex-fontset-entry ()
-  "Get the fontset spec of the current file.
-Has format \"name\" or \"name-style\" where 'name' is one of
-the cars in `org-latex-fontsets'."
-  (let ((fontset-spec
-         (symbol-name
-          (or (car (delq nil
-                         (mapcar
-                          (lambda (opt-line)
-                            (plist-get (org-export--parse-option-keyword opt-line 'latex)
-                                       :latex-font-set))
-                          (cdar (org-collect-keywords '("OPTIONS"))))))
-              org-latex-default-fontset))))
-    (cons (intern (car (split-string fontset-spec "-")))
-          (when (cadr (split-string fontset-spec "-"))
-            (intern (concat ":" (cadr (split-string fontset-spec "-"))))))))
-
-(defun org-latex-fontset (&rest desired-styles)
-  "Generate a LaTeX preamble snippet which applies the current fontset for DESIRED-STYLES."
-  (let* ((fontset-spec (org-latex-fontset-entry))
-         (fontset (alist-get (car fontset-spec) org-latex-fontsets)))
-    (if fontset
-        (concat
-         (mapconcat
-          (lambda (style)
-            (when (plist-get fontset style)
-              (concat (plist-get fontset style) "\n")))
-          desired-styles
-          "")
-         (when (memq (cdr fontset-spec) desired-styles)
-           (pcase (cdr fontset-spec)
-             (:serif "\\renewcommand{\\familydefault}{\\rmdefault}\n")
-             (:sans "\\renewcommand{\\familydefault}{\\sfdefault}\n")
-             (:mono "\\renewcommand{\\familydefault}{\\ttdefault}\n"))))
-      (error "Font-set %s is not provided in org-latex-fontsets" (car fontset-spec))))))
-#+end_src
-
-Now that all the functionality has been implemented, we should hook it into our
-preamble generation.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '(org-latex-default-fontset . custom-font) t)
-(add-to-list 'org-latex-feature-implementations '(custom-font :snippet (org-latex-fontset :serif :sans :mono) :order 0) t)
-(add-to-list 'org-latex-feature-implementations '(.custom-maths-font :eager t :when (custom-font maths) :snippet (org-latex-fontset :maths) :order 0.3) t))
-#+end_src
-
-Finally, we just need to add some fonts.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(defvar org-latex-fontsets
-  '((cm nil) ; computer modern
-    (## nil) ; no font set
-    (alegreya
-     :serif "\\usepackage[osf]{Alegreya}"
-     :sans "\\usepackage{AlegreyaSans}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (biolinum
-     :serif "\\usepackage[osf]{libertineRoman}"
-     :sans "\\usepackage[sfdefault,osf]{biolinum}"
-     :mono "\\usepackage[scale=0.88]{sourcecodepro}"
-     :maths "\\usepackage[libertine,varvw]{newtxmath}")
-    (fira
-     :sans "\\usepackage[sfdefault,scale=0.85]{FiraSans}"
-     :mono "\\usepackage[scale=0.80]{FiraMono}"
-     :maths "\\usepackage[fakebold]{firamath-otf}")
-    (kp
-     :serif "\\usepackage{kpfonts}")
-    (newpx
-     :serif "\\usepackage{newpxtext}"
-     :sans "\\usepackage{gillius}"
-     :mono "\\usepackage[scale=0.9]{sourcecodepro}"
-     :maths "\\usepackage[varbb]{newpxmath}")
-    (noto
-     :serif "\\usepackage[osf]{noto-serif}"
-     :sans "\\usepackage[osf]{noto-sans}"
-     :mono "\\usepackage[scale=0.96]{noto-mono}"
-     :maths "\\usepackage{notomath}")
-    (plex
-     :serif "\\usepackage{plex-serif}"
-     :sans "\\usepackage{plex-sans}"
-     :mono "\\usepackage[scale=0.95]{plex-mono}"
-     :maths "\\usepackage{newtxmath}") ; may be plex-based in future
-    (source
-     :serif "\\usepackage[osf]{sourceserifpro}"
-     :sans "\\usepackage[osf]{sourcesanspro}"
-     :mono "\\usepackage[scale=0.95]{sourcecodepro}"
-     :maths "\\usepackage{newtxmath}") ; may be sourceserifpro-based in future
-    (times
-     :serif "\\usepackage{newtxtext}"
-     :maths "\\usepackage{newtxmath}"))
-  "Alist of fontset specifications.
-Each car is the name of the fontset (which cannot include \"-\").
-
-Each cdr is a plist with (optional) keys :serif, :sans, :mono, and :maths.
-A key's value is a LaTeX snippet which loads such a font."))
-#+end_src
-
-#+RESULTS:
-: org-latex-fontsets
-
-When we're using Alegreya we can apply a lovely little tweak to =tabular= which
-(locally) changes the figures used to lining fixed-width.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '((string= (car (org-latex-fontset-entry)) "alegreya") . alegreya-typeface))
-(add-to-list 'org-latex-feature-implementations '(alegreya-typeface) t)
-(add-to-list 'org-latex-feature-implementations'(.alegreya-tabular-figures :eager t :when (alegreya-typeface table) :order 0.5 :snippet "
-\\makeatletter
-% tabular lining figures in tables
-\\renewcommand{\\tabular}{\\AlegreyaTLF\\let\\@halignto\\@empty\\@tabular}
-\\makeatother\n") t))
-#+end_src
-
-Due to the Alegreya's metrics, the =\LaTeX= symbol doesn't quite look right. We
-can correct for this by redefining it with subtlety shifted kerning.
-
-#+begin_src emacs-lisp
-(after! ox-latex
-(add-to-list 'org-latex-conditional-features '("LaTeX" . latex-symbol))
-(add-to-list 'org-latex-feature-implementations '(latex-symbol :when alegreya-typeface :order 0.5 :snippet "
-\\makeatletter
-% Kerning around the A needs adjusting
-\\DeclareRobustCommand{\\LaTeX}{L\\kern-.24em%
-        {\\sbox\\z@ T%
-         \\vbox to\\ht\\z@{\\hbox{\\check@mathfonts
-                              \\fontsize\\sf@size\\z@
-                              \\math@fontsfalse\\selectfont
-                              A}%
-                        \\vss}%
-        }%
-        \\kern-.10em%
-        \\TeX}
-\\makeatother\n") t))
-#+end_src
-
 ** Calc
 Embedded calc is a lovely feature which let's us use calc to operate on LaTeX
 maths expressions. The standard keybinding is a bit janky however (=C-x * e=), so

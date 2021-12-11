@@ -1,5 +1,6 @@
+# [[file:config.org::*Notes for the unwary adventurer][Notes for the unwary adventurer:1]]
 {
-  description = "Sharya Singh's Doom-emacs config";
+  description = "Shuarya Singh's Doom-emacs config";
 
   nixConfig.extra-substituters = "https://nix-community.cachix.org";
   nixConfig.extra-trusted-public-keys =
@@ -7,8 +8,14 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-    emacs.url = "github:nix-community/emacs-overlay";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    emacs = {
+      url = "github:shaunsingh/emacs";
+      inputs.nixpkgs.follows = "unstable";
+    };
     doom-emacs.url = "github:hlissner/doom-emacs/develop";
     doom-emacs.flake = false;
   };
@@ -22,7 +29,7 @@
         (final: prev: { doomEmacsRevision = doom-emacs.rev; })
       ];
       shell = ./shell.nix;
-      systems = [ "x86_64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      systems = [ "aarch64-darwin" ];
     };
 }
-
+# Notes for the unwary adventurer:1 ends here

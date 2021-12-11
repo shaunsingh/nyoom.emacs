@@ -7,6 +7,10 @@
 (package! citeproc)
 (package! org-appear)
 (package! org-roam-ui)
+(package! org-latex-impatient)
+(package! org-latex-impatient
+  :recipe (:host github
+           :repo "shaunsingh/org-latex-impatient"))
 (package! org-cite-csl-activate
   :recipe (:host github
            :repo "andras-simonyi/org-cite-csl-activate"))
