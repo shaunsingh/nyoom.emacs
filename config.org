@@ -191,39 +191,6 @@ Installing =nix= followed by running =nix develop= will
 - Build the latest emacs (v28, 29 has issues with doom)
 - Install a pinned version of =doom-emacs=, defined in the =flake.lock= file
 - Install the required dependencies for my \LaTeX configuration
-{
-  description = "Shuarya Singh's Doom-emacs config";
-
-nixConfig.extra-substituters = "https://nix-community.cachix.org";
-nixConfig.extra-trusted-public-keys =
-  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
-
-inputs = {
-  nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  flake-utils = {
-    url = "github:numtide/flake-utils";
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
-  emacs = {
-    url = "github:shaunsingh/emacs";
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
-  doom-emacs.url = "github:hlissner/doom-emacs/develop";
-  doom-emacs.flake = false;
-};
-
-  outputs = { self, nixpkgs, flake-utils, emacs, doom-emacs }:
-    flake-utils.lib.simpleFlake {
-      inherit self nixpkgs;
-      name = "doom-emacs";
-      preOverlays = [
-        emacs.overlay
-        (final: prev: { doomEmacsRevision = doom-emacs.rev; })
-      ];
-      shell = ./shell.nix;
-      systems = [ "aarch64-darwin" ];
-    };
-}
 
 * Doom Configuration
 ** Modules
@@ -387,7 +354,7 @@ hl-todo                      ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
 minimap                      ; show a map of the code on the side
 ;;(modeline                  ; snazzy, Atom-inspired modeline, plus API
 ;;  +light)                  ; the doom modeline is a bit much, the default is a bit little
-nav-flash                    ; blink the current line after jumping
+;;nav-flash                  ; blink the current line after jumping
 ;;neotree                    ; a project drawer, like NERDTree for vim
 ophints                      ; highlight the region an operation acts on
 (popup                       ; tame sudden yet inevitable temporary windows
@@ -449,7 +416,7 @@ syntax                                         ; tasing you for every semicolon 
 #+begin_src emacs-lisp
 ;;ansible                    ; a crucible for infrastructure as code
 ;;biblio                     ; Writes a PhD for you (citation needed)
-(debugger +lsp)              ; FIXME stepping through code, to help you add bugs
+;;(debugger +lsp             ; FIXME stepping through code, to help you add bugs
 ;;direnv                     ; be direct about your environment
 ;;docker                     ; port everything to containers
 ;;editorconfig               ; let someone else argue about tabs vs spaces
@@ -633,9 +600,10 @@ tweaking org then
 (package! org-appear)
 (package! org-roam-ui)
 (package! org-latex-impatient)
-(package! org-latex-impatient
-  :recipe (:host github
-           :repo "shaunsingh/org-latex-impatient"))
+(package! org-ol-tree
+  :recipe (:host github :repo "Townk/org-ol-tree"))
+(package! org-pretty-table
+  :recipe (:host github :repo "Fuco1/org-pretty-table"))
 (package! org-cite-csl-activate
   :recipe (:host github
            :repo "andras-simonyi/org-cite-csl-activate"))
@@ -652,7 +620,6 @@ that a bit too
 #+begin_src emacs-lisp
 (package! aas)
 (package! laas)
-(package! org-fragtog)
 (package! engrave-faces)
 #+end_src
 
@@ -675,13 +642,14 @@ because of its refusal to work without requiring org
 Making emacs look good is first priority, actually working in it is second
 #+name: looks
 #+begin_src emacs-lisp
+
+(package! dimmer)
+(package! nano-theme)
+(package! nano-agenda)
+(package! svg-tag-mode)
+(package! nano-modeline)
 (package! solaire-mode :disable t)
-(package! dimmer :recipe (:host github :repo "gonewest818/dimmer.el"))
-(package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
-(package! nano-agenda :recipe (:host github :repo "rougier/nano-agenda"))
-(package! svg-tag-mode :recipe (:host github :repo "rougier/svg-tag-mode"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
-(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
 #+end_src
 
 **** Emacs Tweaks:
@@ -724,38 +692,15 @@ Of course we need to tell emacs who I am
       user-mail-address "shaunsingh0207@gmail.com")
 #+end_src
 
-** Emacsclient
-mu4e is a bit finicky with emacsclient, and org takes forever to load. The
-solution? Use tecosaurs greedy daemon startup
-#+begin_src emacs-lisp
-(defun greedily-do-daemon-setup ()
-  (require 'org)
-  (require 'vertico)
-  (require 'consult)
-  (require 'marginalia)
-  (when (require 'mu4e nil t)
-    (setq mu4e-confirm-quit t)
-    (setq +mu4e-lock-greedy t)
-    (setq +mu4e-lock-relaxed t)
-    (+mu4e-lock-add-watcher)
-    (when (+mu4e-lock-available t)
-      (mu4e~start))))
-
-(when (daemonp)
-  (add-hook 'emacs-startup-hook #'greedily-do-daemon-setup)
-  (add-hook 'emacs-startup-hook #'init-mixed-pitch-h))
-#+end_src
-
 ** Shell
+Vterm is my terminal emulator of choice. We can tell it to use ligatures, and also tell it to compile automatically
+Vterm clearly wins the terminal war. Also doesn't need much configuration out of
+the box, although the shell integration does.
+
 I use the fish shell. If you use zsh/bash, be sure to change this
 #+begin_src emacs-lisp
 (setq explicit-shell-file-name (executable-find "fish"))
 #+end_src
-
-*** Vterm
-Vterm is my terminal emulator of choice. We can tell it to use ligatures, and also tell it to compile automatically
-Vterm clearly wins the terminal war. Also doesn't need much configuration out of
-the box, although the shell integration does. You can find that in =~/.config/fish/config.fish=
 
 Fixes a weird bug with native-comp
 #+begin_src emacs-lisp
@@ -920,7 +865,6 @@ with our snippets
 
 Now let's write a function we can reference in yasnippets to produce a nice
 interactive way to specify header args.
-
 #+begin_src emacs-lisp
 (defun +yas/org-prompt-header-arg (arg question values)
   "Prompt the user to set ARG header property to one of VALUES with QUESTION.
@@ -959,7 +903,6 @@ Finally, we fetch the language information for new source blocks.
 Since we're getting this info, we might as well go a step further and also
 provide the ability to determine the most popular language in the buffer that
 doesn't have any =header-args= set for it (with =#+properties=).
-
 #+begin_src emacs-lisp
 (defun +yas/org-src-lang ()
   "Try to find the current language of the src/header at `point'.
@@ -1036,32 +979,21 @@ The rust language server also has some extra features I would like to enable
         lsp-rust-analyzer-display-chaining-hints t
         lsp-rust-analyzer-display-parameter-hints t
         lsp-rust-analyzer-server-display-inlay-hints t
-        lsp-rust-analyzer-cargo-watch-command "clippy"
-        rustic-format-on-save t))
-#+end_src
-
-I also want to use clippy for linting, and those sweet org-mode docs
-#+begin_src emacs-lisp
-(use-package rustic
-  :after lsp
-  :config
-  (setq lsp-rust-analyzer-cargo-watch-command "clippy"
-        rustic-lsp-server 'rust-analyzer)
-  (rustic-doc-mode t))
+        lsp-rust-analyzer-cargo-watch-command "clippy"))
 #+end_src
 
 ** Better Defaults
 The defaults for emacs aren't so good nowadays. Lets fix that up a bit
 #+begin_src emacs-lisp
-(setq scroll-margin 2                              ;having a little margin is nice
-      auto-save-default t                          ;I dont like to lose work
-      display-line-numbers-type nil                ;I dislike line numbers
-      delete-by-moving-to-trash t                  ;delete
-      truncate-string-ellipsis "…"                 ;default ellipses sucko system trash instead
+(setq scroll-margin 2
+      auto-save-default t
+      display-line-numbers-type nil
+      delete-by-moving-to-trash t
+      truncate-string-ellipsis "…"
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
-(fringe-mode 0) ;;disable fringe
-(global-subword-mode 1) ;;navigate through Camel Case words
+(fringe-mode 0)
+(global-subword-mode 1)
 #+end_src
 
 There's issues with emacs flickering on mac (and sometimes wayland). This should
@@ -1101,24 +1033,20 @@ When im doing regexes, its usually with /g anyways, lets make that the default
 I'm trying out emails in emacs, should be nice. Related, check .mbsyncrc to
 setup your emails first
 
-10 minutes is a reasonable update time
 #+begin_src emacs-lisp
-(setq mu4e-update-interval 300)
-#+end_src
-
-#+begin_src emacs-lisp
-(set-email-account! "shaunsingh0207"
-                    '((mu4e-sent-folder       . "/Sent Mail")
-                      (mu4e-drafts-folder     . "/Drafts")
-                      (mu4e-trash-folder      . "/Trash")
-                      (mu4e-refile-folder     . "/All Mail")
-                      (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
-
-;; don't need to run cleanup after indexing for gmail
-(setq mu4e-index-cleanup nil
-      mu4e-index-lazy-check t)
-
 (after! mu4e
+  (setq mu4e-update-interval 300) ;5 minutes is a reasonable update time
+  (set-email-account! "shaunsingh0207"
+                      '((mu4e-sent-folder       . "/Sent Mail")
+                        (mu4e-drafts-folder     . "/Drafts")
+                        (mu4e-trash-folder      . "/Trash")
+                        (mu4e-refile-folder     . "/All Mail")
+                        (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
+
+  ;; don't need to run cleanup after indexing for gmail
+  (setq mu4e-index-cleanup nil
+        mu4e-index-lazy-check t)
+
   (setq mu4e-headers-fields
         '((:flags . 6)
           (:account-stripe . 2)
@@ -1154,11 +1082,6 @@ We can also send messages using msmtp
         message-sendmail-f-is-evil t
         message-sendmail-extra-arguments '("--read-envelope-from")
         message-send-mail-function #'message-send-mail-with-sendmail))
-#+end_src
-
-Notifications are quite nifty, especially if I'm as lazy as I am
-#+begin_src emacs-lisp
-(setq alert-default-style 'osx-notifier)
 #+end_src
 
 ** +Selectric+ NK-Creams mode
@@ -1272,8 +1195,7 @@ And of course, =nano-agenda=
 Although this isn't a part of =nano=, Its by the same author and fits pretty well, so lets add it here
 #+begin_src emacs-lisp
 (use-package svg-tag-mode
-  :defer t
-  :hook (org-mode . global-svg-tag-mode)
+  :after org
   :config
   (defface svg-tag-org-face
     '((t :foreground "#333333" :background "white"
@@ -1384,7 +1306,8 @@ Although this isn't a part of =nano=, Its by the same author and fits pretty wel
           (,(concat "\\[" date-re  "[] ]")           . svg-tag-make-org-date-inactive)
           (,(concat "\\[" date-re " " day-re "[] ]") . svg-tag-make-org-date-inactive)
           (,(concat time-re "\\]")                   . svg-tag-make-org-time-inactive)
-          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive))))
+          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive)))
+  (global-svg-tag-mode))
 #+end_src
 
 ** Splash
@@ -1492,7 +1415,6 @@ And lets disable all the unessecary stuff
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 #+end_src
-
 
 ** Doom-quit
 I don't like all of the quit messages, lets keep it down to just a few
@@ -1658,7 +1580,6 @@ RSS is a nice simple way of getting my news. Lets set that up
   (push 'elfeed-search-mode evil-snipe-disabled-modes))
 
 (after! elfeed
-
   (elfeed-org)
   (use-package! elfeed-link)
 
@@ -1851,37 +1772,52 @@ Org mode is the best writing format, no contest. The defaults are very bland, so
 
 I prefer /org as my directory. Lets change some other defaults too
 #+begin_src emacs-lisp
-(setq org-directory "~/org"                       ; let's put files here
-      org-use-property-inheritance t              ; it's convenient to have properties inherited
-      org-log-done 'time                          ; having the time a item is done sounds convenient
-      org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
-      org-export-in-background t                  ; run export processes in external emacs process
-      org-catch-invisible-edits 'smart)           ; try not to accidently do weird stuff in invisible regions
+(after! org
+  (setq org-directory "~/org"                       ; let's put files here
+        org-roam-directory "~/org/roam/"            ; same thing, for roam
+        org-use-property-inheritance t              ; it's convenient to have properties inherited
+        org-log-done 'time                          ; having the time a item is done sounds convenient
+        org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
+        org-export-in-background t                  ; run export processes in external emacs process
+        org-catch-invisible-edits 'smart))          ; try not to accidently do weird stuff in invisible regions
 #+end_src
 
 I want to slightly change the default args for babel
 #+begin_src emacs-lisp
-(setq org-babel-default-header-args
-      '((:session . "none")
-        (:results . "replace")
-        (:exports . "code")
-        (:cache . "no")
-        (:noweb . "no")
-        (:hlines . "no")
-        (:tangle . "no")
-        (:comments . "link")))
+(after! org
+  (setq org-babel-default-header-args
+        '((:session . "none")
+          (:results . "replace")
+          (:exports . "code")
+          (:cache . "no")
+          (:noweb . "no")
+          (:hlines . "no")
+          (:tangle . "no")
+          (:comments . "link"))))
 #+end_src
 
 I also want to change the order of bullets
 #+begin_src emacs-lisp
-(setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
+(after! org
+  (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a."))))
 #+end_src
 
 Speaking of bullets, I think the default ones don't fit my theme very well, so lets change those
 #+begin_src emacs-lisp
 (after! org-superstar
   (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
-        org-superstar-prettify-item-bullets t ))
+        org-superstar-prettify-item-bullets t))
+#+end_src
+
+And after all those bullets, its easy to get lost. =ol-tree= outines our org file for us
+#+begin_src emacs-lisp
+(use-package! org-ol-tree
+  :commands org-ol-tree)
+
+(map! :map org-mode-map
+      :after org
+      :localleader
+      :desc "Outline" "O" #'org-ol-tree)
 #+end_src
 
 The =[[yt:...]]= links preview nicely, but don’t export nicely. Thankfully, we can fix that.
@@ -1898,6 +1834,11 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
           ((org-export-derived-backend-p backend 'latex)
            (format "\\href{https://youtu.be/%s}{%s}" path (or desc "youtube")))
           (t (format "https://youtu.be/%s" path)))))
+#+end_src
+
+I like to preview images inline too
+#+begin_src emacs-lisp
+(setq org-startup-with-inline-images t)
 #+end_src
 
 Its annoying having to format every single org source block one by one, so lets have emacs do it for us.
@@ -2531,12 +2472,7 @@ Tecosaur has a good collection of fonts, might as well take some
 #+end_src
 
 ** Org-Roam
-I would like to get into the habit of using org-roam for my notes, mainly because of that cool reddit post with the server.
-#+begin_src emacs-lisp
-(setq org-roam-directory "~/org/roam/")
-#+end_src
-
-Lets set up the org-roam-ui as well
+Lets set up =org-roam-ui=
 #+begin_src emacs-lisp
 (use-package! websocket
   :after org-roam)
@@ -2561,8 +2497,9 @@ to disable the regular buffer
 ** Org-Agenda
 Set the directory
 #+begin_src emacs-lisp
-(setq org-agenda-files (list "~/org/school.org"
-                             "~/org/todo.org"))
+(after! org-agenda
+  (setq org-agenda-files (list "~/org/school.org"
+                               "~/org/todo.org")))
 #+end_src
 
 ** Org Cite
@@ -2857,16 +2794,17 @@ Sprinkle in some =doct= utility functions
 ** Symbols
 I want to hide leading stars, since they feel redundant
 #+begin_src emacs-lisp
-(setq org-ellipsis " ▾ "
-      org-hide-leading-stars t
-      org-priority-highest ?A
-      org-priority-lowest ?E
-      org-priority-faces
-      '((?A . 'all-the-icons-red)
-        (?B . 'all-the-icons-orange)
-        (?C . 'all-the-icons-yellow)
-        (?D . 'all-the-icons-green)
-        (?E . 'all-the-icons-blue)))
+(after! org
+  (setq org-ellipsis " ▾ "
+        org-hide-leading-stars t
+        org-priority-highest ?A
+        org-priority-lowest ?E
+        org-priority-faces
+        '((?A . 'all-the-icons-red)
+          (?B . 'all-the-icons-orange)
+          (?C . 'all-the-icons-yellow)
+          (?D . 'all-the-icons-green)
+          (?E . 'all-the-icons-blue))))
 #+end_src
 
 Lastly, lets add some ligatures for some org mode stuff
@@ -2976,7 +2914,15 @@ Mixed pitch is great. As is ~+org-pretty-mode~, let's use them.
 However, the subscripts (and superscripts) are confusing with latex fragments,
 so lets turn those off
 #+begin_src emacs-lisp
-(setq org-pretty-entities-include-sub-superscripts nil)
+(after! org
+  (setq org-pretty-entities-include-sub-superscripts nil))
+#+end_src
+
+Lets use some pretty unicode characters for our tables as well
+#+begin_src emacs-lisp
+(use-package! org-pretty-table
+  :after org
+  :hook (org-mode . org-pretty-table-mode))
 #+end_src
 
 Lets adjust the the keyword faces a bit
@@ -3009,27 +2955,29 @@ Lets adjust the the keyword faces a bit
 
 It seems reasonable to have deadlines in the error face when they're passed.
 #+begin_src emacs-lisp
-(setq org-agenda-deadline-faces
-      '((1.0 . error)
-        (1.0 . org-warning)
-        (0.5 . org-upcoming-deadline)
-        (0.0 . org-upcoming-distant-deadline)))
+(after! org
+  (setq org-agenda-deadline-faces
+        '((1.0 . error)
+          (1.0 . org-warning)
+          (0.5 . org-upcoming-deadline)
+          (0.0 . org-upcoming-distant-deadline))))
 #+end_src
 
 We can then have quote blocks stand out a bit more by making them /italic/.
 #+begin_src emacs-lisp
-(setq org-fontify-quote-and-verse-blocks t)
+(after! org
+  (setq org-fontify-quote-and-verse-blocks t))
 #+end_src
 
 And lets conceal *those* /syntax/ +markers+.
 #+begin_src emacs-lisp
 (use-package! org-appear
+  :after org
   :hook (org-mode . org-appear-mode)
   :config
   (setq org-appear-autoemphasis t
-        org-appear-autosubmarkers t
-        org-appear-autolinks nil)
-  (run-at-time nil nil #'org-appear--set-elements))
+        org-appear-autolinks t
+        org-appear-autosubmarkers t))
 #+end_src
 
 Org files can be rather nice to look at, particularly with some of the
@@ -3554,19 +3502,6 @@ Lets add cdlatex org mode integration
   (org-edit-latex-environment))
 #+end_src
 
-I like to preview images inline too
-#+begin_src emacs-lisp
-(setq org-display-inline-images t)
-(setq org-redisplay-inline-images t)
-(setq org-startup-with-inline-images "inlineimages")
-#+end_src
-
-Obviously we can't edit a png though. Let use org-fragtog to toggle between previews and text mode
-#+begin_src emacs-lisp
-(use-package! org-fragtog
-  :hook (org-mode . org-fragtog-mode))
-#+end_src
-
 ** PDF-Tools
 DocView gives me a headache, but pdf-tools can be improved, lets configure it a little more
 #+begin_src emacs-lisp
@@ -3577,8 +3512,7 @@ DocView gives me a headache, but pdf-tools can be improved, lets configure it a 
   (setq-default pdf-view-display-size 'fit-page))
 #+end_src
 
-** LaTeX
-A necessary evil. I hate it, it hates me, but it makes my PDF documents look nice.
+** Exports
 *** Preambles
 Various preamble setups to improve the overall look of several items
 #+begin_src emacs-lisp

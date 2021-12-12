@@ -53,14 +53,14 @@ git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
 #+end_src
 
 * RoadMap
-** STRT Add faces for doom modules
+** TODO Add faces for doom modules
 *** TODO VC-gutter
 *** TODO Flycheck
 *** STRT Tree-sitter
 ** TODO Improve LaTeX Export
 *** TODO Define chameleon as a class
 *** DONE Use Fira font family
-** TODO Cleanup Config
-*** STRT Refactor org-mode config
+** STRT Cleanup Config
+*** TODO Refactor org-mode config
 *** DONE Lazy load and Speedup
 *** TODO Restructure config

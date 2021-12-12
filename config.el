@@ -3,23 +3,6 @@
 (setq user-full-name "Shaurya Singh"
       user-mail-address "shaunsingh0207@gmail.com")
 
-(defun greedily-do-daemon-setup ()
-  (require 'org)
-  (require 'vertico)
-  (require 'consult)
-  (require 'marginalia)
-  (when (require 'mu4e nil t)
-    (setq mu4e-confirm-quit t)
-    (setq +mu4e-lock-greedy t)
-    (setq +mu4e-lock-relaxed t)
-    (+mu4e-lock-add-watcher)
-    (when (+mu4e-lock-available t)
-      (mu4e~start))))
-
-(when (daemonp)
-  (add-hook 'emacs-startup-hook #'greedily-do-daemon-setup)
-  (add-hook 'emacs-startup-hook #'init-mixed-pitch-h))
-
 (setq explicit-shell-file-name (executable-find "fish"))
 
 (setq vterm-always-compile-module t)
@@ -240,25 +223,17 @@ Return nil otherwise."
         lsp-rust-analyzer-display-chaining-hints t
         lsp-rust-analyzer-display-parameter-hints t
         lsp-rust-analyzer-server-display-inlay-hints t
-        lsp-rust-analyzer-cargo-watch-command "clippy"
-        rustic-format-on-save t))
+        lsp-rust-analyzer-cargo-watch-command "clippy"))
 
-(use-package rustic
-  :after lsp
-  :config
-  (setq lsp-rust-analyzer-cargo-watch-command "clippy"
-        rustic-lsp-server 'rust-analyzer)
-  (rustic-doc-mode t))
-
-(setq scroll-margin 2                              ;having a little margin is nice
-      auto-save-default t                          ;I dont like to lose work
-      display-line-numbers-type nil                ;I dislike line numbers
-      delete-by-moving-to-trash t                  ;delete
-      truncate-string-ellipsis "…"                 ;default ellipses sucko system trash instead
+(setq scroll-margin 2
+      auto-save-default t
+      display-line-numbers-type nil
+      delete-by-moving-to-trash t
+      truncate-string-ellipsis "…"
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
-(fringe-mode 0) ;;disable fringe
-(global-subword-mode 1) ;;navigate through Camel Case words
+(fringe-mode 0)
+(global-subword-mode 1)
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
@@ -278,20 +253,19 @@ Return nil otherwise."
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 
-(setq mu4e-update-interval 300)
-
-(set-email-account! "shaunsingh0207"
-                    '((mu4e-sent-folder       . "/Sent Mail")
-                      (mu4e-drafts-folder     . "/Drafts")
-                      (mu4e-trash-folder      . "/Trash")
-                      (mu4e-refile-folder     . "/All Mail")
-                      (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
-
-;; don't need to run cleanup after indexing for gmail
-(setq mu4e-index-cleanup nil
-      mu4e-index-lazy-check t)
-
 (after! mu4e
+  (setq mu4e-update-interval 300) ;5 minutes is a reasonable update time
+  (set-email-account! "shaunsingh0207"
+                      '((mu4e-sent-folder       . "/Sent Mail")
+                        (mu4e-drafts-folder     . "/Drafts")
+                        (mu4e-trash-folder      . "/Trash")
+                        (mu4e-refile-folder     . "/All Mail")
+                        (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
+
+  ;; don't need to run cleanup after indexing for gmail
+  (setq mu4e-index-cleanup nil
+        mu4e-index-lazy-check t)
+
   (setq mu4e-headers-fields
         '((:flags . 6)
           (:account-stripe . 2)
@@ -324,8 +298,6 @@ Return nil otherwise."
         message-sendmail-f-is-evil t
         message-sendmail-extra-arguments '("--read-envelope-from")
         message-send-mail-function #'message-send-mail-with-sendmail))
-
-(setq alert-default-style 'osx-notifier)
 
 (use-package! selectric-mode
   :commands selectric-mode)
@@ -398,8 +370,7 @@ Return nil otherwise."
   :commands nano-agenda)
 
 (use-package svg-tag-mode
-  :defer t
-  :hook (org-mode . global-svg-tag-mode)
+  :after org
   :config
   (defface svg-tag-org-face
     '((t :foreground "#333333" :background "white"
@@ -510,7 +481,8 @@ Return nil otherwise."
           (,(concat "\\[" date-re  "[] ]")           . svg-tag-make-org-date-inactive)
           (,(concat "\\[" date-re " " day-re "[] ]") . svg-tag-make-org-date-inactive)
           (,(concat time-re "\\]")                   . svg-tag-make-org-time-inactive)
-          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive))))
+          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive)))
+  (global-svg-tag-mode))
 
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
 (setq +doom-dashboard-banner-padding '(0 . 0))
@@ -746,7 +718,6 @@ Return nil otherwise."
   (push 'elfeed-search-mode evil-snipe-disabled-modes))
 
 (after! elfeed
-
   (elfeed-org)
   (use-package! elfeed-link)
 
@@ -925,28 +896,40 @@ Return nil otherwise."
 (use-package! org-pandoc-import
   :after org)
 
-(setq org-directory "~/org"                       ; let's put files here
-      org-use-property-inheritance t              ; it's convenient to have properties inherited
-      org-log-done 'time                          ; having the time a item is done sounds convenient
-      org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
-      org-export-in-background t                  ; run export processes in external emacs process
-      org-catch-invisible-edits 'smart)           ; try not to accidently do weird stuff in invisible regions
+(after! org
+  (setq org-directory "~/org"                       ; let's put files here
+        org-roam-directory "~/org/roam/"            ; same thing, for roam
+        org-use-property-inheritance t              ; it's convenient to have properties inherited
+        org-log-done 'time                          ; having the time a item is done sounds convenient
+        org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
+        org-export-in-background t                  ; run export processes in external emacs process
+        org-catch-invisible-edits 'smart))          ; try not to accidently do weird stuff in invisible regions
 
-(setq org-babel-default-header-args
-      '((:session . "none")
-        (:results . "replace")
-        (:exports . "code")
-        (:cache . "no")
-        (:noweb . "no")
-        (:hlines . "no")
-        (:tangle . "no")
-        (:comments . "link")))
+(after! org
+  (setq org-babel-default-header-args
+        '((:session . "none")
+          (:results . "replace")
+          (:exports . "code")
+          (:cache . "no")
+          (:noweb . "no")
+          (:hlines . "no")
+          (:tangle . "no")
+          (:comments . "link"))))
 
-(setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
+(after! org
+  (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a."))))
 
 (after! org-superstar
   (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
-        org-superstar-prettify-item-bullets t ))
+        org-superstar-prettify-item-bullets t))
+
+(use-package! org-ol-tree
+  :commands org-ol-tree)
+
+(map! :map org-mode-map
+      :after org
+      :localleader
+      :desc "Outline" "O" #'org-ol-tree)
 
 (after! ox
   (org-link-set-parameters "yt" :export #'+org-export-yt)
@@ -960,6 +943,8 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
           ((org-export-derived-backend-p backend 'latex)
            (format "\\href{https://youtu.be/%s}{%s}" path (or desc "youtube")))
           (t (format "https://youtu.be/%s" path)))))
+
+(setq org-startup-with-inline-images t)
 
 (defun edit-src-block (src fn language)
   "Replace SRC org-element's value property with the result of FN.
@@ -1558,8 +1543,6 @@ MathJax = {
 (advice-add 'org-html-fixed-width     :around #'org-html-block-collapsable)
 (advice-add 'org-html-property-drawer :around #'org-html-block-collapsable)
 
-(setq org-roam-directory "~/org/roam/")
-
 (use-package! websocket
   :after org-roam)
 
@@ -1575,8 +1558,9 @@ MathJax = {
 (after! org-roam
   (setq +org-roam-open-buffer-on-find-file nil))
 
-(setq org-agenda-files (list "~/org/school.org"
-                             "~/org/todo.org"))
+(after! org-agenda
+  (setq org-agenda-files (list "~/org/school.org"
+                               "~/org/todo.org")))
 
 (use-package! citar
   :when (featurep! :completion vertico)
@@ -1846,16 +1830,17 @@ is selected, only the bare key is returned."
                            :keyword "%U"
                            :file +org-capture-project-notes-file))))))
 
-(setq org-ellipsis " ▾ "
-      org-hide-leading-stars t
-      org-priority-highest ?A
-      org-priority-lowest ?E
-      org-priority-faces
-      '((?A . 'all-the-icons-red)
-        (?B . 'all-the-icons-orange)
-        (?C . 'all-the-icons-yellow)
-        (?D . 'all-the-icons-green)
-        (?E . 'all-the-icons-blue)))
+(after! org
+  (setq org-ellipsis " ▾ "
+        org-hide-leading-stars t
+        org-priority-highest ?A
+        org-priority-lowest ?E
+        org-priority-faces
+        '((?A . 'all-the-icons-red)
+          (?B . 'all-the-icons-orange)
+          (?C . 'all-the-icons-yellow)
+          (?D . 'all-the-icons-green)
+          (?E . 'all-the-icons-blue))))
 
 (appendq! +ligatures-extra-symbols
           `(:checkbox      "☐"
@@ -1949,7 +1934,12 @@ is selected, only the bare key is returned."
 
 (add-hook 'org-mode-hook #'+org-pretty-mode)
 
-(setq org-pretty-entities-include-sub-superscripts nil)
+(after! org
+  (setq org-pretty-entities-include-sub-superscripts nil))
+
+(use-package! org-pretty-table
+  :after org
+  :hook (org-mode . org-pretty-table-mode))
 
 (after! hl-todo
   (setq hl-todo-keyword-faces
@@ -1976,21 +1966,23 @@ is selected, only the bare key is returned."
           ("BUG" nano-face-critical)
           ("XXX" nano-face-salient))))
 
-(setq org-agenda-deadline-faces
-      '((1.0 . error)
-        (1.0 . org-warning)
-        (0.5 . org-upcoming-deadline)
-        (0.0 . org-upcoming-distant-deadline)))
+(after! org
+  (setq org-agenda-deadline-faces
+        '((1.0 . error)
+          (1.0 . org-warning)
+          (0.5 . org-upcoming-deadline)
+          (0.0 . org-upcoming-distant-deadline))))
 
-(setq org-fontify-quote-and-verse-blocks t)
+(after! org
+  (setq org-fontify-quote-and-verse-blocks t))
 
 (use-package! org-appear
+  :after org
   :hook (org-mode . org-appear-mode)
   :config
   (setq org-appear-autoemphasis t
-        org-appear-autosubmarkers t
-        org-appear-autolinks nil)
-  (run-at-time nil nil #'org-appear--set-elements))
+        org-appear-autolinks t
+        org-appear-autosubmarkers t))
 
 (defun locally-defer-font-lock ()
   "Set jit-lock defer and stealth, when buffer is over a certain size."
@@ -2465,13 +2457,6 @@ SQL can be either the emacsql vector representation, or a string."
 (defadvice! org-edit-latex-emv-after-insert ()
   :after #'org-cdlatex-environment-indent
   (org-edit-latex-environment))
-
-(setq org-display-inline-images t)
-(setq org-redisplay-inline-images t)
-(setq org-startup-with-inline-images "inlineimages")
-
-(use-package! org-fragtog
-  :hook (org-mode . org-fragtog-mode))
 
 (use-package pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)

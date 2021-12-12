@@ -28,7 +28,7 @@
        minimap                      ; show a map of the code on the side
        ;;(modeline                  ; snazzy, Atom-inspired modeline, plus API
        ;;  +light)                  ; the doom modeline is a bit much, the default is a bit little
-       nav-flash                    ; blink the current line after jumping
+       ;;nav-flash                  ; blink the current line after jumping
        ;;neotree                    ; a project drawer, like NERDTree for vim
        ophints                      ; highlight the region an operation acts on
        (popup                       ; tame sudden yet inevitable temporary windows
@@ -80,7 +80,7 @@
        :tools
        ;;ansible                    ; a crucible for infrastructure as code
        ;;biblio                     ; Writes a PhD for you (citation needed)
-       (debugger +lsp)              ; FIXME stepping through code, to help you add bugs
+       ;;(debugger +lsp             ; FIXME stepping through code, to help you add bugs
        ;;direnv                     ; be direct about your environment
        ;;docker                     ; port everything to containers
        ;;editorconfig               ; let someone else argue about tabs vs spaces

@@ -8,9 +8,10 @@
 (package! org-appear)
 (package! org-roam-ui)
 (package! org-latex-impatient)
-(package! org-latex-impatient
-  :recipe (:host github
-           :repo "shaunsingh/org-latex-impatient"))
+(package! org-ol-tree
+  :recipe (:host github :repo "Townk/org-ol-tree"))
+(package! org-pretty-table
+  :recipe (:host github :repo "Fuco1/org-pretty-table"))
 (package! org-cite-csl-activate
   :recipe (:host github
            :repo "andras-simonyi/org-cite-csl-activate"))
@@ -22,7 +23,6 @@
 ;;latex
 (package! aas)
 (package! laas)
-(package! org-fragtog)
 (package! engrave-faces)
 
 ;;markdown and html
@@ -36,13 +36,14 @@
 ;;                   :pre-build (("nix-shell" "shell.nix" "--command make"))))
 
 ;;looks
+
+(package! dimmer)
+(package! nano-theme)
+(package! nano-agenda)
+(package! svg-tag-mode)
+(package! nano-modeline)
 (package! solaire-mode :disable t)
-(package! dimmer :recipe (:host github :repo "gonewest818/dimmer.el"))
-(package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
-(package! nano-agenda :recipe (:host github :repo "rougier/nano-agenda"))
-(package! svg-tag-mode :recipe (:host github :repo "rougier/svg-tag-mode"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
-(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
 
 ;;emacs additions
 (package! lexic)
