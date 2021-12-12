@@ -452,13 +452,13 @@ Return nil otherwise."
   (defface svg-tag-date-inactive-face
     '((t :foreground "#ffffff" :background "#B0BEC5"
          :box (:line-width 1 :color "#B0BEC5" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+         :family "Liga SFMono Nerd Font" :weight regular :height 135))
     "Face for inactive date svg tag" :group nil)
 
   (defface svg-tag-time-inactive-face
     '((t :foreground "#B0BEC5" :background "#ffffff"
          :box (:line-width 2 :color "#B0BEC5" :style nil)
-         :family "Liga SFMono Nerd Font" :weight light :height 140))
+         :family "Liga SFMono Nerd Font" :weight light :height 135))
     "Face for inactive time svg tag" :group nil)
 
   (setq svg-tag-org-todo (svg-tag-make "TODO" 'svg-tag-todo-face 1 1 2))

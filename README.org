@@ -1,22 +1,21 @@
-#+title: Doom Emacs Configuration 
+#+title: Doom Emacs Configuration
 #+author: Shaunsingh
 
 #+html: <a href="https://www.gnu.org/software/emacs/emacs.html#Releases"><img src="https://img.shields.io/badge/Emacs-27.1%20%E2%80%93%2028.0.50-blueviolet.svg?style=flat-square&logo=GNU%20Emacs&logoColor=white"></a>
 #+html: <a href="https://orgmode.org"><img src="https://img.shields.io/badge/Org-literate%20config-%2377aa99?style=flat-square&logo=org&logoColor=white"></a>
 
 Here you may find my config. There is only one significant file:
-+ =config.org=, my configuration file --- see the [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML]] or [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]] export.
+- =config.org=, my configuration file --- see the [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML]] or [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]] export.
 
-#+attr_org: :width 40%
-[[./misc/assets/dash.png]]
-[[./misc/assets/org.png]]
-[[./misc/assets/vertico.png]]
+#+attr_org: :width 50%
+[[file:./misc/showcase/gura.png]]
+[[file:./misc/showcase/org.png]]
+[[file:./misc/showcase/vertico.png]]
 
 =config.org= /generates/ the init.el, config.el, and packages.el files, as well as
 about a dozen others.
 
 Other than that, resources are put in [[file:misc/][misc]], and you may find some packages I'm working on in [[file:lisp/][lisp]].
-
 * Installation
 ** Nix
 First install nix, and enable both the =nix command= and =flakes= experimental features
@@ -25,7 +24,7 @@ git clone --depth 1 https://github.com/shaunsingh/Nyoom.emacs.git && cd Nyoom.em
 nix develop
 #+end_src
 
-** Regular installation: 
+** Regular installation:
 First install the following dependencies:
 - Emacs (preferably one with =native-comp=, note that I (or rather doom-emacs) doesn't support =emacs29=, I recommend =emacs28= instead)
 - sqlite
@@ -52,3 +51,16 @@ emacs --batch --eval "(progn (require 'org) (setq org-confirm-babel-evaluate nil
 git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
 ~/.emacs.d/bin/doom install
 #+end_src
+
+* RoadMap
+** STRT Add faces for doom modules
+*** TODO VC-gutter
+*** TODO Flycheck
+*** STRT Tree-sitter
+** TODO Improve LaTeX Export
+*** TODO Define chameleon as a class
+*** DONE Use Fira font family
+** TODO Cleanup Config
+*** STRT Refactor org-mode config
+*** DONE Lazy load and Speedup
+*** TODO Restructure config

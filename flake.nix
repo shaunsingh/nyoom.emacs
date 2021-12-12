@@ -1,3 +1,4 @@
+# [[file:config.org::*Notes for the unwary adventurer][Notes for the unwary adventurer:1]]
 {
   description = "Shuarya Singh's Doom-emacs config";
 
@@ -31,3 +32,4 @@
       systems = [ "aarch64-darwin" ];
     };
 }
+# Notes for the unwary adventurer:1 ends here
