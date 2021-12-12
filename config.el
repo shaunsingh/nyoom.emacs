@@ -364,20 +364,32 @@ Return nil otherwise."
 (setq default-frame-alist
       (append (list
            '(min-height . 1)
-               '(height     . 45)
-           '(min-width  . 1)
-               '(width      . 81)
+               '(height . 45)
+           '(min-width . 1)
+               '(width . 81)
                '(vertical-scroll-bars . nil)
                '(internal-border-width . 24)
-               '(left-fringe    . 1)
-               '(right-fringe   . 1)
+               '(left-fringe . 1)
+               '(right-fringe . 1)
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 
 (setq doom-theme 'nil)
 
+;; Dim inactive windows
+(use-package dimmer
+  :hook (after-init . dimmer-mode)
+  :config
+  (setq dimmer-fraction 0.5)
+  (setq dimmer-adjustment-mode :foreground)
+  (setq dimmer-use-colorspace :rgb)
+  (setq dimmer-watch-frame-focus-events nil)
+  (dimmer-configure-which-key)
+  (dimmer-configure-magit)
+  (dimmer-configure-posframe))
+
 (use-package! nano-theme
-  :hook (after-init . nano-dark))
+  :hook (after-init . nano-light))
 
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode))
@@ -385,8 +397,123 @@ Return nil otherwise."
 (use-package! nano-agenda
   :commands nano-agenda)
 
+(use-package svg-tag-mode
+  :defer t
+  :hook (org-mode . global-svg-tag-mode)
+  :config
+  (defface svg-tag-org-face
+    '((t :foreground "#333333" :background "white"
+         :box (:line-width 1 :color "black" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Default face for svg tag" :group nil)
+
+  (defface svg-tag-note-face
+    '((t :foreground "#333333" :background "#FFFFFF"
+         :box (:line-width 1 :color "#333333" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Default face for svg tag" :group nil)
+
+  (defface svg-tag-todo-face
+    '((t :foreground "#ffffff" :background "#FFAB91"
+         :box (:line-width 1 :color "#FFAB91" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for TODO  svg tag" :group nil)
+
+  (defface svg-tag-next-face
+    '((t :foreground "white" :background "#673AB7"
+         :box (:line-width 1 :color "#673AB7" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for NEXT svg tag" :group nil)
+
+  (defface svg-tag-done-face
+    '((t :foreground "white" :background "#B0BEC5"
+         :box (:line-width 1 :color "#B0BEC5" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for DONE  svg tag" :group nil)
+
+  (defface svg-tag-org-tag-face
+    '((t :foreground "#ffffff" :background "#FFAB91"
+         :box (:line-width 1 :color "#FFAB91" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for TODO  svg tag" :group nil)
+
+  (defface svg-tag-date-active-face
+    '((t :foreground "white" :background "#673AB7"
+         :box (:line-width 1 :color "#673AB7" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for active date svg tag" :group nil)
+
+  (defface svg-tag-time-active-face
+    '((t :foreground "#673AB7" :background "#ffffff"
+         :box (:line-width 1 :color "#673AB7" :style nil)
+         :family "Liga SFMono Nerd Font" :weight light :height 140))
+    "Face for active time svg tag" :group nil)
+
+  (defface svg-tag-date-inactive-face
+    '((t :foreground "#ffffff" :background "#B0BEC5"
+         :box (:line-width 1 :color "#B0BEC5" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for inactive date svg tag" :group nil)
+
+  (defface svg-tag-time-inactive-face
+    '((t :foreground "#B0BEC5" :background "#ffffff"
+         :box (:line-width 2 :color "#B0BEC5" :style nil)
+         :family "Liga SFMono Nerd Font" :weight light :height 140))
+    "Face for inactive time svg tag" :group nil)
+
+  (setq svg-tag-org-todo (svg-tag-make "TODO" 'svg-tag-todo-face 1 1 2))
+  (setq svg-tag-org-done (svg-tag-make "DONE" 'svg-tag-done-face 1 1 2))
+  (setq svg-tag-org-hold (svg-tag-make "HOLD" 'svg-tag-org-face 1 1 2))
+  (setq svg-tag-org-next (svg-tag-make "NEXT" 'svg-tag-next-face 1 1 2))
+  (setq svg-tag-org-note-tag (svg-tag-make "NOTE" 'svg-tag-note-face 1 1 2))
+  (setq svg-tag-org-canceled-tag (svg-tag-make "CANCELED" 'svg-tag-note-face 1 1 2))
+
+  (defun svg-tag-make-org-tag (text)
+    (svg-tag-make (substring text 1 -1) 'svg-tag-org-tag-face 1 1 2))
+  (defun svg-tag-make-org-priority (text)
+    (svg-tag-make (substring text 2 -1) 'svg-tag-org-face 1 0 2))
+
+  (defun svg-tag-make-org-date-active (text)
+    (svg-tag-make (substring text 1 -1) 'svg-tag-date-active-face 0 0 0))
+  (defun svg-tag-make-org-time-active (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-active-face 1 0 0))
+  (defun svg-tag-make-org-range-active (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-active-face 0 0 0))
+
+  (defun svg-tag-make-org-date-inactive (text)
+    (svg-tag-make (substring text 1 -1) 'svg-tag-date-inactive-face 0 0 0))
+  (defun svg-tag-make-org-time-inactive (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-inactive-face 1 0 0))
+  (defun svg-tag-make-org-range-inactive (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-inactive-face 0 0 0))
+
+
+  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+  (defconst day-re "[A-Za-z]\\{3\\}")
+
+  (setq svg-tag-tags
+        `(("@[0-9a-zA-Z]+:"                   . svg-tag-make-org-tag)
+          ("@NOTE:"                           . svg-tag-org-note-tag)
+          ("@CANCELED:"                       . svg-tag-org-canceled-tag)
+          ("\\[#[ABC]\\]"                     . svg-tag-make-org-priority)
+          (" TODO "                           . svg-tag-org-todo)
+          (" DONE "                           . svg-tag-org-done)
+          (" NEXT "                           . svg-tag-org-next)
+          (" HOLD "                           . svg-tag-org-hold)
+
+          (,(concat "<" date-re  "[ >]")             . svg-tag-make-org-date-active)
+          (,(concat "<" date-re " " day-re "[ >]")   . svg-tag-make-org-date-active)
+          (,(concat time-re ">")                     . svg-tag-make-org-time-active)
+          (,(concat time-re "-" time-re ">")         . svg-tag-make-org-range-active)
+
+          (,(concat "\\[" date-re  "[] ]")           . svg-tag-make-org-date-inactive)
+          (,(concat "\\[" date-re " " day-re "[] ]") . svg-tag-make-org-date-inactive)
+          (,(concat time-re "\\]")                   . svg-tag-make-org-time-inactive)
+          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive))))
+
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
-(setq +doom-dashboard-banner-padding '(0 . 1))
+(setq +doom-dashboard-banner-padding '(0 . 0))
 
 (defvar splash-phrase-source-folder
   (expand-file-name "misc/splash-phrases" doom-private-dir)
@@ -816,6 +943,10 @@ Return nil otherwise."
         (:comments . "link")))
 
 (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
+
+(after! org-superstar
+  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
+        org-superstar-prettify-item-bullets t ))
 
 (after! ox
 (org-link-set-parameters "yt" :export #'+org-export-yt)
@@ -1679,11 +1810,6 @@ is selected, only the bare key is returned."
                            :keyword "%U"
                            :file +org-capture-project-notes-file)))
               )))
-
-;;make bullets look better
-(after! org-superstar
-  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
-        org-superstar-prettify-item-bullets t ))
 
 (setq org-ellipsis " ▾ "
       org-hide-leading-stars t

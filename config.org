@@ -644,10 +644,12 @@ Making emacs look good is first priority, actually working in it is second
 #+name: looks
 #+begin_src emacs-lisp
 (package! solaire-mode :disable t)
+(package! dimmer :recipe (:host github :repo "gonewest818/dimmer.el"))
 (package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
 (package! nano-agenda :recipe (:host github :repo "rougier/nano-agenda"))
-(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
+(package! svg-tag-mode :recipe (:host github :repo "rougier/svg-tag-mode"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
+(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
 #+end_src
 
 **** Emacs Tweaks:
@@ -1191,23 +1193,39 @@ Doom themes collides with the themes provided by nano, so lets remove that
 (setq default-frame-alist
       (append (list
            '(min-height . 1)
-               '(height     . 45)
-           '(min-width  . 1)
-               '(width      . 81)
+               '(height . 45)
+           '(min-width . 1)
+               '(width . 81)
                '(vertical-scroll-bars . nil)
                '(internal-border-width . 24)
-               '(left-fringe    . 1)
-               '(right-fringe   . 1)
+               '(left-fringe . 1)
+               '(right-fringe . 1)
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 
 (setq doom-theme 'nil)
 #+end_src
 
+Not really related to nano, but I think it would be nice to also dim inactive frames
+#+begin_src emacs-lisp
+;; Dim inactive windows
+(use-package dimmer
+  :hook (after-init . dimmer-mode)
+  :config
+  (setq dimmer-fraction 0.5)
+  (setq dimmer-adjustment-mode :foreground)
+  (setq dimmer-use-colorspace :rgb)
+  (setq dimmer-watch-frame-focus-events nil)
+  (dimmer-configure-which-key)
+  (dimmer-configure-magit)
+  (dimmer-configure-posframe))
+#+end_src
+
 Now we can load the nano modules themselves
+*NOTE*: I'm trying out bespoke, a fork of nano-modeline. Colors are different but the rest still applies
 #+begin_src emacs-lisp
 (use-package! nano-theme
-  :hook (after-init . nano-dark))
+  :hook (after-init . nano-light))
 
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode))
@@ -1219,11 +1237,131 @@ And of course, =nano-agenda=
   :commands nano-agenda)
 #+end_src
 
+*** Svg-Tag-Mode
+Although this isn't a part of =nano=, Its by the same author and fits pretty well, so lets add it here
+#+begin_src emacs-lisp
+(use-package svg-tag-mode
+  :defer t
+  :hook (org-mode . global-svg-tag-mode)
+  :config
+  (defface svg-tag-org-face
+    '((t :foreground "#333333" :background "white"
+         :box (:line-width 1 :color "black" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Default face for svg tag" :group nil)
+
+  (defface svg-tag-note-face
+    '((t :foreground "#333333" :background "#FFFFFF"
+         :box (:line-width 1 :color "#333333" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Default face for svg tag" :group nil)
+
+  (defface svg-tag-todo-face
+    '((t :foreground "#ffffff" :background "#FFAB91"
+         :box (:line-width 1 :color "#FFAB91" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for TODO  svg tag" :group nil)
+
+  (defface svg-tag-next-face
+    '((t :foreground "white" :background "#673AB7"
+         :box (:line-width 1 :color "#673AB7" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for NEXT svg tag" :group nil)
+
+  (defface svg-tag-done-face
+    '((t :foreground "white" :background "#B0BEC5"
+         :box (:line-width 1 :color "#B0BEC5" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for DONE  svg tag" :group nil)
+
+  (defface svg-tag-org-tag-face
+    '((t :foreground "#ffffff" :background "#FFAB91"
+         :box (:line-width 1 :color "#FFAB91" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for TODO  svg tag" :group nil)
+
+  (defface svg-tag-date-active-face
+    '((t :foreground "white" :background "#673AB7"
+         :box (:line-width 1 :color "#673AB7" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for active date svg tag" :group nil)
+
+  (defface svg-tag-time-active-face
+    '((t :foreground "#673AB7" :background "#ffffff"
+         :box (:line-width 1 :color "#673AB7" :style nil)
+         :family "Liga SFMono Nerd Font" :weight light :height 140))
+    "Face for active time svg tag" :group nil)
+
+  (defface svg-tag-date-inactive-face
+    '((t :foreground "#ffffff" :background "#B0BEC5"
+         :box (:line-width 1 :color "#B0BEC5" :style nil)
+         :family "Liga SFMono Nerd Font" :weight regular :height 140))
+    "Face for inactive date svg tag" :group nil)
+
+  (defface svg-tag-time-inactive-face
+    '((t :foreground "#B0BEC5" :background "#ffffff"
+         :box (:line-width 2 :color "#B0BEC5" :style nil)
+         :family "Liga SFMono Nerd Font" :weight light :height 140))
+    "Face for inactive time svg tag" :group nil)
+
+  (setq svg-tag-org-todo (svg-tag-make "TODO" 'svg-tag-todo-face 1 1 2))
+  (setq svg-tag-org-done (svg-tag-make "DONE" 'svg-tag-done-face 1 1 2))
+  (setq svg-tag-org-hold (svg-tag-make "HOLD" 'svg-tag-org-face 1 1 2))
+  (setq svg-tag-org-next (svg-tag-make "NEXT" 'svg-tag-next-face 1 1 2))
+  (setq svg-tag-org-note-tag (svg-tag-make "NOTE" 'svg-tag-note-face 1 1 2))
+  (setq svg-tag-org-canceled-tag (svg-tag-make "CANCELED" 'svg-tag-note-face 1 1 2))
+
+  (defun svg-tag-make-org-tag (text)
+    (svg-tag-make (substring text 1 -1) 'svg-tag-org-tag-face 1 1 2))
+  (defun svg-tag-make-org-priority (text)
+    (svg-tag-make (substring text 2 -1) 'svg-tag-org-face 1 0 2))
+
+  (defun svg-tag-make-org-date-active (text)
+    (svg-tag-make (substring text 1 -1) 'svg-tag-date-active-face 0 0 0))
+  (defun svg-tag-make-org-time-active (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-active-face 1 0 0))
+  (defun svg-tag-make-org-range-active (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-active-face 0 0 0))
+
+  (defun svg-tag-make-org-date-inactive (text)
+    (svg-tag-make (substring text 1 -1) 'svg-tag-date-inactive-face 0 0 0))
+  (defun svg-tag-make-org-time-inactive (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-inactive-face 1 0 0))
+  (defun svg-tag-make-org-range-inactive (text)
+    (svg-tag-make (substring text 0 -1) 'svg-tag-time-inactive-face 0 0 0))
+
+
+  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+  (defconst day-re "[A-Za-z]\\{3\\}")
+
+  (setq svg-tag-tags
+        `(("@[0-9a-zA-Z]+:"                   . svg-tag-make-org-tag)
+          ("@NOTE:"                           . svg-tag-org-note-tag)
+          ("@CANCELED:"                       . svg-tag-org-canceled-tag)
+          ("\\[#[ABC]\\]"                     . svg-tag-make-org-priority)
+          (" TODO "                           . svg-tag-org-todo)
+          (" DONE "                           . svg-tag-org-done)
+          (" NEXT "                           . svg-tag-org-next)
+          (" HOLD "                           . svg-tag-org-hold)
+
+          (,(concat "<" date-re  "[ >]")             . svg-tag-make-org-date-active)
+          (,(concat "<" date-re " " day-re "[ >]")   . svg-tag-make-org-date-active)
+          (,(concat time-re ">")                     . svg-tag-make-org-time-active)
+          (,(concat time-re "-" time-re ">")         . svg-tag-make-org-range-active)
+
+          (,(concat "\\[" date-re  "[] ]")           . svg-tag-make-org-date-inactive)
+          (,(concat "\\[" date-re " " day-re "[] ]") . svg-tag-make-org-date-inactive)
+          (,(concat time-re "\\]")                   . svg-tag-make-org-time-inactive)
+          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive))))
+
+#+end_src
+
 ** Splash
 Gura :emma:
 #+begin_src emacs-lisp
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
-(setq +doom-dashboard-banner-padding '(0 . 1))
+(setq +doom-dashboard-banner-padding '(0 . 0))
 #+end_src
 
 Add random quotes to the splash screen
@@ -1324,6 +1462,7 @@ And lets disable all the unessecary stuff
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 #+end_src
+
 
 ** Doom-quit
 I don't like all of the quit messages, lets keep it down to just a few
@@ -1706,6 +1845,13 @@ I want to slightly change the default args for babel
 I also want to change the order of bullets
 #+begin_src emacs-lisp
 (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a.")))
+#+end_src
+
+Speaking of bullets, I think the default ones don't fit my theme very well, so lets change those
+#+begin_src emacs-lisp
+(after! org-superstar
+  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
+        org-superstar-prettify-item-bullets t ))
 #+end_src
 
 The =[[yt:...]]= links preview nicely, but don’t export nicely. Thankfully, we can fix that.
@@ -2638,15 +2784,7 @@ Sprinkle in some =doct= utility functions
 #+end_src
 
 ** Symbols
-Firstly, I dislike the default stars for org-mode, so lets improve that
-#+begin_src emacs-lisp
-;;make bullets look better
-(after! org-superstar
-  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
-        org-superstar-prettify-item-bullets t ))
-#+end_src
-
-I also want to hide leading stars, since they feel redundant
+I want to hide leading stars, since they feel redundant
 #+begin_src emacs-lisp
 (setq org-ellipsis " ▾ "
       org-hide-leading-stars t

@@ -29,7 +29,7 @@
 ;;; Code:
 
 (defconst selectric-files-path (file-name-directory load-file-name)
-  "Directory containing the typewriter audio files.")
+  "Directory containing the keyboard audio files.")
 
 (defvar-local selectric-last-state nil
   "The last (buffer-size . point) seen by `selectric-mode'.")
@@ -42,13 +42,13 @@
       (start-process "*Messages*" nil "aplay" absolute-path))))
 
 (defun selectric-type ()
-  "Make the sound of the printing element hitting the paper."
+  "Make the sound of the keyboard clacking. Picks a random sound file from 0-6"
   (selectric-play (concat "selectric-" (number-to-string (random 6)) ".wav"))
   (when (= (current-column) (current-fill-column))
     (selectric-play "ping.wav")))
 
 (defun selectric-move ()
-  "Make the carriage movement sound."
+  "Make the keyboard sound. Picks a random file from 0-2"
   (selectric-play (concat "selectric-" (number-to-string (random 2)) ".wav")))
 
 (defun selectric-post-command ()

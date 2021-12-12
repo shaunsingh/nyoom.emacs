@@ -37,10 +37,12 @@
 
 ;;looks
 (package! solaire-mode :disable t)
+(package! dimmer :recipe (:host github :repo "gonewest818/dimmer.el"))
 (package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
 (package! nano-agenda :recipe (:host github :repo "rougier/nano-agenda"))
-(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
+(package! svg-tag-mode :recipe (:host github :repo "rougier/svg-tag-mode"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
+(package! nano-modeline :recipe (:host github :repo "rougier/nano-modeline"))
 
 ;;emacs additions
 (package! lexic)
