@@ -124,11 +124,11 @@ The lovely ~doom doctor~ is good at diagnosing most missing things, but a few ex
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils = {
       url = "github:numtide/flake-utils";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs = {
       url = "github:shaunsingh/emacs";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     doom-emacs.url = "github:hlissner/doom-emacs/develop";
     doom-emacs.flake = false;
@@ -191,6 +191,39 @@ Installing =nix= followed by running =nix develop= will
 - Build the latest emacs (v28, 29 has issues with doom)
 - Install a pinned version of =doom-emacs=, defined in the =flake.lock= file
 - Install the required dependencies for my \LaTeX configuration
+{
+  description = "Shuarya Singh's Doom-emacs config";
+
+  nixConfig.extra-substituters = "https://nix-community.cachix.org";
+  nixConfig.extra-trusted-public-keys =
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    emacs = {
+      url = "github:shaunsingh/emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    doom-emacs.url = "github:hlissner/doom-emacs/develop";
+    doom-emacs.flake = false;
+  };
+
+  outputs = { self, nixpkgs, flake-utils, emacs, doom-emacs }:
+    flake-utils.lib.simpleFlake {
+      inherit self nixpkgs;
+      name = "doom-emacs";
+      preOverlays = [
+        emacs.overlay
+        (final: prev: { doomEmacsRevision = doom-emacs.rev; })
+      ];
+      shell = ./shell.nix;
+      systems = [ "aarch64-darwin" ];
+    };
+}
 
 * Doom Configuration
 ** Modules

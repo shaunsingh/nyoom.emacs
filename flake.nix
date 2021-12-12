@@ -1,4 +1,3 @@
-# [[file:config.org::*Notes for the unwary adventurer][Notes for the unwary adventurer:1]]
 {
   description = "Shuarya Singh's Doom-emacs config";
 
@@ -10,11 +9,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils = {
       url = "github:numtide/flake-utils";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs = {
       url = "github:shaunsingh/emacs";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     doom-emacs.url = "github:hlissner/doom-emacs/develop";
     doom-emacs.flake = false;
@@ -32,4 +31,3 @@
       systems = [ "aarch64-darwin" ];
     };
 }
-# Notes for the unwary adventurer:1 ends here
