@@ -210,13 +210,12 @@ Return nil otherwise."
 (use-package! lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-sideline-enable nil
-        lsp-lens-enable t
+  (setq lsp-lens-enable t
         lsp-ui-doc-enable t
-        lsp-headerline-breadcrumb-enable nil
-        lsp-ui-peek-enable t
-        lsp-ui-peek-fontify 'on-demand
-        lsp-enable-symbol-highlighting nil))
+        lsp-ui-sideline-enable nil
+        lsp-enable-symbol-highlighting t
+        lsp-enable-semantic-tokens-enable t
+        lsp-headerline-breadcrumb-enable nil))
 
 (after! lsp-rust
   (setq lsp-rust-server 'rust-analyzer
@@ -326,12 +325,28 @@ Return nil otherwise."
 
 (setq inhibit-compacting-font-caches t)
 
-;; (use-package! tree-sitter
-;;   :config
-;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-;;   (require 'tree-sitter-langs)
-;;   (global-tree-sitter-mode)
-;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+(if (boundp 'mac-mouse-wheel-smooth-scroll)
+    (setq  mac-mouse-wheel-smooth-scroll t)
+  (if (> emacs-major-version 28)
+      (pixel-scroll-precision-mode)
+    (use-package! good-scroll
+      :config
+      (good-scroll-mode 1))))
+
+(use-package! tree-sitter
+  :defer t ;; loading is handled by individual modes
+  :hook (tree-sitter-after-on . tree-sitter-hl-mode)
+  :config
+  (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
+  (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
+                                                    (intern (concat
+                                                             (symbol-name (car mode)) "-map")))
+                                                  tree-sitter-major-mode-language-alist)
+    "List of mode hooks for tree sitter enabled modes.")
+  ;; This makes every node a link to a section of code
+  (setq tree-sitter-debug-jump-buttons t
+        ;; and this highlights the entire sub tree in your code
+        tree-sitter-debug-highlight-jump-region t))
 
 (setq default-frame-alist
       (append (list
@@ -370,6 +385,7 @@ Return nil otherwise."
   :commands nano-agenda)
 
 (use-package svg-tag-mode
+  :defer t
   :after org
   :config
   (defface svg-tag-org-face
@@ -2443,13 +2459,6 @@ SQL can be either the emacsql vector representation, or a string."
              (read-string "Look up in dictionary: "))
          current-prefix-arg))
   (lexic-search identifier nil nil t))
-
-(use-package org-latex-impatient
-  :defer t
-  :hook (org-mode . org-latex-impatient-mode)
-  :init
-  (setq org-latex-impatient-tex2svg-bin "~/node_modules/mathjax-node-cli/bin/tex2svg"
-        org-latex-impatient-border-width 0))
 
 (after! org
   (add-hook 'org-mode-hook 'turn-on-org-cdlatex))

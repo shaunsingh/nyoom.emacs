@@ -42,7 +42,7 @@ Issue is I don't like the looks of =doom emacs=
 3. Doom-modeline has too many segments, and too much highlighting. +light is a little better, but not that good.
 4. I prefer nano-emacs's theme, how it uses font weights and the more minimal syntax highlighting. The padding and visual tweaks it applies make the editor a little comfier, the default doom line spacing feels cramped
 5. Oh, and nano-mu4e looks cool.
-The author wrote a paper on this as well: https://arxiv.org/pdf/2008.06030.pdf
+The author wrote a paper on this as well: [[https://arxiv.org/pdf/2008.06030.pdf][On the design of text editors]], Check it out if you have the time!
 
 As such, this configuration is now a mix of the excellent =nano-emacs= and =doom-emacs=, best of both worlds!
 
@@ -209,6 +209,9 @@ have flags applied to tweak their behaviour.
 
 ;; This file controls what Doom modules are enabled and what order they load in.
 ;; Press 'K' on a module to view its documentation, and 'gd' to browse its directory.
+
+;; Needs to be set early so it can't go into config
+(setq evil-respect-visual-line-mode t)
 
 (doom! :completion
        <<doom-completion>>
@@ -416,7 +419,7 @@ syntax                                         ; tasing you for every semicolon 
 #+begin_src emacs-lisp
 ;;ansible                    ; a crucible for infrastructure as code
 ;;biblio                     ; Writes a PhD for you (citation needed)
-;;(debugger +lsp             ; FIXME stepping through code, to help you add bugs
+(debugger +lsp)              ; FIXME stepping through code, to help you add bugs
 ;;direnv                     ; be direct about your environment
 ;;docker                     ; port everything to containers
 ;;editorconfig               ; let someone else argue about tabs vs spaces
@@ -426,7 +429,7 @@ syntax                                         ; tasing you for every semicolon 
 (lookup                      ; helps you navigate your code and documentation
  +dictionary                 ; dictionary/thesaurus is nice
  +docsets)                   ; ...or in Dash docsets locally
-lsp                          ; Language Server Protocol
+(lsp +peek)                  ; Language Server Protocol
 (magit                       ; a git porcelain for Emacs
  +forge)                     ; interface with git forges
 ;;make                       ; run make tasks from Emacs
@@ -437,7 +440,7 @@ pdf                          ; pdf enhancements
 ;;taskrunner                 ; taskrunner for all your projects
 ;;terraform                  ; infrastructure as code
 ;;tmux                       ; an API for interacting with tmux
-;;tree-sitter                ; ... sitting in a tree
+tree-sitter                  ; ... sitting in a tree
 ;;upload                     ; map local to remote projects via ssh/ftp
 #+end_src
 
@@ -479,7 +482,7 @@ emacs-lisp                   ; drown in parentheses
 ;;hy                         ; readability of scheme w/ speed of python
 ;;idris                      ;
 ;;json                       ; At least it ain't XML
-;;(java +lsp +tree-sitter)   ; the poster child for carpal tunnel syndrome
+(java +lsp +tree-sitter)     ; the poster child for carpal tunnel syndrome
 ;;(javascript +lsp)          ; all(hope(abandon(ye(who(enter(here))))))
 ;;(julia +lsp)               ; Python, R, and MATLAB in a blender
 ;;(kotlin +lsp)              ; a better, slicker Java(Script)
@@ -491,9 +494,8 @@ emacs-lisp                   ; drown in parentheses
 ;;lean                       ; proof that mathematicians need help
 ;;factor                     ; for when scripts are stacked against you
 ;;ledger                     ; an accounting system in Emacs
-(lua                         ; one-based indices? one-based indices
- +lsp)
-(markdown +grip)             ; writing docs for people to ignore
+(lua +lsp)                   ; one-based indices? one-based indices
+;;(markdown +grip)           ; writing docs for people to ignore
 ;;nim                        ; python + lisp at the speed of c
 nix                          ; I hereby declare "nix geht mehr!"
 ;;ocaml                      ; an objective camel
@@ -506,22 +508,22 @@ nix                          ; I hereby declare "nix geht mehr!"
  +pandoc                     ; export-with-pandoc support
  +gnuplot                    ; who doesn't like pretty pictures
  +pomodoro                   ; be fruitful with the tomato technique
- +present                    ; using org-mode for presentations
+ ;;+present                  ; using org-mode for presentations
  +roam2)                     ; wander around notes
 ;;php                        ; perl's insecure younger brother
 ;;plantuml                   ; diagrams for confusing people more
 ;;purescript                 ; javascript, but functional
 (python                      ; beautiful is better than ugly
  +lsp
- +pyright)
-;; +tree-sitter)
+ +pyright
+ +tree-sitter)
 ;;qt                         ; the 'cutest' gui framework ever
 ;;racket                     ; a DSL for DSLs
 ;;raku                       ; the artist formerly known as perl6
 ;;rest                       ; Emacs as a REST client
 ;;rst                        ; ReST in peace
 ;;(ruby +rails)              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-(rust +lsp)                  ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+(rust +lsp +tree-sitter)     ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
 ;;scala                      ; java, but good
 ;;scheme                     ; a fully conniving family of lisps
 sh                           ; she sells {ba,z,fi}sh shells on the C xor
@@ -599,7 +601,6 @@ tweaking org then
 (package! citeproc)
 (package! org-appear)
 (package! org-roam-ui)
-(package! org-latex-impatient)
 (package! org-ol-tree
   :recipe (:host github :repo "Townk/org-ol-tree"))
 (package! org-pretty-table
@@ -642,7 +643,6 @@ because of its refusal to work without requiring org
 Making emacs look good is first priority, actually working in it is second
 #+name: looks
 #+begin_src emacs-lisp
-
 (package! dimmer)
 (package! nano-theme)
 (package! nano-agenda)
@@ -650,15 +650,18 @@ Making emacs look good is first priority, actually working in it is second
 (package! nano-modeline)
 (package! solaire-mode :disable t)
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
+(when (not (or (> emacs-major-version 28)  (boundp 'mac-mouse-wheel-smooth-scroll)))
+  (package! good-scroll))
 #+end_src
 
 **** Emacs Tweaks:
 Emacs is missing just a few packages that I need to make it my OS
 #+name: emacs
 #+begin_src emacs-lisp
+(package! esup)
 (package! lexic)
-;;(unpin! tree-sitter)
-;;(unpin! tree-sitter-langs)
+(unpin! tree-sitter)
+(unpin! tree-sitter-langs)
 #+end_src
 
 **** LSP:
@@ -963,13 +966,12 @@ I think the LSP is a bit intrusive (especially with inline suggestions), so lets
 (use-package! lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-sideline-enable nil
-        lsp-lens-enable t
+  (setq lsp-lens-enable t
         lsp-ui-doc-enable t
-        lsp-headerline-breadcrumb-enable nil
-        lsp-ui-peek-enable t
-        lsp-ui-peek-fontify 'on-demand
-        lsp-enable-symbol-highlighting nil))
+        lsp-ui-sideline-enable nil
+        lsp-enable-symbol-highlighting t
+        lsp-enable-semantic-tokens-enable t
+        lsp-headerline-breadcrumb-enable nil))
 #+end_src
 
 The rust language server also has some extra features I would like to enable
@@ -1126,17 +1128,37 @@ Just some simple visual tweaks. Lets give the text some more room to breathe, an
 (setq inhibit-compacting-font-caches t)
 #+end_src
 
+** Pixel-scroll
+Default doom scrolling is pretty slow, so lets improve on that with pixel-scrolling. However, =emacs-mac= has its own version of pixel scroll, and so does =emacs29=, so we want to enable this under specific cases
+#+begin_src emacs-lisp
+(if (boundp 'mac-mouse-wheel-smooth-scroll)
+    (setq  mac-mouse-wheel-smooth-scroll t)
+  (if (> emacs-major-version 28)
+      (pixel-scroll-precision-mode)
+    (use-package! good-scroll
+      :config
+      (good-scroll-mode 1))))
+#+end_src
+
 ** Treesitter
 Nvim-treesitter is based on three interlocking features: language parsers, queries, and modules, where modules provide features – e.g., highlighting – based on queries for syntax objects extracted from a given buffer by language parsers. Allowing this to work in doom will reduce the lag introduced by fontlock as well as improve textobjects.
 
 Since I use an apple silicon mac, I prefer if nix handles compiling the parsers for me
 #+begin_src emacs-lisp
-;; (use-package! tree-sitter
-;;   :config
-;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-;;   (require 'tree-sitter-langs)
-;;   (global-tree-sitter-mode)
-;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+(use-package! tree-sitter
+  :defer t ;; loading is handled by individual modes
+  :hook (tree-sitter-after-on . tree-sitter-hl-mode)
+  :config
+  (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
+  (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
+                                                    (intern (concat
+                                                             (symbol-name (car mode)) "-map")))
+                                                  tree-sitter-major-mode-language-alist)
+    "List of mode hooks for tree sitter enabled modes.")
+  ;; This makes every node a link to a section of code
+  (setq tree-sitter-debug-jump-buttons t
+        ;; and this highlights the entire sub tree in your code
+        tree-sitter-debug-highlight-jump-region t))
 #+end_src
 
 ** Nano
@@ -1195,6 +1217,7 @@ And of course, =nano-agenda=
 Although this isn't a part of =nano=, Its by the same author and fits pretty well, so lets add it here
 #+begin_src emacs-lisp
 (use-package svg-tag-mode
+  :defer t
   :after org
   :config
   (defface svg-tag-org-face
@@ -3482,16 +3505,6 @@ same time its hard to write, hard to understand, and very slow. The solution:
 write everything in org and then export it to tex. Best of both worlds!
 
 ** Basic configuration
-Since I'm using tectonic, lets use mathjax to render tex previews.
-#+begin_src emacs-lisp
-(use-package org-latex-impatient
-  :defer t
-  :hook (org-mode . org-latex-impatient-mode)
-  :init
-  (setq org-latex-impatient-tex2svg-bin "~/node_modules/mathjax-node-cli/bin/tex2svg"
-        org-latex-impatient-border-width 0))
-#+end_src
-
 Lets add cdlatex org mode integration
 #+begin_src emacs-lisp
 (after! org

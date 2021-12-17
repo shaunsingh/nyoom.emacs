@@ -3,6 +3,9 @@
 ;; This file controls what Doom modules are enabled and what order they load in.
 ;; Press 'K' on a module to view its documentation, and 'gd' to browse its directory.
 
+;; Needs to be set early so it can't go into config
+(setq evil-respect-visual-line-mode t)
+
 (doom! :completion
        (company                     ; the ultimate code completion backend
         +childframe)                ; ... when your children are better than you
@@ -80,7 +83,7 @@
        :tools
        ;;ansible                    ; a crucible for infrastructure as code
        ;;biblio                     ; Writes a PhD for you (citation needed)
-       ;;(debugger +lsp             ; FIXME stepping through code, to help you add bugs
+       (debugger +lsp)              ; FIXME stepping through code, to help you add bugs
        ;;direnv                     ; be direct about your environment
        ;;docker                     ; port everything to containers
        ;;editorconfig               ; let someone else argue about tabs vs spaces
@@ -90,7 +93,7 @@
        (lookup                      ; helps you navigate your code and documentation
         +dictionary                 ; dictionary/thesaurus is nice
         +docsets)                   ; ...or in Dash docsets locally
-       lsp                          ; Language Server Protocol
+       (lsp +peek)                  ; Language Server Protocol
        (magit                       ; a git porcelain for Emacs
         +forge)                     ; interface with git forges
        ;;make                       ; run make tasks from Emacs
@@ -101,7 +104,7 @@
        ;;taskrunner                 ; taskrunner for all your projects
        ;;terraform                  ; infrastructure as code
        ;;tmux                       ; an API for interacting with tmux
-       ;;tree-sitter                ; ... sitting in a tree
+       tree-sitter                  ; ... sitting in a tree
        ;;upload                     ; map local to remote projects via ssh/ftp
 
        :os
@@ -134,7 +137,7 @@
        ;;hy                         ; readability of scheme w/ speed of python
        ;;idris                      ;
        ;;json                       ; At least it ain't XML
-       ;;(java +lsp +tree-sitter)   ; the poster child for carpal tunnel syndrome
+       (java +lsp +tree-sitter)     ; the poster child for carpal tunnel syndrome
        ;;(javascript +lsp)          ; all(hope(abandon(ye(who(enter(here))))))
        ;;(julia +lsp)               ; Python, R, and MATLAB in a blender
        ;;(kotlin +lsp)              ; a better, slicker Java(Script)
@@ -146,9 +149,8 @@
        ;;lean                       ; proof that mathematicians need help
        ;;factor                     ; for when scripts are stacked against you
        ;;ledger                     ; an accounting system in Emacs
-       (lua                         ; one-based indices? one-based indices
-        +lsp)
-       (markdown +grip)             ; writing docs for people to ignore
+       (lua +lsp)                   ; one-based indices? one-based indices
+       ;;(markdown +grip)           ; writing docs for people to ignore
        ;;nim                        ; python + lisp at the speed of c
        nix                          ; I hereby declare "nix geht mehr!"
        ;;ocaml                      ; an objective camel
@@ -161,22 +163,22 @@
         +pandoc                     ; export-with-pandoc support
         +gnuplot                    ; who doesn't like pretty pictures
         +pomodoro                   ; be fruitful with the tomato technique
-        +present                    ; using org-mode for presentations
+        ;;+present                  ; using org-mode for presentations
         +roam2)                     ; wander around notes
        ;;php                        ; perl's insecure younger brother
        ;;plantuml                   ; diagrams for confusing people more
        ;;purescript                 ; javascript, but functional
        (python                      ; beautiful is better than ugly
         +lsp
-        +pyright)
-       ;; +tree-sitter)
+        +pyright
+        +tree-sitter)
        ;;qt                         ; the 'cutest' gui framework ever
        ;;racket                     ; a DSL for DSLs
        ;;raku                       ; the artist formerly known as perl6
        ;;rest                       ; Emacs as a REST client
        ;;rst                        ; ReST in peace
        ;;(ruby +rails)              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp)                  ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (rust +lsp +tree-sitter)     ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala                      ; java, but good
        ;;scheme                     ; a fully conniving family of lisps
        sh                           ; she sells {ba,z,fi}sh shells on the C xor
