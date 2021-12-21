@@ -104,7 +104,7 @@
        ;;taskrunner                 ; taskrunner for all your projects
        ;;terraform                  ; infrastructure as code
        ;;tmux                       ; an API for interacting with tmux
-       tree-sitter                  ; ... sitting in a tree
+       ;;tree-sitter                ; ... sitting in a tree
        ;;upload                     ; map local to remote projects via ssh/ftp
 
        :os
@@ -137,7 +137,8 @@
        ;;hy                         ; readability of scheme w/ speed of python
        ;;idris                      ;
        ;;json                       ; At least it ain't XML
-       (java +lsp +tree-sitter)     ; the poster child for carpal tunnel syndrome
+       ;;(java +lsp                 ; the poster child for carpal tunnel syndrome
+       ;;  +tree-sitter)
        ;;(javascript +lsp)          ; all(hope(abandon(ye(who(enter(here))))))
        ;;(julia +lsp)               ; Python, R, and MATLAB in a blender
        ;;(kotlin +lsp)              ; a better, slicker Java(Script)
@@ -170,15 +171,16 @@
        ;;purescript                 ; javascript, but functional
        (python                      ; beautiful is better than ugly
         +lsp
-        +pyright
-        +tree-sitter)
+        +pyright)
+       ;; +tree-sitter)
        ;;qt                         ; the 'cutest' gui framework ever
        ;;racket                     ; a DSL for DSLs
        ;;raku                       ; the artist formerly known as perl6
        ;;rest                       ; Emacs as a REST client
        ;;rst                        ; ReST in peace
        ;;(ruby +rails)              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp +tree-sitter)     ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (rust +lsp)                  ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       ;; +tree-sitter)    
        ;;scala                      ; java, but good
        ;;scheme                     ; a fully conniving family of lisps
        sh                           ; she sells {ba,z,fi}sh shells on the C xor
@@ -198,7 +200,7 @@
        :app
        ;;calendar                   ; A dated approach to timetabling
        ;;emms                       ; Multimedia in Emacs is music to my ears
-       ;;everywhere                 ; *leave* Emacs!? You must be joking.
+       everywhere                   ; *leave* Emacs!? You must be joking.
        ;;irc                        ; how neckbeards socialize
        ;;(rss +org)                 ; emacs as an RSS reader
        ;;twitter                    ; twitter client https://twitter.com/vnought

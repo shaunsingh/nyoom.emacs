@@ -313,6 +313,35 @@ Return nil otherwise."
         monkeytype-delete-trailing-whitespace t
         monkeytype-excluded-chars-regexp "[^[:alnum:]']"))
 
+(use-package! emacs-everywhere
+  :if (daemonp)
+  :config
+  (require 'spell-fu)
+  (setq emacs-everywhere-major-mode-function #'org-mode
+        emacs-everywhere-frame-name-format "Edit ∷ %s — %s"))
+
+(defun greedily-do-daemon-setup ()
+  (require 'org)
+  (require 'vertico)
+  (require 'consult)
+  (require 'embark)
+  (require 'marginalia)
+  (when (require 'mu4e nil t)
+    (setq mu4e-confirm-quit t)
+    (setq +mu4e-lock-greedy t)
+    (setq +mu4e-lock-relaxed t)
+    (+mu4e-lock-add-watcher)
+    (when (+mu4e-lock-available t)
+      (mu4e~start)))
+  (when (require 'elfeed nil t)
+    (run-at-time nil (* 8 60 60) #'elfeed-update)))
+
+(when (daemonp)
+  (add-hook 'emacs-startup-hook #'greedily-do-daemon-setup)
+  (add-hook! 'server-after-make-frame-hook
+    (unless (string-match-p "\\*draft" (buffer-name))
+      (switch-to-buffer +doom-dashboard-name))))
+
 (setq-default line-spacing 0.24
               window-resize-pixelwise t
               frame-resize-pixelwise t)
@@ -325,28 +354,22 @@ Return nil otherwise."
 
 (setq inhibit-compacting-font-caches t)
 
-(if (boundp 'mac-mouse-wheel-smooth-scroll)
-    (setq  mac-mouse-wheel-smooth-scroll t)
-  (if (> emacs-major-version 28)
-      (pixel-scroll-precision-mode)
-    (use-package! good-scroll
-      :config
-      (good-scroll-mode 1))))
+(pixel-scroll-precision-mode)
 
-(use-package! tree-sitter
-  :defer t ;; loading is handled by individual modes
-  :hook (tree-sitter-after-on . tree-sitter-hl-mode)
-  :config
-  (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-  (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
-                                                    (intern (concat
-                                                             (symbol-name (car mode)) "-map")))
-                                                  tree-sitter-major-mode-language-alist)
-    "List of mode hooks for tree sitter enabled modes.")
-  ;; This makes every node a link to a section of code
-  (setq tree-sitter-debug-jump-buttons t
-        ;; and this highlights the entire sub tree in your code
-        tree-sitter-debug-highlight-jump-region t))
+;; (use-package! tree-sitter
+;;   :defer t ;; loading is handled by individual modes
+;;   :hook (tree-sitter-after-on . tree-sitter-hl-mode)
+;;   :config
+;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
+;;   (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
+;;                                                     (intern (concat
+;;                                                              (symbol-name (car mode)) "-map")))
+;;                                                   tree-sitter-major-mode-language-alist)
+;;     "List of mode hooks for tree sitter enabled modes.")
+;;   ;; This makes every node a link to a section of code
+;;   (setq tree-sitter-debug-jump-buttons t
+;;         ;; and this highlights the entire sub tree in your code
+;;         tree-sitter-debug-highlight-jump-region t))
 
 (setq default-frame-alist
       (append (list

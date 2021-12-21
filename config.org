@@ -440,7 +440,7 @@ pdf                          ; pdf enhancements
 ;;taskrunner                 ; taskrunner for all your projects
 ;;terraform                  ; infrastructure as code
 ;;tmux                       ; an API for interacting with tmux
-tree-sitter                  ; ... sitting in a tree
+;;tree-sitter                ; ... sitting in a tree
 ;;upload                     ; map local to remote projects via ssh/ftp
 #+end_src
 
@@ -482,7 +482,8 @@ emacs-lisp                   ; drown in parentheses
 ;;hy                         ; readability of scheme w/ speed of python
 ;;idris                      ;
 ;;json                       ; At least it ain't XML
-(java +lsp +tree-sitter)     ; the poster child for carpal tunnel syndrome
+;;(java +lsp                 ; the poster child for carpal tunnel syndrome
+;;  +tree-sitter)
 ;;(javascript +lsp)          ; all(hope(abandon(ye(who(enter(here))))))
 ;;(julia +lsp)               ; Python, R, and MATLAB in a blender
 ;;(kotlin +lsp)              ; a better, slicker Java(Script)
@@ -515,15 +516,16 @@ nix                          ; I hereby declare "nix geht mehr!"
 ;;purescript                 ; javascript, but functional
 (python                      ; beautiful is better than ugly
  +lsp
- +pyright
- +tree-sitter)
+ +pyright)
+;; +tree-sitter)
 ;;qt                         ; the 'cutest' gui framework ever
 ;;racket                     ; a DSL for DSLs
 ;;raku                       ; the artist formerly known as perl6
 ;;rest                       ; Emacs as a REST client
 ;;rst                        ; ReST in peace
 ;;(ruby +rails)              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-(rust +lsp +tree-sitter)     ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+(rust +lsp)                  ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+;; +tree-sitter)    
 ;;scala                      ; java, but good
 ;;scheme                     ; a fully conniving family of lisps
 sh                           ; she sells {ba,z,fi}sh shells on the C xor
@@ -550,7 +552,7 @@ I couldn't resist the Email and Feed modules.
 #+begin_src emacs-lisp
 ;;calendar                   ; A dated approach to timetabling
 ;;emms                       ; Multimedia in Emacs is music to my ears
-;;everywhere                 ; *leave* Emacs!? You must be joking.
+everywhere                   ; *leave* Emacs!? You must be joking.
 ;;irc                        ; how neckbeards socialize
 ;;(rss +org)                 ; emacs as an RSS reader
 ;;twitter                    ; twitter client https://twitter.com/vnought
@@ -650,8 +652,6 @@ Making emacs look good is first priority, actually working in it is second
 (package! nano-modeline)
 (package! solaire-mode :disable t)
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
-(when (not (or (> emacs-major-version 28)  (boundp 'mac-mouse-wheel-smooth-scroll)))
-  (package! good-scroll))
 #+end_src
 
 **** Emacs Tweaks:
@@ -660,8 +660,8 @@ Emacs is missing just a few packages that I need to make it my OS
 #+begin_src emacs-lisp
 (package! esup)
 (package! lexic)
-(unpin! tree-sitter)
-(unpin! tree-sitter-langs)
+;; (unpin! tree-sitter)
+;; (unpin! tree-sitter-langs)
 #+end_src
 
 **** LSP:
@@ -1112,6 +1112,43 @@ Notably here we want to start in insert mode.
         monkeytype-excluded-chars-regexp "[^[:alnum:]']"))
 #+end_src
 
+** Emacs Everywhere
+We want to use tecosaurs excellent emacs-everywhere, to launch emacs from well... everywhere. Just some small changes, such as requiring spell check on start and opening up in org-mode right away. 
+#+begin_src emacs-lisp
+(use-package! emacs-everywhere
+  :if (daemonp)
+  :config
+  (require 'spell-fu)
+  (setq emacs-everywhere-major-mode-function #'org-mode
+        emacs-everywhere-frame-name-format "Edit ∷ %s — %s"))
+#+end_src
+
+** Greedy daemon
+When we open the daemon, we have all the time in the world. Lets just load heavy packages on start, and not have to worry about them later
+#+begin_src emacs-lisp
+(defun greedily-do-daemon-setup ()
+  (require 'org)
+  (require 'vertico)
+  (require 'consult)
+  (require 'embark)
+  (require 'marginalia)
+  (when (require 'mu4e nil t)
+    (setq mu4e-confirm-quit t)
+    (setq +mu4e-lock-greedy t)
+    (setq +mu4e-lock-relaxed t)
+    (+mu4e-lock-add-watcher)
+    (when (+mu4e-lock-available t)
+      (mu4e~start)))
+  (when (require 'elfeed nil t)
+    (run-at-time nil (* 8 60 60) #'elfeed-update)))
+
+(when (daemonp)
+  (add-hook 'emacs-startup-hook #'greedily-do-daemon-setup)
+  (add-hook! 'server-after-make-frame-hook
+    (unless (string-match-p "\\*draft" (buffer-name))
+      (switch-to-buffer +doom-dashboard-name))))
+#+end_src
+
 * Visual configuration
 Just some simple visual tweaks. Lets give the text some more room to breathe, and remove those ugly dividers
 #+begin_src emacs-lisp
@@ -1131,13 +1168,7 @@ Just some simple visual tweaks. Lets give the text some more room to breathe, an
 ** Pixel-scroll
 Default doom scrolling is pretty slow, so lets improve on that with pixel-scrolling. However, =emacs-mac= has its own version of pixel scroll, and so does =emacs29=, so we want to enable this under specific cases
 #+begin_src emacs-lisp
-(if (boundp 'mac-mouse-wheel-smooth-scroll)
-    (setq  mac-mouse-wheel-smooth-scroll t)
-  (if (> emacs-major-version 28)
-      (pixel-scroll-precision-mode)
-    (use-package! good-scroll
-      :config
-      (good-scroll-mode 1))))
+(pixel-scroll-precision-mode)
 #+end_src
 
 ** Treesitter
@@ -1145,20 +1176,20 @@ Nvim-treesitter is based on three interlocking features: language parsers, queri
 
 Since I use an apple silicon mac, I prefer if nix handles compiling the parsers for me
 #+begin_src emacs-lisp
-(use-package! tree-sitter
-  :defer t ;; loading is handled by individual modes
-  :hook (tree-sitter-after-on . tree-sitter-hl-mode)
-  :config
-  (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-  (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
-                                                    (intern (concat
-                                                             (symbol-name (car mode)) "-map")))
-                                                  tree-sitter-major-mode-language-alist)
-    "List of mode hooks for tree sitter enabled modes.")
-  ;; This makes every node a link to a section of code
-  (setq tree-sitter-debug-jump-buttons t
-        ;; and this highlights the entire sub tree in your code
-        tree-sitter-debug-highlight-jump-region t))
+;; (use-package! tree-sitter
+;;   :defer t ;; loading is handled by individual modes
+;;   :hook (tree-sitter-after-on . tree-sitter-hl-mode)
+;;   :config
+;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
+;;   (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
+;;                                                     (intern (concat
+;;                                                              (symbol-name (car mode)) "-map")))
+;;                                                   tree-sitter-major-mode-language-alist)
+;;     "List of mode hooks for tree sitter enabled modes.")
+;;   ;; This makes every node a link to a section of code
+;;   (setq tree-sitter-debug-jump-buttons t
+;;         ;; and this highlights the entire sub tree in your code
+;;         tree-sitter-debug-highlight-jump-region t))
 #+end_src
 
 ** Nano

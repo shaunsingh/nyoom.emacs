@@ -42,14 +42,12 @@
 (package! nano-modeline)
 (package! solaire-mode :disable t)
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon"))
-(when (not (or (> emacs-major-version 28)  (boundp 'mac-mouse-wheel-smooth-scroll)))
-  (package! good-scroll))
 
 ;;emacs additions
 (package! esup)
 (package! lexic)
-(unpin! tree-sitter)
-(unpin! tree-sitter-langs)
+;; (unpin! tree-sitter)
+;; (unpin! tree-sitter-langs)
 
 ;;lsp
 (unpin! lsp-ui)
