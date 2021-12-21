@@ -1470,6 +1470,61 @@ And lets disable all the unessecary stuff
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 #+end_src
 
+But lets not forget to give the ascii splash some love as well
+#+begin_src emacs-lisp
+(defun doom-dashboard-draw-ascii-emacs-banner-fn ()
+  (let* ((banner
+          '("            :h-                                  Nhy`               "
+            "           -mh.                           h.    `Ndho               "
+            "           hmh+                          oNm.   oNdhh               "
+            "          `Nmhd`                        /NNmd  /NNhhd               "
+            "          -NNhhy                      `hMNmmm`+NNdhhh               "
+            "          .NNmhhs              ```....`..-:/./mNdhhh+               "
+            "           mNNdhhh-     `.-::///+++////++//:--.`-/sd`               "
+            "           oNNNdhhdo..://++//++++++/+++//++///++/-.`                "
+            "      y.   `mNNNmhhhdy+/++++//+/////++//+++///++////-` `/oos:       "
+            " .    Nmy:  :NNNNmhhhhdy+/++/+++///:.....--:////+++///:.`:s+        "
+            " h-   dNmNmy oNNNNNdhhhhy:/+/+++/-         ---:/+++//++//.`         "
+            " hd+` -NNNy`./dNNNNNhhhh+-://///    -+oo:`  ::-:+////++///:`        "
+            " /Nmhs+oss-:++/dNNNmhho:--::///    /mmmmmo  ../-///++///////.       "
+            "  oNNdhhhhhhhs//osso/:---:::///    /yyyyso  ..o+-//////////:/.      "
+            "   /mNNNmdhhhh/://+///::://////     -:::- ..+sy+:////////::/:/.     "
+            "     /hNNNdhhs--:/+++////++/////.      ..-/yhhs-/////////::/::/`    "
+            "       .ooo+/-::::/+///////++++//-/ossyyhhhhs/:///////:::/::::/:    "
+            "       -///:::::::////++///+++/////:/+ooo+/::///////.::://::---+`   "
+            "       /////+//++++/////+////-..//////////::-:::--`.:///:---:::/:   "
+            "       //+++//++++++////+++///::--                 .::::-------::   "
+            "       :/++++///////////++++//////.                -:/:----::../-   "
+            "       -/++++//++///+//////////////               .::::---:::-.+`   "
+            "       `////////////////////////////:.            --::-----...-/    "
+            "        -///://////////////////////::::-..      :-:-:-..-::.`.+`    "
+            "         :/://///:///::://::://::::::/:::::::-:---::-.-....``/- -   "
+            "           ::::://::://::::::::::::::----------..-:....`.../- -+oo/ "
+            "            -/:::-:::::---://:-::-::::----::---.-.......`-/.      ``"
+            "           s-`::--:::------:////----:---.-:::...-.....`./:          "
+            "          yMNy.`::-.--::..-dmmhhhs-..-.-.......`.....-/:`           "
+            "         oMNNNh. `-::--...:NNNdhhh/.--.`..``.......:/-              "
+            "        :dy+:`      .-::-..NNNhhd+``..`...````.-::-`                "
+            "                        .-:mNdhh:.......--::::-`                    "
+            "                           yNh/..------..`                          "
+            "                                                                    "
+            "                               E M A C S                            "))
+         (longest-line (apply #'max (mapcar #'length banner))))
+    (put-text-property
+     (point)
+     (dolist (line banner (point))
+       (insert (+doom-dashboard--center
+                +doom-dashboard--width
+                (concat
+                 line (make-string (max 0 (- longest-line (length line)))
+                                   32)))
+               "\n"))
+     'face 'doom-dashboard-banner)))
+
+(unless (display-graphic-p) ; for some reason this messes up the graphical splash screen atm
+  (setq +doom-dashboard-ascii-banner-fn #'doom-dashboard-draw-ascii-emacs-banner-fn))
+#+end_src
+
 ** Doom-quit
 I don't like all of the quit messages, lets keep it down to just a few
 #+begin_src emacs-lisp

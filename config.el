@@ -619,6 +619,58 @@ Return nil otherwise."
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 
+(defun doom-dashboard-draw-ascii-emacs-banner-fn ()
+  (let* ((banner
+          '("            :h-                                  Nhy`               "
+            "           -mh.                           h.    `Ndho               "
+            "           hmh+                          oNm.   oNdhh               "
+            "          `Nmhd`                        /NNmd  /NNhhd               "
+            "          -NNhhy                      `hMNmmm`+NNdhhh               "
+            "          .NNmhhs              ```....`..-:/./mNdhhh+               "
+            "           mNNdhhh-     `.-::///+++////++//:--.`-/sd`               "
+            "           oNNNdhhdo..://++//++++++/+++//++///++/-.`                "
+            "      y.   `mNNNmhhhdy+/++++//+/////++//+++///++////-` `/oos:       "
+            " .    Nmy:  :NNNNmhhhhdy+/++/+++///:.....--:////+++///:.`:s+        "
+            " h-   dNmNmy oNNNNNdhhhhy:/+/+++/-         ---:/+++//++//.`         "
+            " hd+` -NNNy`./dNNNNNhhhh+-://///    -+oo:`  ::-:+////++///:`        "
+            " /Nmhs+oss-:++/dNNNmhho:--::///    /mmmmmo  ../-///++///////.       "
+            "  oNNdhhhhhhhs//osso/:---:::///    /yyyyso  ..o+-//////////:/.      "
+            "   /mNNNmdhhhh/://+///::://////     -:::- ..+sy+:////////::/:/.     "
+            "     /hNNNdhhs--:/+++////++/////.      ..-/yhhs-/////////::/::/`    "
+            "       .ooo+/-::::/+///////++++//-/ossyyhhhhs/:///////:::/::::/:    "
+            "       -///:::::::////++///+++/////:/+ooo+/::///////.::://::---+`   "
+            "       /////+//++++/////+////-..//////////::-:::--`.:///:---:::/:   "
+            "       //+++//++++++////+++///::--                 .::::-------::   "
+            "       :/++++///////////++++//////.                -:/:----::../-   "
+            "       -/++++//++///+//////////////               .::::---:::-.+`   "
+            "       `////////////////////////////:.            --::-----...-/    "
+            "        -///://////////////////////::::-..      :-:-:-..-::.`.+`    "
+            "         :/://///:///::://::://::::::/:::::::-:---::-.-....``/- -   "
+            "           ::::://::://::::::::::::::----------..-:....`.../- -+oo/ "
+            "            -/:::-:::::---://:-::-::::----::---.-.......`-/.      ``"
+            "           s-`::--:::------:////----:---.-:::...-.....`./:          "
+            "          yMNy.`::-.--::..-dmmhhhs-..-.-.......`.....-/:`           "
+            "         oMNNNh. `-::--...:NNNdhhh/.--.`..``.......:/-              "
+            "        :dy+:`      .-::-..NNNhhd+``..`...````.-::-`                "
+            "                        .-:mNdhh:.......--::::-`                    "
+            "                           yNh/..------..`                          "
+            "                                                                    "
+            "                               E M A C S                            "))
+         (longest-line (apply #'max (mapcar #'length banner))))
+    (put-text-property
+     (point)
+     (dolist (line banner (point))
+       (insert (+doom-dashboard--center
+                +doom-dashboard--width
+                (concat
+                 line (make-string (max 0 (- longest-line (length line)))
+                                   32)))
+               "\n"))
+     'face 'doom-dashboard-banner)))
+
+(unless (display-graphic-p) ; for some reason this messes up the graphical splash screen atm
+  (setq +doom-dashboard-ascii-banner-fn #'doom-dashboard-draw-ascii-emacs-banner-fn))
+
 (setq +doom-quit-messages '(;;from doom 1
                             "Don't leave yet -- There's a daemon around that corner!"
                             "Go ahead and leave. See if I care."
