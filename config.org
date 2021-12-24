@@ -610,6 +610,10 @@ tweaking org then
 (package! org-cite-csl-activate
   :recipe (:host github
            :repo "andras-simonyi/org-cite-csl-activate"))
+(package! notebook-mode
+  :recipe (:host github
+           :repo "rougier/notebook-mode"
+           :files ("*.el" "*.org")))
 (package! org-pandoc-import ;https://github.com/melpa/melpa/pull/7326
   :recipe (:host github
            :repo "tecosaur/org-pandoc-import"
@@ -3582,6 +3586,13 @@ On every system I use (I have a lot of systems) the dictionary results in doom/e
              (read-string "Look up in dictionary: "))
          current-prefix-arg))
   (lexic-search identifier nil nil t))
+#+end_src
+
+** Notebook-mode
+I'm a big fan of Rougier's work beautifying emacs, and his latest attempt at improving org-mode is no exception. Lets try it out:
+#+begin_src emacs-lisp
+(use-package! notebook-mode
+  :commands notebook-mode)
 #+end_src
 
 * Latex

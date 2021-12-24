@@ -2535,6 +2535,9 @@ SQL can be either the emacsql vector representation, or a string."
          current-prefix-arg))
   (lexic-search identifier nil nil t))
 
+(use-package! notebook-mode
+  :commands notebook-mode)
+
 (after! org
   (add-hook 'org-mode-hook 'turn-on-org-cdlatex))
 
