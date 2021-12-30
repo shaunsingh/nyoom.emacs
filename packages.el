@@ -9,15 +9,12 @@
 (package! org-roam-ui)
 (package! org-ol-tree
   :recipe (:host github :repo "Townk/org-ol-tree"))
+(package! notebook-mode
+  :recipe (:host github :repo "rougier/notebook-mode"))
 (package! org-pretty-table
   :recipe (:host github :repo "Fuco1/org-pretty-table"))
 (package! org-cite-csl-activate
-  :recipe (:host github
-           :repo "andras-simonyi/org-cite-csl-activate"))
-(package! notebook-mode
-  :recipe (:host github
-           :repo "rougier/notebook-mode"
-           :files ("*.el" "*.org")))
+  :recipe (:host github :repo "andras-simonyi/org-cite-csl-activate"))
 (package! org-pandoc-import ;https://github.com/melpa/melpa/pull/7326
   :recipe (:host github
            :repo "tecosaur/org-pandoc-import"

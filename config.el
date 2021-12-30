@@ -342,9 +342,13 @@ Return nil otherwise."
     (unless (string-match-p "\\*draft" (buffer-name))
       (switch-to-buffer +doom-dashboard-name))))
 
-(setq-default line-spacing 0.24
-              window-resize-pixelwise t
-              frame-resize-pixelwise t)
+(setq-default line-spacing 0.24)
+
+(cond
+ ((string-equal system-type "darwin")
+  (setq frame-resize-pixelwise  t
+        window-resize-pixelwise t)
+  (menu-bar-mode t)))
 
 (after! frame
   (setq window-divider-default-bottom-width 0
@@ -354,7 +358,10 @@ Return nil otherwise."
 
 (setq inhibit-compacting-font-caches t)
 
-(pixel-scroll-precision-mode)
+(if (boundp 'mac-mouse-wheel-smooth-scroll)
+    (setq  mac-mouse-wheel-smooth-scroll t))
+(if (> emacs-major-version 28)
+    (pixel-scroll-precision-mode))
 
 ;; (use-package! tree-sitter
 ;;   :defer t ;; loading is handled by individual modes
@@ -390,10 +397,10 @@ Return nil otherwise."
 (use-package dimmer
   :hook (after-init . dimmer-mode)
   :config
-  (setq dimmer-fraction 0.5)
-  (setq dimmer-adjustment-mode :foreground)
-  (setq dimmer-use-colorspace :rgb)
-  (setq dimmer-watch-frame-focus-events nil)
+  (setq dimmer-fraction 0.5
+        dimmer-adjustment-mode :foreground
+        dimmer-use-colorspace :rgb
+        dimmer-watch-frame-focus-events nil)
   (dimmer-configure-which-key)
   (dimmer-configure-magit)
   (dimmer-configure-posframe))
@@ -402,126 +409,101 @@ Return nil otherwise."
   :hook (after-init . nano-light))
 
 (use-package! nano-modeline
-  :hook (after-init . nano-modeline-mode))
+  :hook (after-init . nano-modeline-mode)
+  :config
+  (setq no-mode-line t
+        nano-modeline-position 'top))
 
 (use-package! nano-agenda
   :commands nano-agenda)
 
 (use-package svg-tag-mode
-  :defer t
-  :after org
+  :commands global-svg-tag-mode
   :config
-  (defface svg-tag-org-face
-    '((t :foreground "#333333" :background "white"
-         :box (:line-width 1 :color "black" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Default face for svg tag" :group nil)
-
-  (defface svg-tag-note-face
-    '((t :foreground "#333333" :background "#FFFFFF"
-         :box (:line-width 1 :color "#333333" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Default face for svg tag" :group nil)
-
-  (defface svg-tag-todo-face
-    '((t :foreground "#ffffff" :background "#FFAB91"
-         :box (:line-width 1 :color "#FFAB91" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Face for TODO  svg tag" :group nil)
-
-  (defface svg-tag-next-face
-    '((t :foreground "white" :background "#673AB7"
-         :box (:line-width 1 :color "#673AB7" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Face for NEXT svg tag" :group nil)
-
-  (defface svg-tag-done-face
-    '((t :foreground "white" :background "#B0BEC5"
-         :box (:line-width 1 :color "#B0BEC5" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Face for DONE  svg tag" :group nil)
-
-  (defface svg-tag-org-tag-face
-    '((t :foreground "#ffffff" :background "#FFAB91"
-         :box (:line-width 1 :color "#FFAB91" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Face for TODO  svg tag" :group nil)
-
-  (defface svg-tag-date-active-face
-    '((t :foreground "white" :background "#673AB7"
-         :box (:line-width 1 :color "#673AB7" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 140))
-    "Face for active date svg tag" :group nil)
-
-  (defface svg-tag-time-active-face
-    '((t :foreground "#673AB7" :background "#ffffff"
-         :box (:line-width 1 :color "#673AB7" :style nil)
-         :family "Liga SFMono Nerd Font" :weight light :height 140))
-    "Face for active time svg tag" :group nil)
-
-  (defface svg-tag-date-inactive-face
-    '((t :foreground "#ffffff" :background "#B0BEC5"
-         :box (:line-width 1 :color "#B0BEC5" :style nil)
-         :family "Liga SFMono Nerd Font" :weight regular :height 135))
-    "Face for inactive date svg tag" :group nil)
-
-  (defface svg-tag-time-inactive-face
-    '((t :foreground "#B0BEC5" :background "#ffffff"
-         :box (:line-width 2 :color "#B0BEC5" :style nil)
-         :family "Liga SFMono Nerd Font" :weight light :height 135))
-    "Face for inactive time svg tag" :group nil)
-
-  (setq svg-tag-org-todo (svg-tag-make "TODO" 'svg-tag-todo-face 1 1 2))
-  (setq svg-tag-org-done (svg-tag-make "DONE" 'svg-tag-done-face 1 1 2))
-  (setq svg-tag-org-hold (svg-tag-make "HOLD" 'svg-tag-org-face 1 1 2))
-  (setq svg-tag-org-next (svg-tag-make "NEXT" 'svg-tag-next-face 1 1 2))
-  (setq svg-tag-org-note-tag (svg-tag-make "NOTE" 'svg-tag-note-face 1 1 2))
-  (setq svg-tag-org-canceled-tag (svg-tag-make "CANCELED" 'svg-tag-note-face 1 1 2))
-
-  (defun svg-tag-make-org-tag (text)
-    (svg-tag-make (substring text 1 -1) 'svg-tag-org-tag-face 1 1 2))
-  (defun svg-tag-make-org-priority (text)
-    (svg-tag-make (substring text 2 -1) 'svg-tag-org-face 1 0 2))
-
-  (defun svg-tag-make-org-date-active (text)
-    (svg-tag-make (substring text 1 -1) 'svg-tag-date-active-face 0 0 0))
-  (defun svg-tag-make-org-time-active (text)
-    (svg-tag-make (substring text 0 -1) 'svg-tag-time-active-face 1 0 0))
-  (defun svg-tag-make-org-range-active (text)
-    (svg-tag-make (substring text 0 -1) 'svg-tag-time-active-face 0 0 0))
-
-  (defun svg-tag-make-org-date-inactive (text)
-    (svg-tag-make (substring text 1 -1) 'svg-tag-date-inactive-face 0 0 0))
-  (defun svg-tag-make-org-time-inactive (text)
-    (svg-tag-make (substring text 0 -1) 'svg-tag-time-inactive-face 1 0 0))
-  (defun svg-tag-make-org-range-inactive (text)
-    (svg-tag-make (substring text 0 -1) 'svg-tag-time-inactive-face 0 0 0))
-
-
   (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
   (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
   (defconst day-re "[A-Za-z]\\{3\\}")
 
+  (defun svg-progress-percent (value)
+    (svg-image (svg-lib-concat
+                (svg-lib-progress-bar (/ (string-to-number value) 100.0)
+                                  nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                (svg-lib-tag (concat value "%")
+                             nil :stroke 0 :margin 0)) :ascent 'center))
+
+  (defun svg-progress-count (value)
+    (let* ((seq (mapcar #'string-to-number (split-string value "/")))
+           (count (float (car seq)))
+           (total (float (cadr seq))))
+    (svg-image (svg-lib-concat
+                (svg-lib-progress-bar (/ count total) nil
+                                      :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                (svg-lib-tag value nil
+                             :stroke 0 :margin 0)) :ascent 'center)))
+
   (setq svg-tag-tags
-        `(("@[0-9a-zA-Z]+:"                   . svg-tag-make-org-tag)
-          ("@NOTE:"                           . svg-tag-org-note-tag)
-          ("@CANCELED:"                       . svg-tag-org-canceled-tag)
-          ("\\[#[ABC]\\]"                     . svg-tag-make-org-priority)
-          (" TODO "                           . svg-tag-org-todo)
-          (" DONE "                           . svg-tag-org-done)
-          (" NEXT "                           . svg-tag-org-next)
-          (" HOLD "                           . svg-tag-org-hold)
+        `((":\\([A-Za-z0-9]+\\)" . ((lambda (tag) (svg-tag-make tag))))
+          (":\\([A-Za-z0-9]+[ \-]\\)" . ((lambda (tag) tag)))
 
-          (,(concat "<" date-re  "[ >]")             . svg-tag-make-org-date-active)
-          (,(concat "<" date-re " " day-re "[ >]")   . svg-tag-make-org-date-active)
-          (,(concat time-re ">")                     . svg-tag-make-org-time-active)
-          (,(concat time-re "-" time-re ">")         . svg-tag-make-org-range-active)
+          ;; Task priority
+          ("\\[#[A-Z]\\]" . ( (lambda (tag)
+                                (svg-tag-make tag :face 'org-priority
+                                              :beg 2 :end -1 :margin 0))))
 
-          (,(concat "\\[" date-re  "[] ]")           . svg-tag-make-org-date-inactive)
-          (,(concat "\\[" date-re " " day-re "[] ]") . svg-tag-make-org-date-inactive)
-          (,(concat time-re "\\]")                   . svg-tag-make-org-time-inactive)
-          (,(concat time-re "-" time-re "\\]")       . svg-tag-make-org-range-inactive)))
-  (global-svg-tag-mode))
+          ;; Progress
+          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
+                                              (svg-progress-percent (substring tag 1 -2)))))
+          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
+                                            (svg-progress-count (substring tag 1 -1)))))
+
+          ;; TODO / DONE, etc.
+          ("XXX" . ((lambda (tag) (svg-tag-make "XXX" :face 'org-done :margin 0))))
+          ("NOTE" . ((lambda (tag) (svg-tag-make "NOTE" :face 'org-done :margin 0))))
+          ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :margin 0))))
+          ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0))))
+          ("HACK" . ((lambda (tag) (svg-tag-make "HACK" :face 'org-todo :inverse t :margin 0))))
+          ("OPTIMIZE" . ((lambda (tag) (svg-tag-make "OPTIMIZE" :face 'org-todo :inverse t :margin 0))))
+          ("DEPRECATED" . ((lambda (tag) (svg-tag-make "DEPRECATED" :face 'org-todo :inverse t :margin 0))))
+
+          ;; Citation of the form [cite:@Knuth:1984]
+          ("\\(\\[cite:@[A-Za-z]+:\\)" . ((lambda (tag)
+                                            (svg-tag-make tag
+                                                          :inverse t
+                                                          :beg 7 :end -1
+                                                          :crop-right t))))
+          ("\\[cite:@[A-Za-z]+:\\([0-9]+\\]\\)" . ((lambda (tag)
+                                                  (svg-tag-make tag
+                                                                :end -1
+                                                                :crop-left t))))
+
+
+          ;; Active date (without day name, with or without time)
+          (,(format "\\(<%s>\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0))))
+          (,(format "\\(<%s *\\)%s>" date-re time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
+          (,(format "\\(<%s *\\)%s>" date-re time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
+          (,(format "<%s *\\(%s>\\)" date-re time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
+
+          ;; Inactive date  (without day name, with or without time)
+           (,(format "\\(\\[%s\\]\\)" date-re) .
+            ((lambda (tag)
+               (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
+           (,(format "\\(\\[%s *\\)%s\\]" date-re time-re) .
+            ((lambda (tag)
+               (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+           (,(format "\\(\\[%s *\\)%s\\]" date-re time-re) .
+            ((lambda (tag)
+               (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+           (,(format "\\[%s *\\(%s\\]\\)" date-re time-re) .
+            ((lambda (tag)
+               (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date)))))))
 
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
 (setq +doom-dashboard-banner-padding '(0 . 0))
@@ -736,21 +718,15 @@ Return nil otherwise."
   (pushnew! writeroom--local-variables
             'display-line-numbers
             'visual-fill-column-width
-            'org-adapt-indentation
-            'org-superstar-headline-bullets-list
-            'org-superstar-remove-leading-stars)
+            'org-adapt-indentation)
   (add-hook 'writeroom-mode-enable-hook
             (defun +zen-prose-org-h ()
               "Reformat the current Org buffer appearance for prose."
               (when (eq major-mode 'org-mode)
                 (setq display-line-numbers nil
                       visual-fill-column-width 60
-                      org-adapt-indentation nil)
-                (when (featurep 'org-superstar)
-                  (setq-local org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤" "✜" "◆" "▶")
-                              org-superstar-remove-leading-stars t)
-                  (org-superstar-restart))               (setq
-                  +zen--original-org-indent-mode-p org-indent-mode)
+                      org-adapt-indentation nil
+                      +zen--original-org-indent-mode-p org-indent-mode)
                 (org-indent-mode -1))))
   (add-hook! 'writeroom-mode-hook
     (if writeroom-mode
@@ -762,8 +738,6 @@ Return nil otherwise."
             (defun +zen-nonprose-org-h ()
               "Reverse the effect of `+zen-prose-org'."
               (when (eq major-mode 'org-mode)
-                (when (featurep 'org-superstar)
-                  (org-superstar-restart))
                 (when +zen--original-org-indent-mode-p (org-indent-mode 1))))))
 
 (map! :map elfeed-search-mode-map
@@ -2032,31 +2006,6 @@ is selected, only the bare key is returned."
   :after org
   :hook (org-mode . org-pretty-table-mode))
 
-(after! hl-todo
-  (setq hl-todo-keyword-faces
-        `(;; Use TODO to note missing features or functionality that should be
-          ;; added at a later date.
-          ("TODO" nano-face-salient)
-          ;; Use FIXME to note broken code that needs to be fixed.
-          ("FIXME" nano-face-critical)
-          ;; Use OPTIMIZE to note slow or inefficient code that may cause
-          ;; performance problems.
-          ("OPTIMIZE" nano-face-salient)
-          ;; Use HACK to note "code smells" where questionable coding practices
-          ;; were used and should be refactored away.
-          ("HACK" nano-face-salient)
-          ;; Use REVIEW to note anything that should be looked at to confirm it is
-          ;; working as intended. For example: REVIEW: Are we sure this is how the
-          ;; client does X currently?
-          ("REVIEW" nano-face-salient)
-
-          ;; Here are keywords I don't use but are added for compatibility with
-          ;; other's codebases
-          ("NOTE" nano-face-salient)
-          ("DEPRECATED" nano-face-salient)
-          ("BUG" nano-face-critical)
-          ("XXX" nano-face-salient))))
-
 (after! org
   (setq org-agenda-deadline-faces
         '((1.0 . error)
@@ -2074,14 +2023,6 @@ is selected, only the bare key is returned."
   (setq org-appear-autoemphasis t
         org-appear-autolinks t
         org-appear-autosubmarkers t))
-
-(defun locally-defer-font-lock ()
-  "Set jit-lock defer and stealth, when buffer is over a certain size."
-  (when (> (buffer-size) 50000)
-    (setq-local jit-lock-defer-time 0.05
-                jit-lock-stealth-time 1)))
-
-(add-hook 'org-mode-hook #'locally-defer-font-lock)
 
 (after! org-plot
   (defun org-plot/generate-theme (_type)
@@ -2535,7 +2476,7 @@ SQL can be either the emacsql vector representation, or a string."
          current-prefix-arg))
   (lexic-search identifier nil nil t))
 
-(use-package! notebook-mode
+(use-package! notebook
   :commands notebook-mode)
 
 (after! org
