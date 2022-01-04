@@ -111,11 +111,7 @@ Made for `org-tab-first-hook'."
                   t)
                  ((use-region-p)
                   (yas-insert-snippet)
-                  t)))
-         ;; HACK Yasnippet breaks org-superstar-mode because yasnippets is
-         ;;      overzealous about cleaning up overlays.
-         (when (bound-and-true-p org-superstar-mode)
-           (org-superstar-restart)))))
+                  t))))))
 
 (defun +yas/org-src-header-p ()
   "Determine whether `point' is within a src-block header or header-args."
@@ -229,6 +225,7 @@ Return nil otherwise."
       display-line-numbers-type nil
       delete-by-moving-to-trash t
       truncate-string-ellipsis "…"
+      evil-want-fine-undo t
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
 (fringe-mode 0)
@@ -391,7 +388,18 @@ Return nil otherwise."
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 
+(use-package! nano-theme
+  :hook (after-init . nano-light))
+
 (setq doom-theme 'nil)
+
+(use-package! nano-modeline
+  :hook (after-init . nano-modeline-mode)
+  :config
+  (setq nano-modeline-position 'top))
+
+(use-package! nano-agenda
+  :commands nano-agenda)
 
 ;; Dim inactive windows
 (use-package dimmer
@@ -405,20 +413,26 @@ Return nil otherwise."
   (dimmer-configure-magit)
   (dimmer-configure-posframe))
 
-(use-package! nano-theme
-  :hook (after-init . nano-light))
+(defun add-list-to-list (dst src)
+  "Similar to `add-to-list', but accepts a list as 2nd argument"
+  (set dst
+       (append (eval dst) src)))
 
-(use-package! nano-modeline
-  :hook (after-init . nano-modeline-mode)
-  :config
-  (setq no-mode-line t
-        nano-modeline-position 'top))
-
-(use-package! nano-agenda
-  :commands nano-agenda)
+(use-package! focus
+    :commands focus-mode
+    :config
+    ;; add whatever lsp servers you use to this list
+    (add-list-to-list 'focus-mode-to-thing
+                      '((c-mode . lsp-folding-range)
+                        (lua-mode . lsp-folding-range)
+                        (org-mode . lsp-folding-range)
+                        (rust-mode . lsp-folding-range)
+                        (latex-mode . lsp-folding-range)
+                        (python-mode . lsp-folding-range))))
 
 (use-package svg-tag-mode
   :commands global-svg-tag-mode
+  :hook (org-mode . global-svg-tag-mode)
   :config
   (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
   (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
@@ -427,7 +441,7 @@ Return nil otherwise."
   (defun svg-progress-percent (value)
     (svg-image (svg-lib-concat
                 (svg-lib-progress-bar (/ (string-to-number value) 100.0)
-                                  nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                                      nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
                 (svg-lib-tag (concat value "%")
                              nil :stroke 0 :margin 0)) :ascent 'center))
 
@@ -435,11 +449,11 @@ Return nil otherwise."
     (let* ((seq (mapcar #'string-to-number (split-string value "/")))
            (count (float (car seq)))
            (total (float (cadr seq))))
-    (svg-image (svg-lib-concat
-                (svg-lib-progress-bar (/ count total) nil
-                                      :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
-                (svg-lib-tag value nil
-                             :stroke 0 :margin 0)) :ascent 'center)))
+      (svg-image (svg-lib-concat
+                  (svg-lib-progress-bar (/ count total) nil
+                                        :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                  (svg-lib-tag value nil
+                               :stroke 0 :margin 0)) :ascent 'center)))
 
   (setq svg-tag-tags
         `((":\\([A-Za-z0-9]+\\)" . ((lambda (tag) (svg-tag-make tag))))
@@ -465,16 +479,17 @@ Return nil otherwise."
           ("OPTIMIZE" . ((lambda (tag) (svg-tag-make "OPTIMIZE" :face 'org-todo :inverse t :margin 0))))
           ("DEPRECATED" . ((lambda (tag) (svg-tag-make "DEPRECATED" :face 'org-todo :inverse t :margin 0))))
 
-          ;; Citation of the form [cite:@Knuth:1984]
+
+          ;;citations
           ("\\(\\[cite:@[A-Za-z]+:\\)" . ((lambda (tag)
                                             (svg-tag-make tag
                                                           :inverse t
                                                           :beg 7 :end -1
                                                           :crop-right t))))
           ("\\[cite:@[A-Za-z]+:\\([0-9]+\\]\\)" . ((lambda (tag)
-                                                  (svg-tag-make tag
-                                                                :end -1
-                                                                :crop-left t))))
+                                                     (svg-tag-make tag
+                                                                   :end -1
+                                                                   :crop-left t))))
 
 
           ;; Active date (without day name, with or without time)
@@ -484,26 +499,20 @@ Return nil otherwise."
           (,(format "\\(<%s *\\)%s>" date-re time-re) .
            ((lambda (tag)
               (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
-          (,(format "\\(<%s *\\)%s>" date-re time-re) .
-           ((lambda (tag)
-              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
           (,(format "<%s *\\(%s>\\)" date-re time-re) .
            ((lambda (tag)
               (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
 
           ;; Inactive date  (without day name, with or without time)
-           (,(format "\\(\\[%s\\]\\)" date-re) .
-            ((lambda (tag)
-               (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
-           (,(format "\\(\\[%s *\\)%s\\]" date-re time-re) .
-            ((lambda (tag)
-               (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
-           (,(format "\\(\\[%s *\\)%s\\]" date-re time-re) .
-            ((lambda (tag)
-               (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
-           (,(format "\\[%s *\\(%s\\]\\)" date-re time-re) .
-            ((lambda (tag)
-               (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date)))))))
+          (,(format "\\(\\[%s\\]\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
+          (,(format "\\(\\[%s *\\)%s\\]" date-re time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+          (,(format "\\[%s *\\(%s\\]\\)" date-re time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date)))))))
 
 (setq fancy-splash-image "~/.config/doom/misc/gura.png")
 (setq +doom-dashboard-banner-padding '(0 . 0))
@@ -962,13 +971,17 @@ Return nil otherwise."
   :after org)
 
 (after! org
-  (setq org-directory "~/org"                       ; let's put files here
-        org-roam-directory "~/org/roam/"            ; same thing, for roam
-        org-use-property-inheritance t              ; it's convenient to have properties inherited
-        org-log-done 'time                          ; having the time a item is done sounds convenient
-        org-list-allow-alphabetical t               ; have a. A. a) A) list bullets
-        org-export-in-background t                  ; run export processes in external emacs process
-        org-catch-invisible-edits 'smart))          ; try not to accidently do weird stuff in invisible regions
+  (setq org-directory "~/org"                     ; let's put files here
+        org-ellipsis "  ﬋"                        ; cute icon for folded org blocks
+        org-list-allow-alphabetical t             ; have a. A. a) A) list bullets
+        org-export-in-background t                ; run export processes in external emacs process
+        org-use-property-inheritance t            ; it's convenient to have properties inherited
+        org-src-fontify-natively t                ; fontify org-src blocks
+        org-catch-invisible-edits 'smart          ; try not to accidently do weird stuff in invisible regions
+        org-src-tab-acts-natively t               ; tabs should act natively in src blocks
+        org-return-follows-link t                 ; hitting return makes it follow the link
+        org-log-done 'time                        ; having the time a item is done sounds convenient
+        org-roam-directory "~/org/roam/"))        ; same thing, for roam
 
 (after! org
   (setq org-babel-default-header-args
@@ -983,10 +996,6 @@ Return nil otherwise."
 
 (after! org
   (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a."))))
-
-(after! org-superstar
-  (setq org-superstar-headline-bullets-list '("一" "二" "三" "五" "六" "七" "八" )
-        org-superstar-prettify-item-bullets t))
 
 (use-package! org-ol-tree
   :commands org-ol-tree)
@@ -1895,18 +1904,6 @@ is selected, only the bare key is returned."
                            :keyword "%U"
                            :file +org-capture-project-notes-file))))))
 
-(after! org
-  (setq org-ellipsis " ▾ "
-        org-hide-leading-stars t
-        org-priority-highest ?A
-        org-priority-lowest ?E
-        org-priority-faces
-        '((?A . 'all-the-icons-red)
-          (?B . 'all-the-icons-orange)
-          (?C . 'all-the-icons-yellow)
-          (?D . 'all-the-icons-green)
-          (?E . 'all-the-icons-blue))))
-
 (appendq! +ligatures-extra-symbols
           `(:checkbox      "☐"
             :pending       "◼"
@@ -1916,9 +1913,6 @@ is selected, only the bare key is returned."
             :ellipses      "…"
             :arrow_right   "→"
             :arrow_left    "←"
-            :property      "☸"
-            :options       "⌥"
-            :startup       "⏻"
             :html_head     "🅷"
             :html          "🅗"
             :latex_class   "🄻"
@@ -1934,7 +1928,6 @@ is selected, only the bare key is returned."
             :header        "›"
             :begin_export  "⏩"
             :end_export    "⏪"
-            :properties    "⚙"
             :end           "∎"
             :priority_a   ,(propertize "⚑" 'face 'all-the-icons-red)
             :priority_b   ,(propertize "⬆" 'face 'all-the-icons-orange)
@@ -1951,14 +1944,6 @@ is selected, only the bare key is returned."
   :ellipsis      "..."
   :arrow_right   "->"
   :arrow_left    "<-"
-  :title         "#+title:"
-  :subtitle      "#+subtitle:"
-  :author        "#+author:"
-  :date          "#+date:"
-  :property      "#+property:"
-  :options       "#+options:"
-  :startup       "#+startup:"
-  :macro         "#+macro:"
   :html_head     "#+html_head:"
   :html          "#+html:"
   :latex_class   "#+latex_class:"
@@ -1975,7 +1960,6 @@ is selected, only the bare key is returned."
   :begin_export  "#+begin_export"
   :end_export    "#+end_export"
   :results       "#+RESULTS:"
-  :property      ":PROPERTIES:"
   :end           ":END:"
   :priority_a    "[#A]"
   :priority_b    "[#B]"
@@ -2012,9 +1996,6 @@ is selected, only the bare key is returned."
           (1.0 . org-warning)
           (0.5 . org-upcoming-deadline)
           (0.0 . org-upcoming-distant-deadline))))
-
-(after! org
-  (setq org-fontify-quote-and-verse-blocks t))
 
 (use-package! org-appear
   :after org
@@ -2479,12 +2460,12 @@ SQL can be either the emacsql vector representation, or a string."
 (use-package! notebook
   :commands notebook-mode)
 
-(after! org
-  (add-hook 'org-mode-hook 'turn-on-org-cdlatex))
+;; (use-package! org-bib-mode
+;;   :hook (org-mode . org-bib-mode))
 
-(defadvice! org-edit-latex-emv-after-insert ()
-  :after #'org-cdlatex-environment-indent
-  (org-edit-latex-environment))
+(after! org
+  (setq org-highlight-latex-and-related '(native script entities))
+  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
 
 (use-package pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
@@ -2796,7 +2777,8 @@ This is done according to `org-latex-feature-implementations'"
 (use-package! engrave-faces-latex
   :after ox-latex
   :config
-  (setq org-latex-listings 'engraved))
+  (setq org-latex-listings 'engraved
+        engrave-faces-preset-styles (engrave-faces-generate-preset)))
 
 (defadvice! org-latex-src-block-engraved (orig-fn src-block contents info)
   "Like `org-latex-src-block', but supporting an engraved backend"

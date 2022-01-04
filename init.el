@@ -23,7 +23,7 @@
        doom-quit                    ; DOOM quit-message prompts when you quit Emacs
        ;;(emoji +unicode)           ; 🙂
        ;;fill-column                ; a `fill-column' indicator
-       hl-todo                      ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
+       ;;hl-todo                    ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;hydra                      ; quick documentation for related commands
        ;;indent-guides              ; highlighted indent columns, notoriously slow
        (ligatures                   ; ligatures and symbols to make your code pnoretty again
@@ -143,9 +143,9 @@
        ;;(julia +lsp)               ; Python, R, and MATLAB in a blender
        ;;(kotlin +lsp)              ; a better, slicker Java(Script)
        (latex                       ; writing papers in Emacs has never been so fun
-        +fold                       ; fold the clutter away nicities
+        ;;+fold                     ; fold the clutter away nicities
         +latexmk                    ; modern latex plz
-        +cdlatex                    ; quick maths symbols
+        ;;+cdlatex                  ; quick maths symbols
         +lsp)
        ;;lean                       ; proof that mathematicians need help
        ;;factor                     ; for when scripts are stacked against you
@@ -156,7 +156,7 @@
        nix                          ; I hereby declare "nix geht mehr!"
        ;;ocaml                      ; an objective camel
        (org                         ; organize your plain life in plain text
-        +pretty                     ; yessss my pretties! (nice unicode symbols)
+        ;;+pretty                   ; yessss my pretties! (nice unicode symbols)
         +dragndrop                  ; drag & drop files/images into org buffers
         ;;+hugo                     ; use Emacs for hugo blogging
         ;;+noter                    ; enhanced PDF notetaking

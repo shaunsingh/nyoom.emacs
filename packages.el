@@ -2,6 +2,7 @@
 ;;; $DOOMDIR/packages.el
 
 ;;org
+(unpin! org)
 (package! doct)
 (package! citar)
 (package! citeproc)
@@ -11,6 +12,8 @@
   :recipe (:host github :repo "Townk/org-ol-tree"))
 (package! notebook-mode
   :recipe (:host github :repo "rougier/notebook-mode"))
+;; (package! org-bib-mode
+;;   :recipe (:host github :repo "rougier/org-bib-mode"))
 (package! org-pretty-table
   :recipe (:host github :repo "Fuco1/org-pretty-table"))
 (package! org-cite-csl-activate
@@ -36,6 +39,7 @@
 ;;                   :pre-build (("nix-shell" "shell.nix" "--command make"))))
 
 ;;looks
+(package! focus)
 (package! dimmer)
 (package! nano-theme)
 (package! nano-agenda)

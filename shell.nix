@@ -13,11 +13,11 @@ mkShell {
     (ripgrep.override { withPCRE2 = true; })
     sqlite
     gnuplot
-    pandoc
-    sdcv
+    # pandoc
+    # sdcv
     (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
     tectonic
-    languagetool
+    # languagetool
     nixfmt
     fd
     sassc
