@@ -520,7 +520,7 @@ Return nil otherwise."
                '(menu-bar-lines . 0))))
 
 (use-package! nano-theme
-  :hook (after-init . nano-light))
+  :hook (after-init . nano-dark))
 
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode)

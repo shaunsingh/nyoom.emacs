@@ -21,12 +21,6 @@
   "Update the buffer to be the name of the window"
   (exwm-workspace-rename-buffer exwm-class-name))
 
-(defun run-in-background (command &optional args)
-  "Run the specified command as a daemon"
-  (kill-process--action (assoc command process-alist))
-  (setq process-alist
-        (cons `(,command . ,(start-process-shell-command command nil (format "%s %s" command (or args "")))) process-alist)))
-
 (defun reload-tray ()
   "Restart the systemtray"
   (interactive)
@@ -43,27 +37,15 @@
   "Configuration for windows (grouped by WM_CLASS)"
   (interactive)
   (pcase (downcase (or exwm-class-name ""))
-    ("mpv" (progn
-             (exwm-floating-toggle-floating)
-             (exwm-layout-toggle-mode-line)))
     ("discord" (progn
                  (exwm-workspace-move-window (exwm-get-index 3))
                  (reload-tray)))
-    ("megasync" (progn
-                  (exwm-floating-toggle-floating)
-                  (exwm-layout-toggle-mode-line)))
     ("spotify" (exwm-workspace-move-window (exwm-get-index 4)))
     ("firefox" (exwm-workspace-move-window (exwm-get-index 2)))))
 
 (defun exwm-init-hook ()
   "Various init processes for exwm"
-  ;; Daemon applications
-  (run-in-background "pasystray")
-  (run-in-background "megasync")
-  (run-in-background "nm-applet")
-
   ;; Startup applications
-  (run-application "spotify")
   (run-application "discord")
   (run-application "firefox")
 
@@ -112,7 +94,7 @@
   (setq exwm-workspace-number 5)
 
   ;; Define workspace setup for monitors
-  (setq exwm-randr-workspace-monitor-plist `(,(exwm-get-index 2) "DP-0" ,(exwm-get-index 3) "DP-0"))
+  ;;(setq exwm-randr-workspace-monitor-plist `(,(exwm-get-index 2) "DP-0" ,(exwm-get-index 3) "DP-0"))
 
   (setq exwm-workspace-index-map
         (lambda (index) (number-to-string (+ 1 index))))
@@ -150,18 +132,12 @@
   ;; Setup screen layout
   (require 'exwm-randr)
   (exwm-randr-enable)
-  ;; TODO Change this to work with my laptops
-  (start-process-shell-command "xrandr" nil "xrandr --output HDMI-0 --primary --mode 2560x1440 --pos 0x1080 --output DP-0 --mode 2560x1080 --pos 0x0")
+  (start-process-shell-command "xrandr" nil "xrandr --output eDP-1 --primary")
 
   ;; Setup tray
   (require 'exwm-systemtray)
   (setq exwm-systemtray-height 16)
   (exwm-systemtray-enable)
-
-  ;; Date/time
-  (setq display-time-format " [ %H:%M %d/%m/%y]")
-  (setq display-time-default-load-average nil)
-  (display-time-mode 1)
 
   (exwm-input-set-key (kbd "<s-return>") '+eshell/toggle)
 
