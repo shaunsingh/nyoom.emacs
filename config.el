@@ -220,12 +220,161 @@ Return nil otherwise."
         lsp-rust-analyzer-server-display-inlay-hints t
         lsp-rust-analyzer-cargo-watch-command "clippy"))
 
+;; (defun meow-setup ()
+;;  (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+;;   (meow-motion-overwrite-define-key
+;;    '("j" . meow-next)
+;;    '("k" . meow-prev)
+;;    '("<escape>" . ignore))
+;;   (meow-leader-define-key
+;;    '("k" . kill-current-buffer)                   ;; C-x k
+;;    '("K" . tl/only-current-buffer)                ;; C-x K
+;;    ;; Use SPC (0-9) for digit arguments.
+;;    '("1" . meow-digit-argument)
+;;    '("2" . meow-digit-argument)
+;;    '("3" . meow-digit-argument)
+;;    '("4" . meow-digit-argument)
+;;    '("5" . meow-digit-argument)
+;;    '("6" . meow-digit-argument)
+;;    '("7" . meow-digit-argument)
+;;    '("8" . meow-digit-argument)
+;;    '("9" . meow-digit-argument)
+;;    '("0" . meow-digit-argument)
+;;    '("/" . meow-keypad-describe-key)
+;;    '("?" . meow-cheatsheet))
+;;   (meow-normal-define-key
+;;    '("0" . meow-expand-0)
+;;    '("9" . meow-expand-9)
+;;    '("8" . meow-expand-8)
+;;    '("7" . meow-expand-7)
+;;    '("6" . meow-expand-6)
+;;    '("5" . meow-expand-5)
+;;    '("4" . meow-expand-4)
+;;    '("3" . meow-expand-3)
+;;    '("2" . meow-expand-2)
+;;    '("1" . meow-expand-1)
+;;    '("-" . negative-argument)
+;;    '(";" . meow-reverse)
+;;    '("," . meow-inner-of-thing)
+;;    '("." . meow-bounds-of-thing)
+;;    '("[" . meow-beginning-of-thing)
+;;    '("]" . meow-end-of-thing)
+;;    '("a" . meow-append)
+;;    '("A" . meow-open-below)
+;;    '("b" . meow-back-word)
+;;    '("B" . meow-back-symbol)
+;;    '("c" . meow-change)
+;;    '("d" . meow-delete)
+;;    '("D" . meow-backward-delete)
+;;    '("e" . meow-next-word)
+;;    '("E" . meow-next-symbol)
+;;    '("f" . meow-find)
+;;    '("g" . meow-cancel-selection)
+;;    '("G" . meow-grab)
+;;    '("h" . meow-left)
+;;    '("H" . meow-left-expand)
+;;    '("i" . meow-insert)
+;;    '("I" . meow-open-above)
+;;    '("j" . meow-next)
+;;    '("J" . meow-next-expand)
+;;    '("k" . meow-prev)
+;;    '("K" . meow-prev-expand)
+;;    '("l" . meow-right)
+;;    '("L" . meow-right-expand)
+;;    '("m" . meow-join)
+;;    '("n" . meow-search)
+;;    '("o" . meow-block)
+;;    '("O" . meow-to-block)
+;;    '("p" . meow-yank)
+;;    '("q" . meow-quit)
+;;    '("Q" . meow-goto-line)
+;;    '("r" . meow-replace)
+;;    '("R" . meow-swap-grab)
+;;    '("s" . meow-kill)
+;;    '("t" . meow-till)
+;;    '("u" . meow-undo)
+;;    '("U" . meow-undo-in-selection)
+;;    '("v" . meow-visit)
+;;    '("w" . meow-mark-word)
+;;    '("W" . meow-mark-symbol)
+;;    '("x" . meow-line)
+;;    '("X" . meow-goto-line)
+;;    '("y" . meow-save)
+;;    '("Y" . meow-sync-grab)
+;;    '("z" . meow-pop-selection)
+;;    '("'" . repeat)
+;;    '("<escape>" . ignore)))
+
+;; (defun meow--setup-useful-keybindings()
+;;       (map! :leader
+;;           (:prefix-map ("b" . "buffer")
+;;            :desc "Toggle narrowing"            "-"   #'doom/toggle-narrow-buffer
+;;            :desc "Previous buffer"             "["   #'previous-buffer
+;;            :desc "Next buffer"                 "]"   #'next-buffer
+;;            :desc "Switch workspace buffer"     "b" #'persp-switch-to-buffer
+;;            :desc "Switch buffer"               "B" #'switch-to-buffer
+;;            :desc "Clone buffer"                "c"   #'clone-indirect-buffer
+;;            :desc "Clone buffer other window"   "C"   #'clone-indirect-buffer-other-window
+;;            :desc "Kill buffer"                 "d"   #'kill-current-buffer
+;;            :desc "ibuffer"                     "i"   #'ibuffer
+;;            :desc "Kill buffer"                 "k"   #'kill-current-buffer
+;;            :desc "Kill all buffers"            "K"   #'doom/kill-all-buffers
+;;            :desc "Switch to last buffer"       "l"   #'evil-switch-to-windows-last-buffer
+;;            :desc "Set bookmark"                "m"   #'bookmark-set
+;;            :desc "Delete bookmark"             "M"   #'bookmark-delete
+;;            :desc "Next buffer"                 "n"   #'next-buffer
+;;            :desc "New empty buffer"            "N"   #'evil-buffer-new
+;;            :desc "Kill other buffers"          "O"   #'doom/kill-other-buffers
+;;            :desc "Previous buffer"             "p"   #'previous-buffer
+;;            :desc "Revert buffer"               "r"   #'revert-buffer
+;;            :desc "Save buffer"                 "s"   #'basic-save-buffer
+;;            :desc "Save all buffers"            "S"   #'evil-write-all
+;;            :desc "Save buffer as root"         "u"   #'doom/sudo-save-buffer
+;;            :desc "Pop up scratch buffer"       "x"   #'doom/open-scratch-buffer
+;;            :desc "Switch to scratch buffer"    "X"   #'doom/switch-to-scratch-buffer
+;;            :desc "Bury buffer"                 "z"   #'bury-buffer
+;;            :desc "Kill buried buffers"         "Z"   #'doom/kill-buried-buffers))
+;;     (meow-leader-define-key
+;;      (cons "f" doom-leader-file-map)
+;;      (cons "d" doom-leader-code-map)
+;;      (cons "s" doom-leader-search-map)
+;;      (cons "b" doom-leader-buffer-map)
+;;      (cons "o" doom-leader-open-map)
+;;      (cons "v" doom-leader-versioning-map)
+;;      (cons "n" doom-leader-notes-map)
+;;      (cons "p" projectile-command-map)
+;;      (cons "i" doom-leader-insert-map)
+;;      (cons "q" doom-leader-quit/restart-map)
+;;      (cons "h" help-map)
+;;      (cons "t" doom-leader-toggle-map)
+;;      (cons "w" doom-leader-workspaces/windows-map)
+;;      (cons "S" doom-leader-snippets-map))
+;;     (map!
+;;      :n "C-t"   #'+workspace/new
+;;      :n "C-S-t" #'+workspace/display
+;;      :g "M-1"   #'+workspace/switch-to-0
+;;      :g "M-2"   #'+workspace/switch-to-1
+;;      :g "M-3"   #'+workspace/switch-to-2
+;;      :g "M-4"   #'+workspace/switch-to-3
+;;      :g "M-5"   #'+workspace/switch-to-4
+;;      :g "M-6"   #'+workspace/switch-to-5
+;;      :g "M-7"   #'+workspace/switch-to-6
+;;      :g "M-8"   #'+workspace/switch-to-7
+;;      :g "M-9"   #'+workspace/switch-to-8
+;;      :g "M-0"   #'+workspace/switch-to-final))
+
+;; (use-package meow
+;;   :hook (after-init . meow-global-mode)
+;;   :config
+;;   (meow-setup))
+;;   ;;(meow--setup-useful-keybindings))
+
 (setq scroll-margin 2
       auto-save-default t
       display-line-numbers-type nil
       delete-by-moving-to-trash t
       truncate-string-ellipsis "…"
-      evil-want-fine-undo t
+      ;;evil-want-fine-undo t
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
 (fringe-mode 0)
@@ -300,9 +449,6 @@ Return nil otherwise."
 
 (use-package! monkeytype
   :commands (monkeytype-region monkeytype-buffer monkeytype-region-as-words)
-  :init
-  (evil-escape-mode -1)
-  (evil-insert -1)
   :config
   (setq monkeytype-directory "~/.config/monkeytype"
         monkeytype-file-name "%a-%d-%b-%Y-%H-%M-%S"
@@ -360,21 +506,6 @@ Return nil otherwise."
 (if (> emacs-major-version 28)
     (pixel-scroll-precision-mode))
 
-;; (use-package! tree-sitter
-;;   :defer t ;; loading is handled by individual modes
-;;   :hook (tree-sitter-after-on . tree-sitter-hl-mode)
-;;   :config
-;;   (cl-pushnew (expand-file-name "~/.config/tree-sitter") tree-sitter-load-path)
-;;   (defvar +tree-sitter-enabled-mode-maps (seq-map (lambda (mode)
-;;                                                     (intern (concat
-;;                                                              (symbol-name (car mode)) "-map")))
-;;                                                   tree-sitter-major-mode-language-alist)
-;;     "List of mode hooks for tree sitter enabled modes.")
-;;   ;; This makes every node a link to a section of code
-;;   (setq tree-sitter-debug-jump-buttons t
-;;         ;; and this highlights the entire sub tree in your code
-;;         tree-sitter-debug-highlight-jump-region t))
-
 (setq default-frame-alist
       (append (list
                '(min-height . 1)
@@ -391,8 +522,6 @@ Return nil otherwise."
 (use-package! nano-theme
   :hook (after-init . nano-light))
 
-(setq doom-theme 'nil)
-
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode)
   :config
@@ -400,6 +529,33 @@ Return nil otherwise."
 
 (use-package! nano-agenda
   :commands nano-agenda)
+
+(use-package! nano-splash
+  :after nano-theme
+  :config
+  (setq initial-scratch-message "\
+
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │             DOOM Emacs / N Λ N O ─ Evil. Emacs. Simplified             │
+ │      Copyright (C) 2021 ─ N Λ N O, Shaurya Singh, Henrik Lissner.      │
+ ╰────────────────────────────────────────────────────────────────────────╯
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │  This program is free software; you can redistribute it and/or modify  │
+ │   it under the terms of the GNU General Public License as published    │
+ │    by the Free Software Foundation, either version 3 of the License.   │
+ ╰────────────────────────────────────────────────────────────────────────╯
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │    This program is distributed in the hope that it will be useful,     │
+ │    but WITHOUT ANY WARRANTY; without even the implied warranty of      │
+ │     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      │
+ │            GNU General Public License for more details.                │
+ ╰────────────────────────────────────────────────────────────────────────╯
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │   You should have received a copy of the GNU General Public License    │
+ │  along with this program. If not, see <http://www.gnu.org/licenses/>.  │
+ ╰────────────────────────────────────────────────────────────────────────╯
+
+"))
 
 ;; Dim inactive windows
 (use-package dimmer
@@ -419,19 +575,19 @@ Return nil otherwise."
        (append (eval dst) src)))
 
 (use-package! focus
-    :commands focus-mode
-    :config
-    ;; add whatever lsp servers you use to this list
-    (add-list-to-list 'focus-mode-to-thing
-                      '((c-mode . lsp-folding-range)
-                        (lua-mode . lsp-folding-range)
-                        (org-mode . lsp-folding-range)
-                        (rust-mode . lsp-folding-range)
-                        (latex-mode . lsp-folding-range)
-                        (python-mode . lsp-folding-range))))
+  :commands focus-mode
+  :config
+  ;; add whatever lsp servers you use to this list
+  (add-list-to-list 'focus-mode-to-thing
+                    '((c-mode . lsp-folding-range)
+                      (lua-mode . lsp-folding-range)
+                      (org-mode . lsp-folding-range)
+                      (rust-mode . lsp-folding-range)
+                      (latex-mode . lsp-folding-range)
+                      (python-mode . lsp-folding-range))))
 
 (use-package svg-tag-mode
-  :commands global-svg-tag-mode
+  :commands svg-tag-mode
   :hook (org-mode . global-svg-tag-mode)
   :config
   (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
@@ -513,201 +669,6 @@ Return nil otherwise."
           (,(format "\\[%s *\\(%s\\]\\)" date-re time-re) .
            ((lambda (tag)
               (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date)))))))
-
-(setq fancy-splash-image "~/.config/doom/misc/gura.png")
-(setq +doom-dashboard-banner-padding '(0 . 0))
-
-(defvar splash-phrase-source-folder
-  (expand-file-name "misc/splash-phrases" doom-private-dir)
-  "A folder of text files with a fun phrase on each line.")
-
-(defvar splash-phrase-sources
-  (let* ((files (directory-files splash-phrase-source-folder nil "\\.txt\\'"))
-         (sets (delete-dups (mapcar
-                             (lambda (file)
-                               (replace-regexp-in-string "\\(?:-[0-9]+-\\w+\\)?\\.txt" "" file))
-                             files))))
-    (mapcar (lambda (sset)
-              (cons sset
-                    (delq nil (mapcar
-                               (lambda (file)
-                                 (when (string-match-p (regexp-quote sset) file)
-                                   file))
-                               files))))
-            sets))
-  "A list of cons giving the phrase set name, and a list of files which contain phrase components.")
-
-(defvar splash-phrase-set
-  (nth (random (length splash-phrase-sources)) (mapcar #'car splash-phrase-sources))
-  "The default phrase set. See `splash-phrase-sources'.")
-
-(defun splase-phrase-set-random-set ()
-  "Set a new random splash phrase set."
-  (interactive)
-  (setq splash-phrase-set
-        (nth (random (1- (length splash-phrase-sources)))
-             (cl-set-difference (mapcar #'car splash-phrase-sources) (list splash-phrase-set))))
-  (+doom-dashboard-reload t))
-
-(defvar splase-phrase--cache nil)
-
-(defun splash-phrase-get-from-file (file)
-  "Fetch a random line from FILE."
-  (let ((lines (or (cdr (assoc file splase-phrase--cache))
-                   (cdar (push (cons file
-                                     (with-temp-buffer
-                                       (insert-file-contents (expand-file-name file splash-phrase-source-folder))
-                                       (split-string (string-trim (buffer-string)) "\n")))
-                               splase-phrase--cache)))))
-    (nth (random (length lines)) lines)))
-
-(defun splash-phrase (&optional set)
-  "Construct a splash phrase from SET. See `splash-phrase-sources'."
-  (mapconcat
-   #'splash-phrase-get-from-file
-   (cdr (assoc (or set splash-phrase-set) splash-phrase-sources))
-   " "))
-
-(defun doom-dashboard-phrase ()
-  "Get a splash phrase, flow it over multiple lines as needed, and make fontify it."
-  (mapconcat
-   (lambda (line)
-     (+doom-dashboard--center
-      +doom-dashboard--width
-      (with-temp-buffer
-        (insert-text-button
-         line
-         'action
-         (lambda (_) (+doom-dashboard-reload t))
-         'face 'doom-dashboard-menu-title
-         'mouse-face 'doom-dashboard-menu-title
-         'help-echo "Random phrase"
-         'follow-link t)
-        (buffer-string))))
-   (split-string
-    (with-temp-buffer
-      (insert (splash-phrase))
-      (setq fill-column (min 70 (/ (* 2 (window-width)) 3)))
-      (fill-region (point-min) (point-max))
-      (buffer-string))
-    "\n")
-   "\n"))
-
-(defadvice! doom-dashboard-widget-loaded-with-phrase ()
-  :override #'doom-dashboard-widget-loaded
-  (insert
-   "\n\n"
-   (propertize
-    (+doom-dashboard--center
-     +doom-dashboard--width
-     (doom-display-benchmark-h 'return))
-    'face 'doom-dashboard-loaded)
-   "\n"
-   (doom-dashboard-phrase)
-   "\n"))
-
-(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
-(add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1) (hl-line-mode -1))
-(setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
-
-(defun doom-dashboard-draw-ascii-emacs-banner-fn ()
-  (let* ((banner
-          '("            :h-                                  Nhy`               "
-            "           -mh.                           h.    `Ndho               "
-            "           hmh+                          oNm.   oNdhh               "
-            "          `Nmhd`                        /NNmd  /NNhhd               "
-            "          -NNhhy                      `hMNmmm`+NNdhhh               "
-            "          .NNmhhs              ```....`..-:/./mNdhhh+               "
-            "           mNNdhhh-     `.-::///+++////++//:--.`-/sd`               "
-            "           oNNNdhhdo..://++//++++++/+++//++///++/-.`                "
-            "      y.   `mNNNmhhhdy+/++++//+/////++//+++///++////-` `/oos:       "
-            " .    Nmy:  :NNNNmhhhhdy+/++/+++///:.....--:////+++///:.`:s+        "
-            " h-   dNmNmy oNNNNNdhhhhy:/+/+++/-         ---:/+++//++//.`         "
-            " hd+` -NNNy`./dNNNNNhhhh+-://///    -+oo:`  ::-:+////++///:`        "
-            " /Nmhs+oss-:++/dNNNmhho:--::///    /mmmmmo  ../-///++///////.       "
-            "  oNNdhhhhhhhs//osso/:---:::///    /yyyyso  ..o+-//////////:/.      "
-            "   /mNNNmdhhhh/://+///::://////     -:::- ..+sy+:////////::/:/.     "
-            "     /hNNNdhhs--:/+++////++/////.      ..-/yhhs-/////////::/::/`    "
-            "       .ooo+/-::::/+///////++++//-/ossyyhhhhs/:///////:::/::::/:    "
-            "       -///:::::::////++///+++/////:/+ooo+/::///////.::://::---+`   "
-            "       /////+//++++/////+////-..//////////::-:::--`.:///:---:::/:   "
-            "       //+++//++++++////+++///::--                 .::::-------::   "
-            "       :/++++///////////++++//////.                -:/:----::../-   "
-            "       -/++++//++///+//////////////               .::::---:::-.+`   "
-            "       `////////////////////////////:.            --::-----...-/    "
-            "        -///://////////////////////::::-..      :-:-:-..-::.`.+`    "
-            "         :/://///:///::://::://::::::/:::::::-:---::-.-....``/- -   "
-            "           ::::://::://::::::::::::::----------..-:....`.../- -+oo/ "
-            "            -/:::-:::::---://:-::-::::----::---.-.......`-/.      ``"
-            "           s-`::--:::------:////----:---.-:::...-.....`./:          "
-            "          yMNy.`::-.--::..-dmmhhhs-..-.-.......`.....-/:`           "
-            "         oMNNNh. `-::--...:NNNdhhh/.--.`..``.......:/-              "
-            "        :dy+:`      .-::-..NNNhhd+``..`...````.-::-`                "
-            "                        .-:mNdhh:.......--::::-`                    "
-            "                           yNh/..------..`                          "
-            "                                                                    "
-            "                               E M A C S                            "))
-         (longest-line (apply #'max (mapcar #'length banner))))
-    (put-text-property
-     (point)
-     (dolist (line banner (point))
-       (insert (+doom-dashboard--center
-                +doom-dashboard--width
-                (concat
-                 line (make-string (max 0 (- longest-line (length line)))
-                                   32)))
-               "\n"))
-     'face 'doom-dashboard-banner)))
-
-(unless (display-graphic-p) ; for some reason this messes up the graphical splash screen atm
-  (setq +doom-dashboard-ascii-banner-fn #'doom-dashboard-draw-ascii-emacs-banner-fn))
-
-(setq +doom-quit-messages '(;;from doom 1
-                            "Don't leave yet -- There's a daemon around that corner!"
-                            "Go ahead and leave. See if I care."
-                            ;;from doom 2
-                            "Get outta here and go back to your boring programs."
-                            ;;from Portal
-                            "Thank you for participating in this Aperture Science computer-aided enrichment activity."
-                            "You can't fire me, I quit!"
-                            "I'm the man who's going to burn your house down! With the lemons!"
-                            ;;custom
-                            "It's not like I'll miss you or anything, b-baka!"
-                            "Please don't go. The drones need you. They look up to you."))
-
-(after! marginalia
-  (setq marginalia-censor-variables nil)
-
-  (defadvice! +marginalia--anotate-local-file-colorful (cand)
-    "Just a more colourful version of `marginalia--anotate-local-file'."
-    :override #'marginalia--annotate-local-file
-    (when-let (attrs (file-attributes (substitute-in-file-name
-                                       (marginalia--full-candidate cand))
-                                      'integer))
-      (marginalia--fields
-       ((marginalia--file-owner attrs)
-        :width 12 :face 'marginalia-file-owner)
-       ((marginalia--file-modes attrs))
-       ((+marginalia-file-size-colorful (file-attribute-size attrs))
-        :width 7)
-       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
-        :width 12))))
-
-  (defun +marginalia--time-colorful (time)
-    (let* ((seconds (float-time (time-subtract (current-time) time)))
-           (color (doom-blend
-                   (face-attribute 'marginalia-date :foreground nil t)
-                   (face-attribute 'marginalia-documentation :foreground nil t)
-                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
-      ;; 1 - log(3 + 1/(days + 1)) % grey
-      (propertize (marginalia--time time) 'face (list :foreground color))))
-
-  (defun +marginalia-file-size-colorful (size)
-    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
-           (color (if (< size-index 10000000) ; 10m
-                      (doom-blend 'orange 'green size-index)
-                    (doom-blend 'red 'orange (- size-index 1)))))
-      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
 
 (setq +zen-text-scale 0.8)
 

@@ -1,26 +1,36 @@
+# [[file:config.org::*Notes for the unwary adventurer][Notes for the unwary adventurer:2]]
 { pkgs ? import <nixpkgs> {
   overlays = [
     (import (builtins.fetchTarball {
-      url = "https://github.com/shaunsingh/emacs/archive/master.tar.gz";
+      url = "https://github.com/nix-community/emacs-overlay/archive/master.tar.gz";
     }))
   ];
 } }:
 with pkgs;
 mkShell {
   buildInputs = [
-    # Emacs deps
-    emacs
+    # use emacs29
+    emacsGit
+    # we need ripgrep build with pcre lookheads
     (ripgrep.override { withPCRE2 = true; })
+    # new emacs needs sqlite
     sqlite
+    # General org-mode config deps
     gnuplot
-    # pandoc
-    # sdcv
+    pandoc
+    sdcv
+    languagetool
     (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
     tectonic
-    # languagetool
+    # used for formatting nix files
     nixfmt
-    fd
+    # used for compiling the css files
     sassc
+    # required by +jupyter
+    (python39.withPackages(ps: with ps; [jupyter]))
+    # mu4e
+    mu
+    isync
   ];
   shellHook = ''
     if [ ! -d $HOME/.config/emacs/.git ]; then
@@ -33,3 +43,4 @@ mkShell {
     fi
   '';
 }
+# Notes for the unwary adventurer:2 ends here
