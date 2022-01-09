@@ -4,9 +4,6 @@
 #+html: <a href="https://www.gnu.org/software/emacs/emacs.html#Releases"><img src="https://img.shields.io/badge/Emacs-27.1%20%E2%80%93%2028.0.50-blueviolet.svg?style=flat-square&logo=GNU%20Emacs&logoColor=white"></a>
 #+html: <a href="https://orgmode.org"><img src="https://img.shields.io/badge/Org-literate%20config-%2377aa99?style=flat-square&logo=org&logoColor=white"></a>
 
-Here you may find my config. There is only one significant file:
-- =config.org=, my configuration file --- see the [[https://shaunsingh.github.io/nix-darwin-dotfiles/][HTML]] or [[https://github.com/shaunsingh/nix-darwin-dotfiles/blob/gh-pages/nix-config.pdf][PDF]] export.
-
 #+attr_org: :width 50%
 [[file:./misc/showcase/gura.png]]
 [[file:./misc/showcase/org.png]]

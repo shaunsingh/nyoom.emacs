@@ -145,8 +145,8 @@
        (:if (executable-find "mu") (mu4e +org +gmail))
 
        :app
-       calendar                     ; A dated approach to timetabling
-       emms                         ; Multimedia in Emacs is music to my ears
+       ;;calendar                   ; A dated approach to timetabling
+       ;;emms                       ; Multimedia in Emacs is music to my ears
        everywhere                   ; *leave* Emacs!? You must be joking.
        (rss +org)                   ; emacs as an RSS reader
 
