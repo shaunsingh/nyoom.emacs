@@ -1,7 +1,7 @@
 #+title: Doom Emacs Configuration
 #+author: Shaunsingh
 
-#+html: <a href="https://www.gnu.org/software/emacs/emacs.html#Releases"><img src="https://img.shields.io/badge/Emacs-27.1%20%E2%80%93%2028.0.50-blueviolet.svg?style=flat-square&logo=GNU%20Emacs&logoColor=white"></a>
+#+html: <a href="https://www.gnu.org/software/emacs/emacs.html#Releases"><img src="https://img.shields.io/badge/Emacs-27.1%20%E2%80%93%2029-blueviolet.svg?style=flat-square&logo=GNU%20Emacs&logoColor=white"></a>
 #+html: <a href="https://orgmode.org"><img src="https://img.shields.io/badge/Org-literate%20config-%2377aa99?style=flat-square&logo=org&logoColor=white"></a>
 
 #+attr_org: :width 50%
@@ -23,7 +23,7 @@ nix develop
 
 ** Regular installation:
 First install the following dependencies:
-- Emacs (preferably one with =native-comp=, note that I (or rather doom-emacs) doesn't support =emacs29=, I recommend =emacs28= instead)
+- Emacs (preferably one with =native-comp=, note that doom-emacs does not support emacs29 (HEAD), but I personally use it with no issues. 
 - sqlite
 - fd
 - ripgrep
@@ -34,19 +34,13 @@ You can optionally install the following:
 - gnuplot (for org-plot)
 - pandoc (for ox-pandoc imports/exports)
 - languagetool (for grammer checking)
-- texlive (for latex exports and editing)
-
-I also use the following latex packages, along with =BasicTex= or =Scheme-Small=:
-#+begin_src shell
-sudo tlmgr install dvipng dvisvgm l3packages xcolor soul adjustbox collectbox amsmath siunitx cancel mathalpha capt-of chemfig wrapfig mhchem fvextra cleveref latexmk tcolorbox environ arev amsfonts simplekv alegreya sourcecodepro newpx svg catchfile transparent hanging biblatex biblatex-mla;
-#+end_src
+- tectonic (for latex exports and editing)
 
 As for the plugins themselves
 #+begin_src shell
 git clone --depth 1 https://github.com/shaunsingh/Nyoom.emacs.git ~/.config/doom
-emacs --batch --eval "(progn (require 'org) (setq org-confirm-babel-evaluate nil) (org-babel-tangle-file \"~/.config/doom/config.org\"))"
-git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
-~/.emacs.d/bin/doom install
+git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.config/emacs
+~/.config/emacs/bin/doom install
 #+end_src
 
 * RoadMap
@@ -54,10 +48,12 @@ git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
 *** TODO VC-gutter
 *** TODO Flycheck
 *** STRT Tree-sitter
-** TODO Improve LaTeX Export
-*** TODO Define chameleon as a class
+** DONE Improve Exports
+*** DONE Refactor  
 *** DONE Use Fira font family
-** STRT Cleanup Config
-*** TODO Refactor org-mode config
+*** DONE Use tectonic
+*** DONE Simplify HTML CSS
+** DONE Cleanup Config
+*** DONE Refactor org-mode config
 *** DONE Lazy load and Speedup
-*** TODO Restructure config
+*** DONE Restructure config
