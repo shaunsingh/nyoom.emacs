@@ -76,7 +76,7 @@ unrivaled in extensibility.
 #+attr_html: :class invertible :alt Radar chart comparing my thoughts on a few editors.
 [[file:./misc/editor-comparison.jpeg]]
 
-** Why Emacs?
+*** Why Emacs?
 Emacs is [[https://www.eigenbahn.com/2020/01/12/emacs-is-no-editor][not a text editor]], this is a common misnomer. It is far more apt to
 describe Emacs as /a Lisp machine providing a generic user-centric text
 manipulation environment/. That's quite a mouthful.
@@ -118,8 +118,13 @@ applications which act like islands, but this often doesn't mirror how we
 /actually use/ our computers. Emacs, if one goes down the rabbit hole, can give
 users the power to bridge this gap.
 
-** Notes for the unwary adventurer
+*** Notes for the unwary adventurer
 The lovely ~doom doctor~ is good at diagnosing most missing things, but a few extras packages might be needed. You can find most of them in the =flake.nix= and =shell.nix= files.
+
+Installing =nix= followed by running =nix develop= in =$DOOMDIR= (usually =~/.config/doom=) will
+- Install all the required dependencies (excluding fonts)
+- Install a pinned version of =doom-emacs=, defined in the =flake.lock= file
+- Install a pinned version of emacs =HEAD= , defined in the =flake.lock= file
 
 #+begin_src nix :tangle "flake.nix"
 {
@@ -166,24 +171,25 @@ mkShell {
   buildInputs = [
     # use emacs29
     emacsGit
-    # we need ripgrep build with pcre lookheads
+    # :completion vertico
     (ripgrep.override { withPCRE2 = true; })
-    # new emacs needs sqlite
     sqlite
-    # General org-mode config deps
-    gnuplot
-    pandoc
-    sdcv
-    languagetool
-    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
+    # :lang org
     tectonic
-    # used for formatting nix files
-    nixfmt
-    # used for compiling the css files
-    sassc
-    # required by +jupyter
+    ## +gnuplot
+    gnuplot
+    ## +pandoc
+    pandoc
+    ## +jupyter
     (python39.withPackages(ps: with ps; [jupyter]))
-    # mu4e
+    # :checkers spell
+    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
+    sdcv
+    # :checkers grammar
+    languagetool
+    # :lang nix
+    nixfmt
+    # :app mu4e
     mu
     isync
   ];
@@ -200,14 +206,8 @@ mkShell {
 }
 #+end_src
 
-Installing =nix= followed by running =nix develop= will
-- Install all the required dependencies (excluding fonts)
-- Build the latest emacs (v28, 29 has issues with doom)
-- Install a pinned version of =doom-emacs=, defined in the =flake.lock= file
-- Install the required dependencies for my $\LaTeX$ configuration
-
 * Doom Configuration
-** Modules
+*** Modules
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle no
 :END:
@@ -261,7 +261,7 @@ have flags applied to tweak their behaviour.
        <<doom-config>>)
 #+end_src
 
-**** Structure
+***** Structure
 As you may have noticed by this point, this is a [[https://en.wikipedia.org/wiki/Literate_programming][literate]] configuration. Doom
 has good support for this which we access though the ~literate~ module.
 
@@ -274,7 +274,7 @@ literate
 (default +bindings +smartparens)
 #+end_src
 
-**** Interface
+***** Interface
 There's a lot that can be done to enhance Emacs' capabilities.
 I reckon enabling half the modules Doom provides should do it.
 #+name: doom-completion
@@ -353,7 +353,7 @@ rgb                          ; creating color strings
 tty                          ; improve the terminal Emacs experience
 #+end_src
 
-**** Language support
+***** Language support
 We can be rather liberal with enabling support for languages as the associated
 packages/configuration are (usually) only loaded when first opening an
 associated file.
@@ -438,7 +438,7 @@ sh                           ; she sells {ba,z,fi}sh shells on the C xor
 ;;zig                        ; C, but simpler
 #+end_src
 
-**** Everything in Emacs
+***** Everything in Emacs
 It's just too convenient being able to have everything in Emacs.
 I couldn't resist the Email and Feed modules.
 #+name: doom-email
@@ -454,7 +454,7 @@ everywhere                   ; *leave* Emacs!? You must be joking.
 (rss +org)                   ; emacs as an RSS reader
 #+end_src
 
-** Packages
+*** Packages
 :PROPERTIES:
 :header-args:emacs-lisp: :tangle no
 :END:
@@ -482,7 +482,7 @@ one place
 <<fun>>
 #+end_src
 
-**** Org:
+***** Org:
 The majority of my work in emacs is done in org mode, even this configuration
 was written in org! It makes sense that the majority of my packages are for
 tweaking org then
@@ -518,7 +518,7 @@ tweaking org then
            :files ("*.el" "filters" "preprocessors")))
 #+end_src
 
-**** $\LaTeX$:
+***** $\LaTeX$:
 When I'm not working in org, I'm probably exporting it to latex. Lets adjust
 that a bit too
 #+name: latex
@@ -528,7 +528,7 @@ that a bit too
 (package! engrave-faces)
 #+end_src
 
-**** Looks:
+***** Looks:
 Making emacs look good is first priority, actually working in it is second
 #+name: looks
 #+begin_src emacs-lisp
@@ -544,9 +544,10 @@ Making emacs look good is first priority, actually working in it is second
 (package! ox-chameleon :recipe (:host github
                                 :repo "tecosaur/ox-chameleon")
   :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
+;; master gives an error, something about =sf= and bg/fg snapping. I'll look into it later, for now pin it to something earlier.
 #+end_src
 
-**** Emacs Tweaks:
+***** Emacs Tweaks:
 Emacs is missing just a few packages that I need to make it my OS
 #+name: emacs
 #+begin_src emacs-lisp
@@ -557,25 +558,26 @@ Emacs is missing just a few packages that I need to make it my OS
                           :repo "aspiers/etrace"))
 #+end_src
 
-**** Fun:
+***** Fun:
 We do a little trolling (and reading)
 #+name: fun
 #+begin_src emacs-lisp
 (package! nov)
 (package! xkcd)
+(package! elcord)
 (package! monkeytype)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))
 #+end_src
 
 * Basic Configuration
-** Personal information
+*** Personal information
 Of course we need to tell emacs who I am
 #+begin_src emacs-lisp
 (setq user-full-name "Shaurya Singh"
       user-mail-address "shaunsingh0207@gmail.com")
 #+end_src
 
-** Shell
+*** Shell
 Vterm is my terminal emulator of choice. We can tell it to use ligatures, and also tell it to compile automatically
 Vterm clearly wins the terminal war. Also doesn't need much configuration out of
 the box, although the shell integration does.
@@ -609,7 +611,7 @@ Use ligatures from within vterm (and eshell), we do this by redefining the varia
 (setq +ligatures-extras-in-modes '(org-mode emacs-lisp-mode))
 #+end_src
 
-** Fonts
+*** Fonts
 [[xkcd:590]]
 
 I like the apple fonts for programming, so I'll go with Liga SFMono Nerd Font. I
@@ -654,7 +656,7 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
       (mixed-pitch-mode (or arg 'toggle)))))
 #+end_src
 
-** Company
+*** Company
 I think company is a bit too quick to recommend some stuff
 #+begin_src emacs-lisp
 (after! company
@@ -836,7 +838,7 @@ And lastly lets add some helpful snippets for org-mode, and add a better templet
 (set-file-template! "\\.org$" :trigger "__" :mode 'org-mode)
 #+end_src
 
-** LSP
+*** LSP
 I think the LSP is a bit intrusive (especially with inline suggestions), so lets make it behave a bit more
 #+begin_src emacs-lisp
 (use-package! lsp-ui
@@ -860,7 +862,7 @@ The rust language server also has some extra features I would like to enable
         lsp-rust-analyzer-cargo-watch-command "clippy"))
 #+end_src
 
-** Meow
+*** Meow
 Instead of using EVIL, lets use something lighter, faster, and more modern. Akin to kakoune's modal editing experience, Meow makes a pethora of changes that just make sense, building on top of emacs' keybindings rather than writing its own 
 
 First we're going to define meow's keybinding, setting it up for a slightly customized qwerty keyboard. 
@@ -1020,7 +1022,7 @@ We also want to use some doom-specific keybindings, so we can use the leader key
 ;;   ;;(meow--setup-useful-keybindings)) 
 #+end_src
 
-** Better Defaults
+*** Better Defaults
 The defaults for emacs aren't so good nowadays. Lets fix that up a bit
 #+begin_src emacs-lisp
 (setq scroll-margin 2
@@ -1067,7 +1069,7 @@ When im doing regexes, its usually with /g anyways, lets make that the default
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 #+end_src
 
-** Mu4e
+*** Mu4e
 [[xkcd:1796]]
 I'm trying out emails in emacs, should be nice. Related, check .mbsyncrc to
 setup your emails first
@@ -1123,7 +1125,7 @@ We can also send messages using msmtp
         message-send-mail-function #'message-send-mail-with-sendmail))
 #+end_src
 
-** +Selectric+ NK-Creams mode
+*** +Selectric+ NK-Creams mode
 Instead of using the regular selectric-mode, I modified it with a few notable tweaks, mainly:
 1. Support for EVIL mode
 2. It uses NK Cream sounds instead of the typewritter ones
@@ -1132,7 +1134,7 @@ Instead of using the regular selectric-mode, I modified it with a few notable tw
   :commands selectric-mode)
 #+end_src
 
-** Monkeytype
+*** Monkeytype
 Now that we have some nice keyboard sounds, lets test that keyboard with an elisp clone of Monkeytype!
 Notably here we want to start in insert mode.
 #+begin_src emacs-lisp
@@ -1146,7 +1148,7 @@ Notably here we want to start in insert mode.
         monkeytype-excluded-chars-regexp "[^[:alnum:]']"))
 #+end_src
 
-** Emacs Everywhere
+*** Emacs Everywhere
 We want to use tecosaurs excellent emacs-everywhere, to launch emacs from well... everywhere. Just some small changes, such as requiring spell check on start and opening up in org-mode right away. 
 #+begin_src emacs-lisp
 (use-package! emacs-everywhere
@@ -1157,7 +1159,7 @@ We want to use tecosaurs excellent emacs-everywhere, to launch emacs from well..
         emacs-everywhere-frame-name-format "Edit ∷ %s — %s"))
 #+end_src
 
-** Greedy daemon
+*** Greedy daemon
 When we open the daemon, we have all the time in the world. Lets just load heavy packages on start, and not have to worry about them later
 #+begin_src emacs-lisp
 (defun greedily-do-daemon-setup ()
@@ -1183,7 +1185,7 @@ When we open the daemon, we have all the time in the world. Lets just load heavy
       (switch-to-buffer +doom-dashboard-name))))
 #+end_src
 
-** Customizations
+*** Customizations
 Customizations done through the emacs gui should go into their own file, in my doom-dir.
 #+begin_src emacs-lisp
 (setq-default custom-file (expand-file-name ".custom.el" doom-private-dir))
@@ -1194,8 +1196,9 @@ Customizations done through the emacs gui should go into their own file, in my d
 * Visual configuration
 Just some simple visual tweaks. Lets give the text some more room to breathe, and remove those ugly dividers
 
-To make Emacs play a little nicer with window management, enable menu-bar-mode. Also, set the frame’s dimensions based on pixels - this makes Emacs play nicer with tiling window managers, where no title bar is displayed.
+To make Emacs play a little nicer with window management, enable menu-bar-mode. Additionally, set the frame’s dimensions based on pixels - this makes Emacs play nicer with tiling window managers, where no title bar is displayed.
 #+begin_src emacs-lisp
+(setq-default fill-column 80)
 (setq-default line-spacing 0.24)
 
 (cond
@@ -1204,16 +1207,16 @@ To make Emacs play a little nicer with window management, enable menu-bar-mode. 
         window-resize-pixelwise t)
   (menu-bar-mode t)))
 
+;; Vertical window divider
 (after! frame
-  (setq window-divider-default-bottom-width 0
-        window-divider-default-right-width 0))
+  (setq window-divider-default-right-width 24
+        window-divider-default-places 'right-only)
+  (window-divider-mode 1))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
-
-(setq inhibit-compacting-font-caches t)
 #+end_src
 
-** Info Colors
+*** Info Colors
 This makes manual pages nicer to look at by adding variable pitch fontification
 and colouring.
 
@@ -1225,7 +1228,7 @@ To use this we'll just hook it into =Info=.
 (add-hook 'Info-selection-hook 'info-colors-fontify-node)
 #+end_src
 
-** Window management
+*** Window management
 First, we'll enter the new window
 #+begin_src emacs-lisp
 (setq evil-vsplit-window-right t
@@ -1252,14 +1255,10 @@ For the window title, I'd like to have just the buffer name, then if applicable 
         (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
-             (format (if (buffer-modified-p)  " ◉ %s" "  ●  %s") project-name))))))
+             (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
 #+end_src
 
-For example when I open my config file it the window will be titled =config.org ●
-doom= then as soon as I make a change it will become =config.org ◉ doom=.
-
-** Etrace
-
+*** Etrace
 The /Emacs Lisp Profiler/ (ELP) does a nice job recording information, but it
 isn't the best for looking at results. =etrace= converts ELP's results to the
 "Chromium Catapult Trace Event Format". This means that the output of =etrace= can
@@ -1271,7 +1270,16 @@ investigation.
   :after elp)
 #+end_src
 
-** Pixel-scroll
+*** Elcord
+What’s even the point of using Emacs unless you’re constantly telling everyone about it?
+#+begin_src emacs-lisp
+(use-package! elcord
+  :commands elcord-mode
+  :config
+  (setq elcord-use-major-mode-as-main-icon t))
+#+end_src
+
+*** Pixel-scroll
 Default doom scrolling is pretty slow, so lets improve on that with pixel-scrolling. However, =emacs-mac= has its own version of pixel scroll, and so does =emacs29=, so we want to enable this under specific cases
 #+begin_src emacs-lisp
 (if (boundp 'mac-mouse-wheel-smooth-scroll)
@@ -1280,21 +1288,19 @@ Default doom scrolling is pretty slow, so lets improve on that with pixel-scroll
     (pixel-scroll-precision-mode))
 #+end_src
 
-** Nano
+*** Nano
 I prefer the nano look and feel over the default doom one. Lets integrate it with doom!
 
 Doom themes collides with the themes provided by nano, so lets remove that
 #+begin_src emacs-lisp
 (setq default-frame-alist
       (append (list
-               '(min-height . 1)
-               '(height . 45)
-               '(min-width . 1)
-               '(width . 81)
+               '(min-height . 1)  '(height . 45)
+               '(min-width  . 1)  '(width  . 81)
                '(vertical-scroll-bars . nil)
                '(internal-border-width . 24)
-               '(left-fringe . 1)
-               '(right-fringe . 1)
+               '(left-fringe . 0)
+               '(right-fringe . 0)
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 #+end_src
@@ -1321,6 +1327,8 @@ Instead of doom's dashboard, lets use a modified version of nano's
 (use-package! nano-splash
   :after nano-theme
   :config
+  (setq initial-major-mode 'text-mode)
+  (setq default-major-mode 'text-mode)
   (setq initial-scratch-message "\
 
  ╭────────────────────────────────────────────────────────────────────────╮
@@ -1362,7 +1370,7 @@ Not really related to nano, but I think it would be nice to also dim inactive fr
   (dimmer-configure-posframe))
 #+end_src
 
-Similar to that, I want to dim surrrounding text using the focus package 
+Similar to that, I want to dim surrounding text using the focus package
 #+begin_src emacs-lisp
 (defun add-list-to-list (dst src)
   "Similar to `add-to-list', but accepts a list as 2nd argument"
@@ -1469,7 +1477,7 @@ Although this isn't a part of =nano=, Its by the same author and fits pretty wel
               (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date)))))))
 #+end_src
 
-** Writeroom
+*** Writeroom
 For starters, I think Doom is a bit over-zealous when zooming in
 #+begin_src emacs-lisp
 (setq +zen-text-scale 0.8)
@@ -1477,17 +1485,18 @@ For starters, I think Doom is a bit over-zealous when zooming in
 
 Then, when using Org it would be nice to make a number of other aesthetic
 tweaks. Namely:
-- Use a serif-ed variable-pitch font
+- Use a serifed variable-pitch font
+- Hiding headline leading stars
 - Using fleurons as headline bullets
 - Hiding line numbers
 - Removing outline indentation
-- Centering the text
+- Centring the text
+- Turning on org-pretty-table-mode
 
 #+begin_src emacs-lisp
 (defvar +zen-serif-p t
   "Whether to use a serifed font with `mixed-pitch-mode'.")
 (after! writeroom-mode
-  (defvar-local +zen--original-org-indent-mode-p nil)
   (defvar-local +zen--original-mixed-pitch-mode-p nil)
   (defun +zen-enable-mixed-pitch-mode-h ()
     "Enable `mixed-pitch-mode' when in `+zen-mixed-pitch-modes'."
@@ -1499,31 +1508,16 @@ tweaks. Namely:
         (funcall #'mixed-pitch-mode (if +zen--original-mixed-pitch-mode-p 1 -1)))))
   (pushnew! writeroom--local-variables
             'display-line-numbers
-            'visual-fill-column-width
-            'org-adapt-indentation)
+            'visual-fill-column-width)
   (add-hook 'writeroom-mode-enable-hook
             (defun +zen-prose-org-h ()
               "Reformat the current Org buffer appearance for prose."
               (when (eq major-mode 'org-mode)
                 (setq display-line-numbers nil
-                      visual-fill-column-width 60
-                      org-adapt-indentation nil
-                      +zen--original-org-indent-mode-p org-indent-mode)
-                (org-indent-mode -1))))
-  (add-hook! 'writeroom-mode-hook
-    (if writeroom-mode
-        (add-hook 'post-command-hook #'recenter nil t)
-      (remove-hook 'post-command-hook #'recenter t)))
-  (add-hook 'writeroom-mode-enable-hook #'doom-disable-line-numbers-h)
-  (add-hook 'writeroom-mode-disable-hook #'doom-enable-line-numbers-h)
-  (add-hook 'writeroom-mode-disable-hook
-            (defun +zen-nonprose-org-h ()
-              "Reverse the effect of `+zen-prose-org'."
-              (when (eq major-mode 'org-mode)
-                (when +zen--original-org-indent-mode-p (org-indent-mode 1))))))
+                      visual-fill-column-width 60)))))
 #+end_src
 
-** RSS
+*** RSS
 RSS is a nice simple way of getting my news. Lets set that up
 #+begin_src emacs-lisp
 (map! :map elfeed-search-mode-map
@@ -1722,7 +1716,7 @@ RSS is a nice simple way of getting my news. Lets set that up
             (funcall file-view-function file)))))))
 #+end_src
 
-** Ebooks
+*** Ebooks
 [[xkcd:548]]
 
 To actually read the ebooks we use =nov=.
@@ -1752,10 +1746,8 @@ To actually read the ebooks we use =nov=.
 #+end_src
 
 * Org
-** Org-Mode
-
+*** Org-Mode
 I really like org mode, I've given some thought to why, and below is the result.
-
 #+attr_latex: :align *{8}{p{0.105\linewidth}} :font \small
 | Format            | Fine-grained control | Initial ease of use | Syntax simplicity | Editor Support | Integrations | Ease-of-referencing | Versatility |
 |-------------------+----------------------+---------------------+-------------------+----------------+--------------+---------------------+-------------|
@@ -1770,47 +1762,7 @@ Beyond the elegance in the markup language, tremendously rich integrations with
 Emacs allow for some fantastic [[https://orgmode.org/features.html][features]], such as what seems to be the best
 support for [[https://en.wikipedia.org/wiki/Literate_programming][literate programming]] of any currently available technology.
 
-#+name: Literate programming workflow
-#+attr_html: :style line-height:1.13;
-#+begin_example
-      ╭─╴Code╶─╮            ╭─╴Raw Code╶─▶ Computer
-Ideas╺┥        ┝━▶ Org Mode╺┥
-      ╰─╴Text╶─╯            ╰─╴Document╶─▶ People
-#+end_example
-
-An =.org= file can contain blocks of code (with [[https://en.wikipedia.org/wiki/Noweb][noweb]] templating support), which
-can be [[https://orgmode.org/manual/Extracting-Source-Code.html][tangled]] to dedicated source code files, and [[https://orgmode.org/manual/Extracting-Source-Code.html][woven]] into a document
-(report, documentation, presentation, etc.) through various (/extensible/) methods.
-These source blocks may even create images or other content to be included in
-the document, or generate source code.
-
-#+name: Example Org Flowchart
-#+attr_html: :style line-height:1.13;
-#+begin_example
-                   ╭───────────────────────────────────▶ .pdf ⎫
-                  pdfLaTeX ▶╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╮                 ⎪
-                   ╿     ╿                  ┊                 ⎪
-                   │     ┊                  ┊                 ⎪
-                 .tex    ┊                  ┊                 ⎪
-                   ╿     ┊                  ┊                 ⎪
-                ╭──┴╌╌╮  ┊                  ┊ style.scss      ⎬ Weaving
-graphc.png ─╮   │  embedded TeX             ┊      ╽          ⎪ (Documents)
-image.jpeg ─┤ filters   ╿                   ┊    .css         ⎪
-            ╎     ╿     ┊                   ┊     ▾╎          ⎪
-figure.png╶─╧─▶ PROJECT.ORG ▶───╴filters╶───╧──────╪──▶ .html ⎪
-     ╿           ╿┊ ║ │ ╰╌╌╌▷╌╌ embedded html ▶╌╌╌╌╯          ⎪
-     ├╌╌╌╌╌╌╌▷╌╌╌╯┊ ║ │                                       ⎪
-    result╶╌╌╌╌╌╮ ┊ ║ ├──────╴filters╶────────────────▶ .txt  ⎪
-     ┊▴         ┊ ┊ ║ │                                       ⎪
-    execution   ┊ ┊ ║ ╰──────╴filters╶────────────────▶ .md   ⎭
-     ┊▴         ┊ ┊ ║
-    code blocks◀╯ ┊ ╟─────────────────────────────────▶ .c    ⎫
-     ╰╌╌╌╌◁╌╌╌╌╌╌╌╯ ╟─────────────────────────────────▶ .sh   ⎬ Tangling
-                    ╟─────────────────────────────────▶ .hs   ⎪ (Code)
-                    ╙─────────────────────────────────▶ .el   ⎭
-#+end_example
-
-Org mode is the best writing format, no contest. The defaults are very bland, so lets make it look a little better. Sadly I can't always work in org, but I can import stuff into it!
+Sadly I can't always work in org, but I can import stuff into it!
 #+begin_src emacs-lisp
 (use-package! org-pandoc-import
   :after org)
@@ -1821,34 +1773,33 @@ I prefer /org as my directory. Lets change some other defaults too
 (after! org
   (setq org-directory "~/org"                     ; let's put files here
         org-ellipsis "  ﬋"                        ; cute icon for folded org blocks
+        org-startup-indented nil                  ; no need to start with indents when org-num is enabled
         org-list-allow-alphabetical t             ; have a. A. a) A) list bullets
         org-export-in-background t                ; run export processes in external emacs process
         org-use-property-inheritance t            ; it's convenient to have properties inherited
-        org-src-fontify-natively t                ; fontify org-src blocks
         org-pretty-entities t                     ; who doesn't like pretty things
+        org-fontify-whole-heading-line t
+        org-fontify-done-headline t
+        org-fontify-quote-and-verse-blocks t
+        org-src-fontify-natively t                ; fontify org-src blocks
         org-catch-invisible-edits 'smart          ; try not to accidently do weird stuff in invisible regions
-        org-odd-levels-only t                     ; Odd levels are the best levels
-        org-startup-indented t                    ; startup indented
         org-src-tab-acts-natively t               ; tabs should act natively in src blocks
-        org-return-follows-link t                 ; hitting return makes it follow the link
         org-log-done 'time                        ; having the time a item is done sounds convenient
         org-roam-directory "~/org/roam/"))        ; same thing, for roam
 #+end_src
 
 I also thing the leading stars are useless, especially with =org-num= enabled, so lets just remove that altogether.
 #+begin_src emacs-lisp
-(defun org-mode-hide-stars ()
+(defun org-mode-remove-stars ()
   (font-lock-add-keywords
    nil
    '(("^\\*+ "
       (0
        (prog1 nil
          (put-text-property (match-beginning 0) (match-end 0)
-                            'face (list :foreground
-                                        (face-attribute
-                                         'default :background)))))))))
+                            'invisible t)))))))
 
-(add-hook 'org-mode-hook #'org-mode-hide-stars)
+(add-hook 'org-mode-hook #'org-mode-remove-stars)
 #+end_src
 
 I want to slightly change the default args for babel
@@ -2026,7 +1977,7 @@ And now to just have org-mode do it every time we save
             (add-hook 'after-save-hook #'format-elisp-src-blocks)))
 #+end_src
 
-** Org-Roam
+*** Org-Roam
 Lets set up =org-roam-ui=
 #+begin_src emacs-lisp
 (use-package! websocket
@@ -2049,7 +2000,7 @@ to disable the regular buffer
   (setq +org-roam-open-buffer-on-find-file nil))
 #+end_src
 
-** Org-Agenda
+*** Org-Agenda
 Set the directory
 #+begin_src emacs-lisp
 (after! org-agenda
@@ -2057,7 +2008,7 @@ Set the directory
                                "~/org/todo.org")))
 #+end_src
 
-** Org Cite
+*** Org Cite
 #+begin_src emacs-lisp
 (use-package! citar
   :when (featurep! :completion vertico)
@@ -2147,7 +2098,7 @@ Set the directory
     (fmakunbound #'+org-cite-csl-activate/enable)))
 #+end_src
 
-** Org-Capture
+*** Org-Capture
 Use doct
 #+begin_src emacs-lisp
 (use-package! doct
@@ -2346,7 +2297,7 @@ Sprinkle in some =doct= utility functions
                            :file +org-capture-project-notes-file))))))
 #+end_src
 
-** Symbols
+*** Symbols
 Lets add some ligatures for some org mode stuff
 #+begin_src emacs-lisp
 (appendq! +ligatures-extra-symbols
@@ -2439,7 +2390,7 @@ And along with that, lets use =org-num=, which allows us to get that those same 
   :hook (org-mode . org-num-mode))
 #+end_src
 
-** Font Display
+*** Font Display
 Lets use some pretty unicode characters for our tables as well
 #+begin_src emacs-lisp
 (use-package! org-pretty-table
@@ -2583,86 +2534,86 @@ so lets turn those off
   (setq org-pretty-entities-include-sub-superscripts nil))
 #+end_src
 
-** Org-Plot
+*** Org-Plot
 You can't ever have too many graphs! Lets make it look prettier, and tell it to use the doom theme colors
 #+begin_src emacs-lisp
-;; (after! org-plot
-;;   (defun org-plot/generate-theme (_type)
-;;     "Use the current Doom theme colours to generate a GnuPlot preamble."
-;;     (format "
-;; fgt = \"textcolor rgb '%s'\" # foreground text
-;; fgat = \"textcolor rgb '%s'\" # foreground alt text
-;; fgl = \"linecolor rgb '%s'\" # foreground line
-;; fgal = \"linecolor rgb '%s'\" # foreground alt line
+(after! org-plot
+  (defun org-plot/generate-theme (_type)
+    "Use the current Doom theme colours to generate a GnuPlot preamble."
+    (format "
+fgt = \"textcolor rgb '%s'\" # foreground text
+fgat = \"textcolor rgb '%s'\" # foreground alt text
+fgl = \"linecolor rgb '%s'\" # foreground line
+fgal = \"linecolor rgb '%s'\" # foreground alt line
 
-;; # foreground colors
-;; set border lc rgb '%s'
-;; # change text colors of  tics
-;; set xtics @fgt
-;; set ytics @fgt
-;; # change text colors of labels
-;; set title @fgt
-;; set xlabel @fgt
-;; set ylabel @fgt
-;; # change a text color of key
-;; set key @fgt
+# foreground colors
+set border lc rgb '%s'
+# change text colors of  tics
+set xtics @fgt
+set ytics @fgt
+# change text colors of labels
+set title @fgt
+set xlabel @fgt
+set ylabel @fgt
+# change a text color of key
+set key @fgt
 
-;; # line styles
-;; set linetype 1 lw 2 lc rgb '%s' # red
-;; set linetype 2 lw 2 lc rgb '%s' # blue
-;; set linetype 3 lw 2 lc rgb '%s' # green
-;; set linetype 4 lw 2 lc rgb '%s' # magenta
-;; set linetype 5 lw 2 lc rgb '%s' # orange
-;; set linetype 6 lw 2 lc rgb '%s' # yellow
-;; set linetype 7 lw 2 lc rgb '%s' # teal
-;; set linetype 8 lw 2 lc rgb '%s' # violet
+# line styles
+set linetype 1 lw 2 lc rgb '%s' # red
+set linetype 2 lw 2 lc rgb '%s' # blue
+set linetype 3 lw 2 lc rgb '%s' # green
+set linetype 4 lw 2 lc rgb '%s' # magenta
+set linetype 5 lw 2 lc rgb '%s' # orange
+set linetype 6 lw 2 lc rgb '%s' # yellow
+set linetype 7 lw 2 lc rgb '%s' # teal
+set linetype 8 lw 2 lc rgb '%s' # violet
 
-;; # border styles
-;; set tics out nomirror
-;; set border 3
+# border styles
+set tics out nomirror
+set border 3
 
-;; # palette
-;; set palette maxcolors 8
-;; set palette defined ( 0 '%s',\
-;; 1 '%s',\
-;; 2 '%s',\
-;; 3 '%s',\
-;; 4 '%s',\
-;; 5 '%s',\
-;; 6 '%s',\
-;; 7 '%s' )
-;; "
-;;             (doom-color 'fg)
-;;             (doom-color 'fg-alt)
-;;             (doom-color 'fg)
-;;             (doom-color 'fg-alt)
-;;             (doom-color 'fg)
-;;             ;; colours
-;;             (doom-color 'red)
-;;             (doom-color 'blue)
-;;             (doom-color 'green)
-;;             (doom-color 'magenta)
-;;             (doom-color 'orange)
-;;             (doom-color 'yellow)
-;;             (doom-color 'teal)
-;;             (doom-color 'violet)
-;;             ;; duplicated
-;;             (doom-color 'red)
-;;             (doom-color 'blue)
-;;             (doom-color 'green)
-;;             (doom-color 'magenta)
-;;             (doom-color 'orange)
-;;             (doom-color 'yellow)
-;;             (doom-color 'teal)
-;;             (doom-color 'violet)))
-;;   (defun org-plot/gnuplot-term-properties (_type)
-;;     (format "background rgb '%s' size 1050,650"
-;;             (doom-color 'bg)))
-;;   (setq org-plot/gnuplot-script-preamble #'org-plot/generate-theme)
-;;   (setq org-plot/gnuplot-term-extra #'org-plot/gnuplot-term-properties))
+# palette
+set palette maxcolors 8
+set palette defined ( 0 '%s',\
+1 '%s',\
+2 '%s',\
+3 '%s',\
+4 '%s',\
+5 '%s',\
+6 '%s',\
+7 '%s' )
+"
+            (doom-color 'fg)
+            (doom-color 'fg-alt)
+            (doom-color 'fg)
+            (doom-color 'fg-alt)
+            (doom-color 'fg)
+            ;; colours
+            (doom-color 'red)
+            (doom-color 'blue)
+            (doom-color 'green)
+            (doom-color 'magenta)
+            (doom-color 'orange)
+            (doom-color 'yellow)
+            (doom-color 'teal)
+            (doom-color 'violet)
+            ;; duplicated
+            (doom-color 'red)
+            (doom-color 'blue)
+            (doom-color 'green)
+            (doom-color 'magenta)
+            (doom-color 'orange)
+            (doom-color 'yellow)
+            (doom-color 'teal)
+            (doom-color 'violet)))
+  (defun org-plot/gnuplot-term-properties (_type)
+    (format "background rgb '%s' size 1050,650"
+            (doom-color 'bg)))
+  (setq org-plot/gnuplot-script-preamble #'org-plot/generate-theme)
+  (setq org-plot/gnuplot-term-extra #'org-plot/gnuplot-term-properties))
 #+end_src
 
-** XKCD
+*** XKCD
 [[xkcd:446]]
 
 #+begin_quote
@@ -2998,7 +2949,7 @@ Now to just have this register with org
     (format "xkcd:%d" (+xkcd-select))))
 #+end_src
 
-** Calc
+*** Calc
 Embedded calc is a lovely feature which let's us use calc to operate on LaTeX
 maths expressions. The standard keybinding is a bit janky however (=C-x * e=), so
 we'll add a localleader-based alternative.
@@ -3055,13 +3006,13 @@ panel.
       (select-window main-window))))
 #+end_src
 
-** (sub|super)script characters
+*** (sub|super)script characters
 Annoying having to gate these, so let's fix that
 #+begin_src emacs-lisp
 (setq org-export-with-sub-superscripts '{})
 #+end_src
 
-** PDF-Tools
+*** PDF-Tools
 DocView gives me a headache, but pdf-tools can be improved, lets configure it a little more
 #+begin_src emacs-lisp
 (use-package pdf-view
@@ -3071,7 +3022,7 @@ DocView gives me a headache, but pdf-tools can be improved, lets configure it a 
   (setq-default pdf-view-display-size 'fit-page))
 #+end_src
 
-** View Exported File
+*** View Exported File
 I have to export files pretty often, lets setup some keybindings to make it easier
 #+begin_src emacs-lisp
 (map! :map org-mode-map
@@ -3103,7 +3054,7 @@ I have to export files pretty often, lets setup some keybindings to make it easi
   "File formats that should be opened externally.")
 #+end_src
 
-** Dictionaries
+*** Dictionaries
 On every system I use (I have a lot of systems) the dictionary results in doom/emacs are different, and that gets annoying. Lets use lexic + stardict, instead of the default dictionaries.
 #+begin_src emacs-lisp
 (use-package! lexic
@@ -3137,14 +3088,14 @@ On every system I use (I have a lot of systems) the dictionary results in doom/e
   (lexic-search identifier nil nil t))
 #+end_src
 
-** Notebook-mode
+*** Notebook-mode
 I'm a big fan of Rougier's work beautifying emacs, and his latest attempt at improving org-mode is no exception. Lets try it out:
 #+begin_src emacs-lisp
 (use-package! notebook
   :commands notebook-mode)
 #+end_src
 
-** Org-bib-mode
+*** Org-bib-mode
 Neat drag-and-drop literate bibliographies for org-mode. Disabled for now, due to an issue with use-package
 #+begin_src emacs-lisp
 ;; (use-package! org-bib-mode
@@ -3153,14 +3104,14 @@ Neat drag-and-drop literate bibliographies for org-mode. Disabled for now, due t
 
 * Latex
 Note that this \(\LaTeX\) export configuration is largely borrowed from Tecosaur and Elken, and just adjusted to fit my needs. Big thanks to them for their excellent configs.
-** \(\LaTeX\) highlighting in Org-mode
+*** \(\LaTeX\) highlighting in Org-mode
 #+begin_src emacs-lisp
 (after! org
   (setq org-highlight-latex-and-related '(native script entities))
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
 #+end_src
 
-** Tectonic
+*** Tectonic
 Tectonic is the hot new thing, which also means I can get rid of my tex installation.
 #+begin_src emacs-lisp
 (after! org
@@ -3174,7 +3125,7 @@ Looks crisp!
   F(x) &= \int^a_b \frac{1}{3}x^3
 \end{align*}
 
-** Preambles
+*** Preambles
 Various preamble setups to improve the overall look of several items
 
 #+begin_src emacs-lisp
@@ -3214,7 +3165,7 @@ Various preamble setups to improve the overall look of several items
   "Preamble that provides a macro for custom boxes.")
 #+end_src
 
-** Conditional features
+*** Conditional features
 Don't always need everything in LaTeX, so only add it what we need when we need it.
 
 #+begin_src emacs-lisp
@@ -3405,7 +3356,7 @@ Last step, some advice to hook in all of the above to work
               "\n"))))
 #+end_src
 
-** Class templates
+*** Class templates
 I really like the KOMA bundle. It provides a set of mechanisms to tweak document
 styling which is both easy to use, and quite comprehensive.
 For example, I rather like section numbers in the margin, which can be
@@ -3501,7 +3452,7 @@ There are also some obsolete entries in the default value, specifically
           "\\setmainfont{Fira Sans}")))
 #+end_src
 
-** Cover page
+*** Cover page
 To make a nice cover page, a simple method that comes to mind is just redefining
 =\maketitle=. To get precise control over the positioning we'll use the =tikz=
 package, and then add in the Tikz libraries =calc= and =shapes.geometric= to make
@@ -3611,7 +3562,7 @@ subtitle format to use the cover page.
   (add-to-list 'org-latex-conditional-features '((org-latex-cover-page-p) . cover-page) t))
 #+end_src
 
-** Condensed lists
+*** Condensed lists
 LaTeX is generally pretty good by default, but it's /really/ generous with how
 much space it puts between list items by default. I'm generally not a fan.
 
@@ -3631,7 +3582,7 @@ Thankfully this is easy to correct with a small snippet:
   (add-to-list 'org-latex-feature-implementations '(condensed-lists :snippet org-latex-condensed-lists :order 0.7) t))
 #+end_src
 
-** Pretty code blocks
+*** Pretty code blocks
 We could just use minted for syntax highlighting --- however, we can do better!
 The =engrave-faces= package lets us use Emacs' font-lock for syntax highlighting,
 exporting that as LaTeX commands.
@@ -3826,7 +3777,7 @@ Treating the verbatim (no syntax highlighting) result as a baseline; this
 rudimentary test suggest that =engrave-faces= is around eight times faster than
 =pygments=, and takes three times as long as no syntax highlighting (verbatim).
 
-** Support images from URLs
+*** Support images from URLs
 You can link to remote images easily, and they work nicely with HTML-based
 exports. However, LaTeX can only include local files, and so the current
 behaviour of =org-latex-link= is just to insert a URL to the image.
@@ -3868,7 +3819,7 @@ tempfile, this can provide a caching mechanism.
               (org-latex--inline-image link info)))))
 #+end_src
 
-** Chameleon --- aka. match theme
+*** Chameleon --- aka. match theme
 Once I had the idea of having the look of the LaTeX document produced match the
 current Emacs theme, I was enraptured. The result is the pseudo-class ~chameleon~,
 which I have implemented in the package =ox-chameleon=.
@@ -3878,7 +3829,7 @@ which I have implemented in the package =ox-chameleon=.
   :after ox)
 #+end_src
 
-** Make verbatim different to code
+*** Make verbatim different to code
 Since have just gone to so much effort above let's make the most of it by making
 =verbatim= use ~verb~ instead of ~protectedtexttt~ (default).
 
@@ -3892,6 +3843,7 @@ Since have just gone to so much effort above let's make the most of it by making
           (underline . "\\uline{%s}")
           (verbatim . verb))))
 #+end_src
+
 * Credits
 - Tecosaur - For all his help and the excellent Org, $\LaTeX$, and HTML export configs
 - Dr. Elken - For his EXWM Module and help on the DOOM Server

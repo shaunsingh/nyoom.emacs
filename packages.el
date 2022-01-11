@@ -49,6 +49,7 @@
 (package! ox-chameleon :recipe (:host github
                                 :repo "tecosaur/ox-chameleon")
   :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
+;; master gives an error, something about =sf= and bg/fg snapping. I'll look into it later, for now pin it to something earlier.
 
 ;;emacs additions
 ;; (package! meow)
@@ -60,6 +61,7 @@
 ;;fun
 (package! nov)
 (package! xkcd)
+(package! elcord)
 (package! monkeytype)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))
 

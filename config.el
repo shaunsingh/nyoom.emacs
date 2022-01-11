@@ -489,6 +489,7 @@ Return nil otherwise."
 (when (file-exists-p custom-file)
   (load custom-file))
 
+(setq-default fill-column 80)
 (setq-default line-spacing 0.24)
 
 (cond
@@ -497,13 +498,13 @@ Return nil otherwise."
         window-resize-pixelwise t)
   (menu-bar-mode t)))
 
+;; Vertical window divider
 (after! frame
-  (setq window-divider-default-bottom-width 0
-        window-divider-default-right-width 0))
+  (setq window-divider-default-right-width 24
+        window-divider-default-places 'right-only)
+  (window-divider-mode 1))
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
-
-(setq inhibit-compacting-font-caches t)
 
 (use-package! info-colors
   :commands (info-colors-fontify-node))
@@ -528,7 +529,12 @@ Return nil otherwise."
         (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
-             (format (if (buffer-modified-p)  " ◉ %s" "  ●  %s") project-name))))))
+             (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
+
+(use-package! elcord
+  :commands elcord-mode
+  :config
+  (setq elcord-use-major-mode-as-main-icon t))
 
 (if (boundp 'mac-mouse-wheel-smooth-scroll)
     (setq  mac-mouse-wheel-smooth-scroll t))
@@ -537,14 +543,12 @@ Return nil otherwise."
 
 (setq default-frame-alist
       (append (list
-               '(min-height . 1)
-               '(height . 45)
-               '(min-width . 1)
-               '(width . 81)
+               '(min-height . 1)  '(height . 45)
+               '(min-width  . 1)  '(width  . 81)
                '(vertical-scroll-bars . nil)
                '(internal-border-width . 24)
-               '(left-fringe . 1)
-               '(right-fringe . 1)
+               '(left-fringe . 0)
+               '(right-fringe . 0)
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 
@@ -562,6 +566,8 @@ Return nil otherwise."
 (use-package! nano-splash
   :after nano-theme
   :config
+  (setq initial-major-mode 'text-mode)
+  (setq default-major-mode 'text-mode)
   (setq initial-scratch-message "\
 
  ╭────────────────────────────────────────────────────────────────────────╮
@@ -703,7 +709,6 @@ Return nil otherwise."
 (defvar +zen-serif-p t
   "Whether to use a serifed font with `mixed-pitch-mode'.")
 (after! writeroom-mode
-  (defvar-local +zen--original-org-indent-mode-p nil)
   (defvar-local +zen--original-mixed-pitch-mode-p nil)
   (defun +zen-enable-mixed-pitch-mode-h ()
     "Enable `mixed-pitch-mode' when in `+zen-mixed-pitch-modes'."
@@ -715,28 +720,13 @@ Return nil otherwise."
         (funcall #'mixed-pitch-mode (if +zen--original-mixed-pitch-mode-p 1 -1)))))
   (pushnew! writeroom--local-variables
             'display-line-numbers
-            'visual-fill-column-width
-            'org-adapt-indentation)
+            'visual-fill-column-width)
   (add-hook 'writeroom-mode-enable-hook
             (defun +zen-prose-org-h ()
               "Reformat the current Org buffer appearance for prose."
               (when (eq major-mode 'org-mode)
                 (setq display-line-numbers nil
-                      visual-fill-column-width 60
-                      org-adapt-indentation nil
-                      +zen--original-org-indent-mode-p org-indent-mode)
-                (org-indent-mode -1))))
-  (add-hook! 'writeroom-mode-hook
-    (if writeroom-mode
-        (add-hook 'post-command-hook #'recenter nil t)
-      (remove-hook 'post-command-hook #'recenter t)))
-  (add-hook 'writeroom-mode-enable-hook #'doom-disable-line-numbers-h)
-  (add-hook 'writeroom-mode-disable-hook #'doom-enable-line-numbers-h)
-  (add-hook 'writeroom-mode-disable-hook
-            (defun +zen-nonprose-org-h ()
-              "Reverse the effect of `+zen-prose-org'."
-              (when (eq major-mode 'org-mode)
-                (when +zen--original-org-indent-mode-p (org-indent-mode 1))))))
+                      visual-fill-column-width 60)))))
 
 (map! :map elfeed-search-mode-map
       :after elfeed-search
@@ -962,31 +952,30 @@ Return nil otherwise."
 (after! org
   (setq org-directory "~/org"                     ; let's put files here
         org-ellipsis "  ﬋"                        ; cute icon for folded org blocks
+        org-startup-indented nil                  ; no need to start with indents when org-num is enabled
         org-list-allow-alphabetical t             ; have a. A. a) A) list bullets
         org-export-in-background t                ; run export processes in external emacs process
         org-use-property-inheritance t            ; it's convenient to have properties inherited
-        org-src-fontify-natively t                ; fontify org-src blocks
         org-pretty-entities t                     ; who doesn't like pretty things
+        org-fontify-whole-heading-line t
+        org-fontify-done-headline t
+        org-fontify-quote-and-verse-blocks t
+        org-src-fontify-natively t                ; fontify org-src blocks
         org-catch-invisible-edits 'smart          ; try not to accidently do weird stuff in invisible regions
-        org-odd-levels-only t                     ; Odd levels are the best levels
-        org-startup-indented t                    ; startup indented
         org-src-tab-acts-natively t               ; tabs should act natively in src blocks
-        org-return-follows-link t                 ; hitting return makes it follow the link
         org-log-done 'time                        ; having the time a item is done sounds convenient
         org-roam-directory "~/org/roam/"))        ; same thing, for roam
 
-(defun org-mode-hide-stars ()
+(defun org-mode-remove-stars ()
   (font-lock-add-keywords
    nil
    '(("^\\*+ "
       (0
        (prog1 nil
          (put-text-property (match-beginning 0) (match-end 0)
-                            'face (list :foreground
-                                        (face-attribute
-                                         'default :background)))))))))
+                            'invisible t)))))))
 
-(add-hook 'org-mode-hook #'org-mode-hide-stars)
+(add-hook 'org-mode-hook #'org-mode-remove-stars)
 
 (after! org
   (setq org-babel-default-header-args
@@ -1597,80 +1586,80 @@ Must be run as part of `org-font-lock-set-keywords-hook'."
 (after! org
   (setq org-pretty-entities-include-sub-superscripts nil))
 
-;; (after! org-plot
-;;   (defun org-plot/generate-theme (_type)
-;;     "Use the current Doom theme colours to generate a GnuPlot preamble."
-;;     (format "
-;; fgt = \"textcolor rgb '%s'\" # foreground text
-;; fgat = \"textcolor rgb '%s'\" # foreground alt text
-;; fgl = \"linecolor rgb '%s'\" # foreground line
-;; fgal = \"linecolor rgb '%s'\" # foreground alt line
+(after! org-plot
+  (defun org-plot/generate-theme (_type)
+    "Use the current Doom theme colours to generate a GnuPlot preamble."
+    (format "
+fgt = \"textcolor rgb '%s'\" # foreground text
+fgat = \"textcolor rgb '%s'\" # foreground alt text
+fgl = \"linecolor rgb '%s'\" # foreground line
+fgal = \"linecolor rgb '%s'\" # foreground alt line
 
-;; # foreground colors
-;; set border lc rgb '%s'
-;; # change text colors of  tics
-;; set xtics @fgt
-;; set ytics @fgt
-;; # change text colors of labels
-;; set title @fgt
-;; set xlabel @fgt
-;; set ylabel @fgt
-;; # change a text color of key
-;; set key @fgt
+# foreground colors
+set border lc rgb '%s'
+# change text colors of  tics
+set xtics @fgt
+set ytics @fgt
+# change text colors of labels
+set title @fgt
+set xlabel @fgt
+set ylabel @fgt
+# change a text color of key
+set key @fgt
 
-;; # line styles
-;; set linetype 1 lw 2 lc rgb '%s' # red
-;; set linetype 2 lw 2 lc rgb '%s' # blue
-;; set linetype 3 lw 2 lc rgb '%s' # green
-;; set linetype 4 lw 2 lc rgb '%s' # magenta
-;; set linetype 5 lw 2 lc rgb '%s' # orange
-;; set linetype 6 lw 2 lc rgb '%s' # yellow
-;; set linetype 7 lw 2 lc rgb '%s' # teal
-;; set linetype 8 lw 2 lc rgb '%s' # violet
+# line styles
+set linetype 1 lw 2 lc rgb '%s' # red
+set linetype 2 lw 2 lc rgb '%s' # blue
+set linetype 3 lw 2 lc rgb '%s' # green
+set linetype 4 lw 2 lc rgb '%s' # magenta
+set linetype 5 lw 2 lc rgb '%s' # orange
+set linetype 6 lw 2 lc rgb '%s' # yellow
+set linetype 7 lw 2 lc rgb '%s' # teal
+set linetype 8 lw 2 lc rgb '%s' # violet
 
-;; # border styles
-;; set tics out nomirror
-;; set border 3
+# border styles
+set tics out nomirror
+set border 3
 
-;; # palette
-;; set palette maxcolors 8
-;; set palette defined ( 0 '%s',\
-;; 1 '%s',\
-;; 2 '%s',\
-;; 3 '%s',\
-;; 4 '%s',\
-;; 5 '%s',\
-;; 6 '%s',\
-;; 7 '%s' )
-;; "
-;;             (doom-color 'fg)
-;;             (doom-color 'fg-alt)
-;;             (doom-color 'fg)
-;;             (doom-color 'fg-alt)
-;;             (doom-color 'fg)
-;;             ;; colours
-;;             (doom-color 'red)
-;;             (doom-color 'blue)
-;;             (doom-color 'green)
-;;             (doom-color 'magenta)
-;;             (doom-color 'orange)
-;;             (doom-color 'yellow)
-;;             (doom-color 'teal)
-;;             (doom-color 'violet)
-;;             ;; duplicated
-;;             (doom-color 'red)
-;;             (doom-color 'blue)
-;;             (doom-color 'green)
-;;             (doom-color 'magenta)
-;;             (doom-color 'orange)
-;;             (doom-color 'yellow)
-;;             (doom-color 'teal)
-;;             (doom-color 'violet)))
-;;   (defun org-plot/gnuplot-term-properties (_type)
-;;     (format "background rgb '%s' size 1050,650"
-;;             (doom-color 'bg)))
-;;   (setq org-plot/gnuplot-script-preamble #'org-plot/generate-theme)
-;;   (setq org-plot/gnuplot-term-extra #'org-plot/gnuplot-term-properties))
+# palette
+set palette maxcolors 8
+set palette defined ( 0 '%s',\
+1 '%s',\
+2 '%s',\
+3 '%s',\
+4 '%s',\
+5 '%s',\
+6 '%s',\
+7 '%s' )
+"
+            (doom-color 'fg)
+            (doom-color 'fg-alt)
+            (doom-color 'fg)
+            (doom-color 'fg-alt)
+            (doom-color 'fg)
+            ;; colours
+            (doom-color 'red)
+            (doom-color 'blue)
+            (doom-color 'green)
+            (doom-color 'magenta)
+            (doom-color 'orange)
+            (doom-color 'yellow)
+            (doom-color 'teal)
+            (doom-color 'violet)
+            ;; duplicated
+            (doom-color 'red)
+            (doom-color 'blue)
+            (doom-color 'green)
+            (doom-color 'magenta)
+            (doom-color 'orange)
+            (doom-color 'yellow)
+            (doom-color 'teal)
+            (doom-color 'violet)))
+  (defun org-plot/gnuplot-term-properties (_type)
+    (format "background rgb '%s' size 1050,650"
+            (doom-color 'bg)))
+  (setq org-plot/gnuplot-script-preamble #'org-plot/generate-theme)
+  (setq org-plot/gnuplot-term-extra #'org-plot/gnuplot-term-properties))
 
 (use-package! xkcd
   :commands (xkcd-get-json

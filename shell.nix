@@ -1,3 +1,4 @@
+# [[file:config.org::*Notes for the unwary adventurer][Notes for the unwary adventurer:2]]
 { pkgs ? import <nixpkgs> {
   overlays = [
     (import (builtins.fetchTarball {
@@ -10,24 +11,25 @@ mkShell {
   buildInputs = [
     # use emacs29
     emacsGit
-    # we need ripgrep build with pcre lookheads
+    # :completion vertico
     (ripgrep.override { withPCRE2 = true; })
-    # new emacs needs sqlite
     sqlite
-    # General org-mode config deps
-    gnuplot
-    pandoc
-    sdcv
-    languagetool
-    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
+    # :lang org
     tectonic
-    # used for formatting nix files
-    nixfmt
-    # used for compiling the css files
-    sassc
-    # required by +jupyter
+    ## +gnuplot
+    gnuplot
+    ## +pandoc
+    pandoc
+    ## +jupyter
     (python39.withPackages(ps: with ps; [jupyter]))
-    # mu4e
+    # :checkers spell
+    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
+    sdcv
+    # :checkers grammar
+    languagetool
+    # :lang nix
+    nixfmt
+    # :app mu4e
     mu
     isync
   ];
@@ -42,3 +44,4 @@ mkShell {
     fi
   '';
 }
+# Notes for the unwary adventurer:2 ends here
