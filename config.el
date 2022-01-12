@@ -421,6 +421,11 @@ Return nil otherwise."
 (use-package! selectric-mode
   :commands selectric-mode)
 
+(use-package! md4rd
+  :commands (md4rd-mode md4rd-login)
+  :config
+  (setq md4rd-subs-active '(emacs neovim vim apple linux rust)))
+
 (use-package! monkeytype
   :commands (monkeytype-region monkeytype-buffer monkeytype-region-as-words)
   :config
@@ -505,10 +510,48 @@ Return nil otherwise."
            (unless (string= "-" project-name)
              (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
 
+(defun shaunsingh/elcord-buffer-details-format ()
+  "Return the buffer details string shown on discord."
+  (format "Conjuring Spells"))
+
 (use-package! elcord
   :commands elcord-mode
   :config
-  (setq elcord-use-major-mode-as-main-icon t))
+  (setq elcord-mode-icon-alist '((dashboard-mode . "elisp-mode_icon")
+                                 (fundamental-mode . "elisp-mode_icon")
+                                 (c-mode . "c-mode_icon")
+                                 (c++-mode . "c_-mode_icon")
+                                 (crystal-mode . "crystal-mode_icon")
+                                 (clojure-mode . "clojure-mode_icon")
+                                 (css-mode . "css-mode_icon")
+                                 (emacs-lisp-mode . "elisp-mode_icon")
+                                 (eshell-mode . "elisp-mode_icon")
+                                 (haskell-mode . "haskell-mode_icon")
+                                 (haxe-mode . "haxe-mode_icon")
+                                 (haskell-interactive-mode . "haskell-mode_icon")
+                                 (js-mode . "javascript-mode_icon")
+                                 (magit-mode . "magit-mode_icon")
+                                 (markdown-mode . "markdown-mode_icon")
+                                 (nixos-mode . "nixos-mode_icon")
+                                 (latex-mode . "latex-mode_icon")
+                                 (text-mode . "elisp-mode_icon")
+                                 (org-mode . "org-mode_icon")
+                                 ("^slime-.*" . "lisp-mode_icon")
+                                 ("^sly-.*$" . "lisp-mode_icon")
+                                 (typescript-mode . "typescript-mode_icon")
+                                 (writer-mode . "org-mode_icon")
+                                 (term-mode . "x-mode_icon")
+                                 (shell-mode . "x-mode_icon")
+                                 (vterm-mode . "x-mode_icon")))
+  (setq elcord-client-id "930927487867834408") ;; You can set your own check elcord's readme
+  (setq elcord-quiet t
+        elcord-editor-icon "elisp-mode_icon"
+        elcord-buffer-details-format-function 'shaunsingh/elcord-buffer-details-format
+        elcord-display-buffer-details t
+        elcord-display-elapsed nil
+        elcord-show-small-icon nil
+        elcord-use-major-mode-as-main-icon t
+        elcord-refresh-rate 0.25))
 
 (if (boundp 'mac-mouse-wheel-smooth-scroll)
     (setq  mac-mouse-wheel-smooth-scroll t))
@@ -532,9 +575,6 @@ Return nil otherwise."
   (pcase appearance
     ('light (nano-light))
     ('dark (nano-dark))))
-
-;; (use-package! nano-theme
-;;   :hook (after-init . shaunsingh/apply-nano-theme))
 
 (use-package nano-theme
   :hook (after-init . nano-light)
@@ -1096,93 +1136,6 @@ LANGUAGE is a string referring to one of orb-babel's supported languages.
 (after! org-agenda
   (setq org-agenda-files (list "~/org/school.org"
                                "~/org/todo.org")))
-
-(use-package! citar
-  :when (featurep! :completion vertico)
-  :no-require
-  :config
-  (setq org-cite-insert-processor 'citar
-        org-cite-follow-processor 'citar
-        org-cite-activate-processor 'citar
-        citar-bibliography '("~/org/references.bib"))
-  (when (featurep! :lang org +roam2)
-    ;; Include property drawer metadata for 'org-roam' v2.
-    (setq citar-file-note-org-include '(org-id org-roam-ref))))
-
-(use-package! citar
-  :when (featurep! :completion vertico)
-  :after org)
-
-(use-package! citeproc
-  :defer t)
-
-;;; Org-Cite configuration
-(map! :after org
-      :map org-mode-map
-      :localleader
-      :desc "Insert citation" "@" #'org-cite-insert)
-
-(use-package! oc
-  :after citar
-  :config
-  (require 'ox)
-  (setq org-cite-global-bibliography
-        (let ((paths (or citar-bibliography
-                         (bound-and-true-p bibtex-completion-bibliography))))
-          ;; Always return bibliography paths as list for org-cite.
-          (if (stringp paths) (list paths) paths)))
-  ;; setup export processor; default csl/citeproc-el, with biblatex for latex
-  (setq org-cite-export-processors
-        '((t csl))))
-
-;;; Org-cite processors
-(use-package! oc-biblatex
-  :after oc)
-
-(use-package! oc-csl
-  :after oc
-  :config
-  (setq org-cite-csl-styles-dir "~/.config/bib/styles"))
-
-(use-package! oc-natbib
-  :after oc)
-
-;;;; Third-party
-(use-package! citar-org
-  :no-require
-  :custom
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-  (org-support-shift-select t)
-  (citar-bibliography '("~/org/references.bib"))
-  (when (featurep! :lang org +roam2)
-    ;; Include property drawer metadata for 'org-roam' v2.
-    (citar-org-note-include '(org-id org-roam-ref)))
-  ;; Personal extras
-  (setq citar-symbols
-        `((file ,(all-the-icons-faicon "file-o" :v-adjust -0.1) . " ")
-          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-silver :v-adjust -0.3) . " ")
-          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-dsilver :v-adjust 0.01) . " "))))
-
-(use-package! oc-csl-activate
-  :after oc
-  :config
-  (setq org-cite-csl-activate-use-document-style t)
-  (defun +org-cite-csl-activate/enable ()
-    (interactive)
-    (setq org-cite-activate-processor 'csl-activate)
-    (add-hook! 'org-mode-hook '((lambda () (cursor-sensor-mode 1)) org-cite-csl-activate-render-all))
-    (defadvice! +org-cite-csl-activate-render-all-silent (orig-fn)
-      :around #'org-cite-csl-activate-render-all
-      (with-silent-modifications (funcall orig-fn)))
-    (when (eq major-mode 'org-mode)
-      (with-silent-modifications
-        (save-excursion
-          (goto-char (point-min))
-          (org-cite-activate (point-max)))
-        (org-cite-csl-activate-render-all)))
-    (fmakunbound #'+org-cite-csl-activate/enable)))
 
 (use-package! doct
   :commands (doct))

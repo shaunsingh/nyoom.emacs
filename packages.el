@@ -4,8 +4,6 @@
 ;;org
 (unpin! org)
 (package! doct)
-(package! citar)
-(package! citeproc)
 (package! websocket)
 (package! org-appear)
 (package! org-roam-ui)
@@ -17,15 +15,9 @@
 (package! notebook-mode
   :recipe (:host github 
            :repo "rougier/notebook-mode"))
-;; (package! org-bib-mode
-;;   :recipe (:host github 
-;;            :repo "rougier/org-bib-mode"))
 (package! org-pretty-table
   :recipe (:host github 
            :repo "Fuco1/org-pretty-table"))
-(package! org-cite-csl-activate
-  :recipe (:host github 
-           :repo "andras-simonyi/org-cite-csl-activate"))
 (package! org-pandoc-import 
   :recipe (:host github
            :repo "tecosaur/org-pandoc-import"
@@ -53,7 +45,6 @@
 
 ;;emacs additions
 ;; (package! meow)
-(package! esup)
 (package! lexic)
 (package! etrace :recipe (:host github
                           :repo "aspiers/etrace"))
@@ -64,6 +55,7 @@
 ;;fun
 (package! nov)
 (package! xkcd)
+(package! md4rd)
 (package! elcord)
 (package! monkeytype)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))

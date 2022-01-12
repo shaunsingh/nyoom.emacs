@@ -17,7 +17,6 @@
        (popup                       ; tame sudden yet inevitable temporary windows
         +all                        ; catch all popups that start with an asterix
         +defaults)                  ; default popup rules
-       vi-tilde-fringe              ; fringe tildes to mark beyond EOB
        workspaces                   ; tab emulation, persistence & separate workspaces
        zen                          ; distraction-free coding or writing
 
@@ -45,10 +44,10 @@
        (:if (executable-find "languagetool") grammar) ; tasing grammar mistake every you make
 
        :tools
-       ;;biblio                     ; Writes a PhD for you (citation needed)
+       biblio                       ; Writes a PhD for you (citation needed)
        (debugger +lsp)              ; FIXME stepping through code, to help you add bugs
        direnv                       ; be direct about your environment
-       editorconfig                 ; let someone else argue about tabs vs spaces
+       ;; editorconfig              ; let someone else argue about tabs vs spaces
        (eval +overlay)              ; run code, run (also, repls)
        (lookup                      ; helps you navigate your code and documentation
         +dictionary                 ; dictionary/thesaurus is nice
@@ -61,12 +60,11 @@
 
        :os
        (:if IS-MAC macos)           ; improve compatibility with macOS
-       tty                          ; improve the terminal Emacs experience
 
        :lang
        ;;agda                       ; types of types of types of types...
        ;;beancount                  ; mind the GAAP
-       (cc +lsp)                    ; C/C++/Obj-C madness
+       ;;(cc +lsp)                  ; C/C++/Obj-C madness
        ;;clojure                    ; java with a lisp
        ;;common-lisp                ; if you've seen one lisp, you've seen them all
        ;;coq                        ; proofs-as-programs

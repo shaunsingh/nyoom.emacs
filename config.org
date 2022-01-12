@@ -293,7 +293,6 @@ ophints                      ; highlight the region an operation acts on
 (popup                       ; tame sudden yet inevitable temporary windows
  +all                        ; catch all popups that start with an asterix
  +defaults)                  ; default popup rules
-vi-tilde-fringe              ; fringe tildes to mark beyond EOB
 workspaces                   ; tab emulation, persistence & separate workspaces
 zen                          ; distraction-free coding or writing
 #+end_src
@@ -331,10 +330,10 @@ syntax                                         ; tasing you for every semicolon 
 
 #+name: doom-tools
 #+begin_src emacs-lisp
-;;biblio                     ; Writes a PhD for you (citation needed)
+biblio                       ; Writes a PhD for you (citation needed)
 (debugger +lsp)              ; FIXME stepping through code, to help you add bugs
 direnv                       ; be direct about your environment
-editorconfig                 ; let someone else argue about tabs vs spaces
+;; editorconfig              ; let someone else argue about tabs vs spaces
 (eval +overlay)              ; run code, run (also, repls)
 (lookup                      ; helps you navigate your code and documentation
  +dictionary                 ; dictionary/thesaurus is nice
@@ -349,7 +348,6 @@ rgb                          ; creating color strings
 #+name: doom-os
 #+begin_src emacs-lisp
 (:if IS-MAC macos)           ; improve compatibility with macOS
-tty                          ; improve the terminal Emacs experience
 #+end_src
 
 ***** Language support
@@ -361,7 +359,7 @@ associated file.
 #+begin_src emacs-lisp
 ;;agda                       ; types of types of types of types...
 ;;beancount                  ; mind the GAAP
-(cc +lsp)                    ; C/C++/Obj-C madness
+;;(cc +lsp)                  ; C/C++/Obj-C madness
 ;;clojure                    ; java with a lisp
 ;;common-lisp                ; if you've seen one lisp, you've seen them all
 ;;coq                        ; proofs-as-programs
@@ -489,8 +487,6 @@ tweaking org then
 #+begin_src emacs-lisp
 (unpin! org)
 (package! doct)
-(package! citar)
-(package! citeproc)
 (package! websocket)
 (package! org-appear)
 (package! org-roam-ui)
@@ -502,15 +498,9 @@ tweaking org then
 (package! notebook-mode
   :recipe (:host github 
            :repo "rougier/notebook-mode"))
-;; (package! org-bib-mode
-;;   :recipe (:host github 
-;;            :repo "rougier/org-bib-mode"))
 (package! org-pretty-table
   :recipe (:host github 
            :repo "Fuco1/org-pretty-table"))
-(package! org-cite-csl-activate
-  :recipe (:host github 
-           :repo "andras-simonyi/org-cite-csl-activate"))
 (package! org-pandoc-import 
   :recipe (:host github
            :repo "tecosaur/org-pandoc-import"
@@ -551,7 +541,6 @@ Emacs is missing just a few packages that I need to make it my OS
 #+name: emacs
 #+begin_src emacs-lisp
 ;; (package! meow)
-(package! esup)
 (package! lexic)
 (package! etrace :recipe (:host github
                           :repo "aspiers/etrace"))
@@ -566,6 +555,7 @@ We do a little trolling (and reading)
 #+begin_src emacs-lisp
 (package! nov)
 (package! xkcd)
+(package! md4rd)
 (package! elcord)
 (package! monkeytype)
 (package! selectric-mode :recipe (:local-repo "lisp/selectric-mode"))
@@ -1101,13 +1091,22 @@ We can also send messages using msmtp
         message-send-mail-function #'message-send-mail-with-sendmail))
 #+end_src
 
-*** +Selectric+ NK-Creams mode
+*** NK Creams Mode
 Instead of using the regular selectric-mode, I modified it with a few notable tweaks, mainly:
 1. Support for EVIL mode
 2. It uses NK Cream sounds instead of the typewritter ones
 #+begin_src emacs-lisp
 (use-package! selectric-mode
   :commands selectric-mode)
+#+end_src
+
+*** Mode for Reddit
+Considering half of this config is /from/ reddit, it only makes sense to browse reddit in emacs. Who needs new reddit anyways :p
+#+begin_src emacs-lisp
+(use-package! md4rd
+  :commands (md4rd-mode md4rd-login)
+  :config
+  (setq md4rd-subs-active '(emacs neovim vim apple linux rust)))
 #+end_src
 
 *** Monkeytype
@@ -1247,12 +1246,53 @@ investigation.
 #+end_src
 
 *** Elcord
-What’s even the point of using Emacs unless you’re constantly telling everyone about it?
+
+[[file:./misc/lang_icons/elisp-mode_icon.png]]
+
+What’s even the point of using Emacs unless you’re constantly telling everyone about it? What we're doing here is replacing the buffer details with something less revealing, then replacing the icon set used via creating a custom discord application. Theoretically this config should work for anyone, but I haven't tested it yet. Thank you cae for the [[file:./misc/lang_icons][icons]]
 #+begin_src emacs-lisp
+(defun shaunsingh/elcord-buffer-details-format ()
+  "Return the buffer details string shown on discord."
+  (format "Conjuring Spells"))
+
 (use-package! elcord
   :commands elcord-mode
   :config
-  (setq elcord-use-major-mode-as-main-icon t))
+  (setq elcord-mode-icon-alist '((dashboard-mode . "elisp-mode_icon")
+                                 (fundamental-mode . "elisp-mode_icon")
+                                 (c-mode . "c-mode_icon")
+                                 (c++-mode . "c_-mode_icon")
+                                 (crystal-mode . "crystal-mode_icon")
+                                 (clojure-mode . "clojure-mode_icon")
+                                 (css-mode . "css-mode_icon")
+                                 (emacs-lisp-mode . "elisp-mode_icon")
+                                 (eshell-mode . "elisp-mode_icon")
+                                 (haskell-mode . "haskell-mode_icon")
+                                 (haxe-mode . "haxe-mode_icon")
+                                 (haskell-interactive-mode . "haskell-mode_icon")
+                                 (js-mode . "javascript-mode_icon")
+                                 (magit-mode . "magit-mode_icon")
+                                 (markdown-mode . "markdown-mode_icon")
+                                 (nixos-mode . "nixos-mode_icon")
+                                 (latex-mode . "latex-mode_icon")
+                                 (text-mode . "elisp-mode_icon")
+                                 (org-mode . "org-mode_icon")
+                                 ("^slime-.*" . "lisp-mode_icon")
+                                 ("^sly-.*$" . "lisp-mode_icon")
+                                 (typescript-mode . "typescript-mode_icon")
+                                 (writer-mode . "org-mode_icon")
+                                 (term-mode . "x-mode_icon")
+                                 (shell-mode . "x-mode_icon")
+                                 (vterm-mode . "x-mode_icon")))
+  (setq elcord-client-id "930927487867834408") ;; You can set your own check elcord's readme
+  (setq elcord-quiet t
+        elcord-editor-icon "elisp-mode_icon"
+        elcord-buffer-details-format-function 'shaunsingh/elcord-buffer-details-format
+        elcord-display-buffer-details t
+        elcord-display-elapsed nil
+        elcord-show-small-icon nil
+        elcord-use-major-mode-as-main-icon t
+        elcord-refresh-rate 0.25))
 #+end_src
 
 *** Pixel-scroll
@@ -1289,9 +1329,6 @@ Now we can load the nano modules themselves.
   (pcase appearance
     ('light (nano-light))
     ('dark (nano-dark))))
-
-;; (use-package! nano-theme
-;;   :hook (after-init . shaunsingh/apply-nano-theme))
 
 (use-package nano-theme
   :hook (after-init . nano-light)
@@ -1971,96 +2008,6 @@ Set the directory
 (after! org-agenda
   (setq org-agenda-files (list "~/org/school.org"
                                "~/org/todo.org")))
-#+end_src
-
-*** Org Cite
-#+begin_src emacs-lisp
-(use-package! citar
-  :when (featurep! :completion vertico)
-  :no-require
-  :config
-  (setq org-cite-insert-processor 'citar
-        org-cite-follow-processor 'citar
-        org-cite-activate-processor 'citar
-        citar-bibliography '("~/org/references.bib"))
-  (when (featurep! :lang org +roam2)
-    ;; Include property drawer metadata for 'org-roam' v2.
-    (setq citar-file-note-org-include '(org-id org-roam-ref))))
-
-(use-package! citar
-  :when (featurep! :completion vertico)
-  :after org)
-
-(use-package! citeproc
-  :defer t)
-
-;;; Org-Cite configuration
-(map! :after org
-      :map org-mode-map
-      :localleader
-      :desc "Insert citation" "@" #'org-cite-insert)
-
-(use-package! oc
-  :after citar
-  :config
-  (require 'ox)
-  (setq org-cite-global-bibliography
-        (let ((paths (or citar-bibliography
-                         (bound-and-true-p bibtex-completion-bibliography))))
-          ;; Always return bibliography paths as list for org-cite.
-          (if (stringp paths) (list paths) paths)))
-  ;; setup export processor; default csl/citeproc-el, with biblatex for latex
-  (setq org-cite-export-processors
-        '((t csl))))
-
-;;; Org-cite processors
-(use-package! oc-biblatex
-  :after oc)
-
-(use-package! oc-csl
-  :after oc
-  :config
-  (setq org-cite-csl-styles-dir "~/.config/bib/styles"))
-
-(use-package! oc-natbib
-  :after oc)
-
-;;;; Third-party
-(use-package! citar-org
-  :no-require
-  :custom
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-  (org-support-shift-select t)
-  (citar-bibliography '("~/org/references.bib"))
-  (when (featurep! :lang org +roam2)
-    ;; Include property drawer metadata for 'org-roam' v2.
-    (citar-org-note-include '(org-id org-roam-ref)))
-  ;; Personal extras
-  (setq citar-symbols
-        `((file ,(all-the-icons-faicon "file-o" :v-adjust -0.1) . " ")
-          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-silver :v-adjust -0.3) . " ")
-          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-dsilver :v-adjust 0.01) . " "))))
-
-(use-package! oc-csl-activate
-  :after oc
-  :config
-  (setq org-cite-csl-activate-use-document-style t)
-  (defun +org-cite-csl-activate/enable ()
-    (interactive)
-    (setq org-cite-activate-processor 'csl-activate)
-    (add-hook! 'org-mode-hook '((lambda () (cursor-sensor-mode 1)) org-cite-csl-activate-render-all))
-    (defadvice! +org-cite-csl-activate-render-all-silent (orig-fn)
-      :around #'org-cite-csl-activate-render-all
-      (with-silent-modifications (funcall orig-fn)))
-    (when (eq major-mode 'org-mode)
-      (with-silent-modifications
-        (save-excursion
-          (goto-char (point-min))
-          (org-cite-activate (point-max)))
-        (org-cite-csl-activate-render-all)))
-    (fmakunbound #'+org-cite-csl-activate/enable)))
 #+end_src
 
 *** Org-Capture
