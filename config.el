@@ -61,14 +61,14 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
         company-dabbrev-ignore-case t
         company-dabbrev-other-buffers nil
         company-tooltip-limit 5
-        company-tooltip-minimum-width 40))
-(set-company-backend!
-  '(text-mode
-    markdown-mode
-    gfm-mode)
-  '(:seperate
-    company-yasnippet
-    company-files))
+        company-tooltip-minimum-width 40)
+  (set-company-backend!
+    '(text-mode
+      markdown-mode
+      gfm-mode)
+    '(:seperate
+      company-yasnippet
+      company-files)))
 
 (setq yas-triggers-in-field t)
 
@@ -398,44 +398,18 @@ Return nil otherwise."
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 
+(use-package! mu4e-dashboard
+  :commands mu4e-dashboard-mode)
 (after! mu4e
-  (setq mu4e-update-interval 300) ;5 minutes is a reasonable update time
+  (setq mu4e-index-cleanup nil
+        mu4e-index-lazy-check t
+        mu4e-update-interval 300)
   (set-email-account! "shaunsingh0207"
                       '((mu4e-sent-folder       . "/Sent Mail")
                         (mu4e-drafts-folder     . "/Drafts")
                         (mu4e-trash-folder      . "/Trash")
                         (mu4e-refile-folder     . "/All Mail")
-                        (smtpmail-smtp-user     . "shaunsingh0207@gmail.com")))
-
-  ;; don't need to run cleanup after indexing for gmail
-  (setq mu4e-index-cleanup nil
-        mu4e-index-lazy-check t)
-
-  (setq mu4e-headers-fields
-        '((:flags . 6)
-          (:account-stripe . 2)
-          (:from-or-to . 25)
-          (:folder . 10)
-          (:recipnum . 2)
-          (:subject . 80)
-          (:human-date . 8))
-        +mu4e-min-header-frame-width 142
-        mu4e-headers-date-format "%d/%m/%y"
-        mu4e-headers-time-format "⧖ %H:%M"
-        mu4e-headers-results-limit 1000
-        mu4e-index-cleanup t)
-
-  (add-to-list 'mu4e-bookmarks
-               '(:name "Yesterday's messages" :query "date:2d..1d" :key ?y) t)
-
-  (defvar +mu4e-header--folder-colors nil)
-  (appendq! mu4e-header-info-custom
-            '((:folder .
-               (:name "Folder" :shortname "Folder" :help "Lowest level folder" :function
-                (lambda (msg)
-                  (+mu4e-colorize-str
-                   (replace-regexp-in-string "\\`.*/" "" (mu4e-message-field msg :maildir))
-                   '+mu4e-header--folder-colors)))))))
+                        (smtpmail-smtp-user     . "shaunsingh0207@gmail.com"))))
 
 (after! mu4e
   (setq sendmail-program "msmtp"
@@ -552,8 +526,23 @@ Return nil otherwise."
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 
-(use-package! nano-theme
-  :hook (after-init . nano-light))
+(defun shaunsingh/apply-nano-theme (appearance)
+  "Load theme, taking current system APPEARANCE into consideration."
+  (mapc #'disable-theme custom-enabled-themes)
+  (pcase appearance
+    ('light (nano-light))
+    ('dark (nano-dark))))
+
+;; (use-package! nano-theme
+;;   :hook (after-init . shaunsingh/apply-nano-theme))
+
+(use-package nano-theme
+  :hook (after-init . nano-light)
+  :config
+  ;; If emacs has been built with system appearance detection
+  ;; add a hook to change the theme to match the system
+  (if (boundp 'ns-system-appearance-change-functions)
+      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-nano-theme)))
 
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode)
@@ -564,33 +553,7 @@ Return nil otherwise."
   :commands nano-agenda)
 
 (use-package! nano-splash
-  :after nano-theme
-  :config
-  (setq initial-major-mode 'text-mode)
-  (setq default-major-mode 'text-mode)
-  (setq initial-scratch-message "\
-
- ╭────────────────────────────────────────────────────────────────────────╮
- │             DOOM Emacs / N Λ N O ─ Evil. Emacs. Simplified             │
- │      Copyright (C) 2021 ─ N Λ N O, Shaurya Singh, Henrik Lissner.      │
- ╰────────────────────────────────────────────────────────────────────────╯
- ╭────────────────────────────────────────────────────────────────────────╮
- │  This program is free software; you can redistribute it and/or modify  │
- │   it under the terms of the GNU General Public License as published    │
- │    by the Free Software Foundation, either version 3 of the License.   │
- ╰────────────────────────────────────────────────────────────────────────╯
- ╭────────────────────────────────────────────────────────────────────────╮
- │    This program is distributed in the hope that it will be useful,     │
- │    but WITHOUT ANY WARRANTY; without even the implied warranty of      │
- │     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      │
- │            GNU General Public License for more details.                │
- ╰────────────────────────────────────────────────────────────────────────╯
- ╭────────────────────────────────────────────────────────────────────────╮
- │   You should have received a copy of the GNU General Public License    │
- │  along with this program. If not, see <http://www.gnu.org/licenses/>.  │
- ╰────────────────────────────────────────────────────────────────────────╯
-
-"))
+  :after nano-theme)
 
 ;; Dim inactive windows
 (use-package dimmer

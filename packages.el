@@ -57,6 +57,9 @@
 (package! lexic)
 (package! etrace :recipe (:host github
                           :repo "aspiers/etrace"))
+(package! mu4e-dashboard
+  :recipe (:host github
+           :repo "rougier/mu4e-dashboard"))
 
 ;;fun
 (package! nov)
