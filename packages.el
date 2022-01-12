@@ -1,8 +1,10 @@
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
+;; live life on the edge
+(unpin! t)
+
 ;;org
-(unpin! org)
 (package! doct)
 (package! websocket)
 (package! org-appear)

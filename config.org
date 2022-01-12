@@ -463,6 +463,9 @@ one place
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
+;; live life on the edge
+(unpin! t)
+
 ;;org
 <<org>>
 
@@ -485,7 +488,6 @@ was written in org! It makes sense that the majority of my packages are for
 tweaking org then
 #+name: org
 #+begin_src emacs-lisp
-(unpin! org)
 (package! doct)
 (package! websocket)
 (package! org-appear)
