@@ -11,19 +11,10 @@
 (package! org-roam-ui)
 (package! org-preview-html)
 (package! org-num :recipe (:local-repo "lisp/org-num"))
-(package! org-ol-tree
-  :recipe (:host github 
-           :repo "Townk/org-ol-tree"))
-(package! notebook-mode
-  :recipe (:host github 
-           :repo "rougier/notebook-mode"))
-(package! org-pretty-table
-  :recipe (:host github 
-           :repo "Fuco1/org-pretty-table"))
-(package! org-pandoc-import 
-  :recipe (:host github
-           :repo "tecosaur/org-pandoc-import"
-           :files ("*.el" "filters" "preprocessors")))
+(package! org-ol-tree :recipe (:host github :repo "Townk/org-ol-tree"))
+(package! notebook-mode :recipe (:host github :repo "rougier/notebook-mode"))
+(package! org-pretty-table :recipe (:host github :repo "Fuco1/org-pretty-table"))
+(package! org-pandoc-import :recipe (:host github :repo "tecosaur/org-pandoc-import" :files ("*.el" "filters" "preprocessors")))
 
 ;;latex
 (package! aas)
@@ -40,19 +31,14 @@
 (package! nano-modeline)
 (package! solaire-mode :disable t)
 (package! nano-splash :recipe (:local-repo "lisp/nano-splash"))
-(package! ox-chameleon :recipe (:host github
-                                :repo "tecosaur/ox-chameleon")
-  :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
-;; master gives an error, something about =sf= and bg/fg snapping. I'll look into it later, for now pin it to something earlier.
+(package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon") :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
 
 ;;emacs additions
 ;; (package! meow)
 (package! lexic)
-(package! etrace :recipe (:host github
-                          :repo "aspiers/etrace"))
-(package! mu4e-dashboard
-  :recipe (:host github
-           :repo "rougier/mu4e-dashboard"))
+(package! etrace :recipe (:host github :repo "aspiers/etrace"))
+(package! mu4e-dashboard :recipe (:host github :repo "rougier/mu4e-dashboard"))
+(package! flight-attendant.el :recipe (:local-repo "lisp/flight-attendant.el" :files ("*.el" "copilot")))
 
 ;;fun
 (package! nov)

@@ -53,8 +53,8 @@
         +dictionary                 ; dictionary/thesaurus is nice
         +docsets)                   ; ...or in Dash docsets locally
        (lsp +peek)                  ; Language Server Protocol
-       (magit                       ; a git porcelain for Emacs
-        +forge)                     ; interface with git forges
+       ;; (magit                    ; a git porcelain for Emacs
+       ;;  +forge)                  ; interface with git forges
        pdf                          ; pdf enhancements
        rgb                          ; creating color strings
 

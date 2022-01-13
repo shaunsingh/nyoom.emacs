@@ -339,8 +339,8 @@ direnv                       ; be direct about your environment
  +dictionary                 ; dictionary/thesaurus is nice
  +docsets)                   ; ...or in Dash docsets locally
 (lsp +peek)                  ; Language Server Protocol
-(magit                       ; a git porcelain for Emacs
- +forge)                     ; interface with git forges
+;; (magit                    ; a git porcelain for Emacs
+;;  +forge)                  ; interface with git forges
 pdf                          ; pdf enhancements
 rgb                          ; creating color strings
 #+end_src
@@ -494,19 +494,10 @@ tweaking org then
 (package! org-roam-ui)
 (package! org-preview-html)
 (package! org-num :recipe (:local-repo "lisp/org-num"))
-(package! org-ol-tree
-  :recipe (:host github 
-           :repo "Townk/org-ol-tree"))
-(package! notebook-mode
-  :recipe (:host github 
-           :repo "rougier/notebook-mode"))
-(package! org-pretty-table
-  :recipe (:host github 
-           :repo "Fuco1/org-pretty-table"))
-(package! org-pandoc-import 
-  :recipe (:host github
-           :repo "tecosaur/org-pandoc-import"
-           :files ("*.el" "filters" "preprocessors")))
+(package! org-ol-tree :recipe (:host github :repo "Townk/org-ol-tree"))
+(package! notebook-mode :recipe (:host github :repo "rougier/notebook-mode"))
+(package! org-pretty-table :recipe (:host github :repo "Fuco1/org-pretty-table"))
+(package! org-pandoc-import :recipe (:host github :repo "tecosaur/org-pandoc-import" :files ("*.el" "filters" "preprocessors")))
 #+end_src
 
 ***** $\LaTeX$:
@@ -532,10 +523,7 @@ Making emacs look good is first priority, actually working in it is second
 (package! nano-modeline)
 (package! solaire-mode :disable t)
 (package! nano-splash :recipe (:local-repo "lisp/nano-splash"))
-(package! ox-chameleon :recipe (:host github
-                                :repo "tecosaur/ox-chameleon")
-  :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
-;; master gives an error, something about =sf= and bg/fg snapping. I'll look into it later, for now pin it to something earlier.
+(package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon") :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
 #+end_src
 
 ***** Emacs Tweaks:
@@ -544,11 +532,9 @@ Emacs is missing just a few packages that I need to make it my OS
 #+begin_src emacs-lisp
 ;; (package! meow)
 (package! lexic)
-(package! etrace :recipe (:host github
-                          :repo "aspiers/etrace"))
-(package! mu4e-dashboard
-  :recipe (:host github
-           :repo "rougier/mu4e-dashboard"))
+(package! etrace :recipe (:host github :repo "aspiers/etrace"))
+(package! mu4e-dashboard :recipe (:host github :repo "rougier/mu4e-dashboard"))
+(package! flight-attendant.el :recipe (:local-repo "lisp/flight-attendant.el" :files ("*.el" "copilot")))
 #+end_src
 
 ***** Fun:
@@ -674,6 +660,14 @@ I think company is a bit too quick to recommend some stuff
 (setq yas-triggers-in-field t)
 #+end_src
 
+*** Copilot
+Finally, I've wanted this for quite a while now. A bit buggy but I think its worth it
+#+begin_src emacs-lisp
+(use-package! flight-attendant.el
+  :commands fa-enable)
+#+end_src
+
+*** Snippets
 Lets add some snippets for latex
 #+begin_src emacs-lisp
 (use-package! aas
@@ -1024,7 +1018,7 @@ The defaults for emacs aren't so good nowadays. Lets fix that up a bit
       display-line-numbers-type nil
       delete-by-moving-to-trash t
       truncate-string-ellipsis "…"
-      ;;evil-want-fine-undo t
+      evil-want-fine-undo t
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
 (fringe-mode 0)
@@ -1224,12 +1218,6 @@ For the window title, I'd like to have just the buffer name, then if applicable 
 (setq frame-title-format
       '(""
         (:eval
-         (if (s-contains-p org-roam-directory (or buffer-file-name ""))
-             (replace-regexp-in-string
-              ".*/[0-9]*-?" "☰ "
-              (subst-char-in-string ?_ ?  buffer-file-name))
-           "%b"))
-        (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
              (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
@@ -1255,7 +1243,7 @@ What’s even the point of using Emacs unless you’re constantly telling everyo
 #+begin_src emacs-lisp
 (defun shaunsingh/elcord-buffer-details-format ()
   "Return the buffer details string shown on discord."
-  (format "Conjuring Spells"))
+  (format "Text is a Magical Thing"))
 
 (use-package! elcord
   :commands elcord-mode

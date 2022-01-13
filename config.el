@@ -72,6 +72,9 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
 
 (setq yas-triggers-in-field t)
 
+(use-package! flight-attendant.el
+  :commands fa-enable)
+
 (use-package! aas
   :commands aas-mode)
 
@@ -374,7 +377,7 @@ Return nil otherwise."
       display-line-numbers-type nil
       delete-by-moving-to-trash t
       truncate-string-ellipsis "…"
-      ;;evil-want-fine-undo t
+      evil-want-fine-undo t
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
 (fringe-mode 0)
@@ -500,19 +503,13 @@ Return nil otherwise."
 (setq frame-title-format
       '(""
         (:eval
-         (if (s-contains-p org-roam-directory (or buffer-file-name ""))
-             (replace-regexp-in-string
-              ".*/[0-9]*-?" "☰ "
-              (subst-char-in-string ?_ ?  buffer-file-name))
-           "%b"))
-        (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
              (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
 
 (defun shaunsingh/elcord-buffer-details-format ()
   "Return the buffer details string shown on discord."
-  (format "Conjuring Spells"))
+  (format "Text is a Magical Thing"))
 
 (use-package! elcord
   :commands elcord-mode
