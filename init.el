@@ -17,6 +17,7 @@
        (popup                       ; tame sudden yet inevitable temporary windows
         +all                        ; catch all popups that start with an asterix
         +defaults)                  ; default popup rules
+       vc-gutter                    ; vcs diff in the fringe
        workspaces                   ; tab emulation, persistence & separate workspaces
        zen                          ; distraction-free coding or writing
 
@@ -53,8 +54,8 @@
         +dictionary                 ; dictionary/thesaurus is nice
         +docsets)                   ; ...or in Dash docsets locally
        (lsp +peek)                  ; Language Server Protocol
-       ;; (magit                    ; a git porcelain for Emacs
-       ;;  +forge)                  ; interface with git forges
+       (magit                       ; a git porcelain for Emacs
+        +forge)                     ; interface with git forges
        pdf                          ; pdf enhancements
        rgb                          ; creating color strings
 

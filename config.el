@@ -579,7 +579,28 @@ Return nil otherwise."
   ;; If emacs has been built with system appearance detection
   ;; add a hook to change the theme to match the system
   (if (boundp 'ns-system-appearance-change-functions)
-      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-nano-theme)))
+      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-nano-theme))
+  ;; Now to add some missing faces
+  (custom-set-faces
+   `(flyspell-incorrect ((t (:underline (:color ,nano-light-salient :style line)))))
+   `(flyspell-duplicate ((t (:underline (:color ,nano-light-salient :style line)))))
+
+   `(git-gutter:modified ((t (:foreground ,nano-light-salient))))
+   `(git-gutter-fr:added ((t (:foreground ,nano-light-popout))))
+   `(git-gutter-fr:modified ((t (:foreground ,nano-light-salient))))
+
+   `(lsp-ui-doc-url:added ((t (:background ,nano-light-highlight))))
+   `(lsp-ui-doc-background:modified ((t (:background ,nano-light-highlight))))
+
+   `(vterm-color-red ((t (:foreground ,nano-light-critical))))
+   `(vterm-color-blue ((t (:foreground ,nano-light-salient))))
+   `(vterm-color-green ((t (:foreground ,nano-light-popout))))
+   `(vterm-color-yellow ((t (:foreground ,nano-light-popout))))
+   `(vterm-color-magenta ((t (:foreground ,nano-light-salient))))
+
+   `(avy-lead-face-1 ((t (:foreground ,nano-light-subtle))))
+   `(avy-lead-face ((t (:foreground ,nano-light-salient :weight bold))))
+   `(avy-lead-face-0 ((t (:foreground ,nano-light-subtle :weight bold))))))
 
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode)
