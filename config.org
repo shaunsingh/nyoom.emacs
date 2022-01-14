@@ -1322,7 +1322,7 @@ Now we can load the nano modules themselves.
     ('dark (nano-dark))))
 
 (use-package nano-theme
-  :hook (after-init . nano-light)
+  :hook (after-init . nano-dark)
   :config
   ;; If emacs has been built with system appearance detection
   ;; add a hook to change the theme to match the system
@@ -1330,25 +1330,25 @@ Now we can load the nano modules themselves.
       (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-nano-theme))
   ;; Now to add some missing faces
   (custom-set-faces
-   `(flyspell-incorrect ((t (:underline (:color ,nano-light-salient :style line)))))
-   `(flyspell-duplicate ((t (:underline (:color ,nano-light-salient :style line)))))
+   `(flyspell-incorrect ((t (:underline (:color ,nano-dark-salient :style line)))))
+   `(flyspell-duplicate ((t (:underline (:color ,nano-dark-salient :style line)))))
 
-   `(git-gutter:modified ((t (:foreground ,nano-light-salient))))
-   `(git-gutter-fr:added ((t (:foreground ,nano-light-popout))))
-   `(git-gutter-fr:modified ((t (:foreground ,nano-light-salient))))
+   `(git-gutter:modified ((t (:foreground ,nano-dark-salient))))
+   `(git-gutter-fr:added ((t (:foreground ,nano-dark-popout))))
+   `(git-gutter-fr:modified ((t (:foreground ,nano-dark-salient))))
 
-   `(lsp-ui-doc-url:added ((t (:background ,nano-light-highlight))))
-   `(lsp-ui-doc-background:modified ((t (:background ,nano-light-highlight))))
+   `(lsp-ui-doc-url:added ((t (:background ,nano-dark-highlight))))
+   `(lsp-ui-doc-background:modified ((t (:background ,nano-dark-highlight))))
 
-   `(vterm-color-red ((t (:foreground ,nano-light-critical))))
-   `(vterm-color-blue ((t (:foreground ,nano-light-salient))))
-   `(vterm-color-green ((t (:foreground ,nano-light-popout))))
-   `(vterm-color-yellow ((t (:foreground ,nano-light-popout))))
-   `(vterm-color-magenta ((t (:foreground ,nano-light-salient))))
+   `(vterm-color-red ((t (:foreground ,nano-dark-critical))))
+   `(vterm-color-blue ((t (:foreground ,nano-dark-salient))))
+   `(vterm-color-green ((t (:foreground ,nano-dark-popout))))
+   `(vterm-color-yellow ((t (:foreground ,nano-dark-popout))))
+   `(vterm-color-magenta ((t (:foreground ,nano-dark-salient))))
 
-   `(avy-lead-face-1 ((t (:foreground ,nano-light-subtle))))
-   `(avy-lead-face ((t (:foreground ,nano-light-salient :weight bold))))
-   `(avy-lead-face-0 ((t (:foreground ,nano-light-subtle :weight bold))))))
+   `(avy-lead-face-1 ((t (:foreground ,nano-dark-subtle))))
+   `(avy-lead-face ((t (:foreground ,nano-dark-popout :weight bold))))
+   `(avy-lead-face-0 ((t (:foreground ,nano-dark-salient :weight bold))))))
 
 (use-package! nano-modeline
   :hook (after-init . nano-modeline-mode)
