@@ -598,6 +598,8 @@ Return nil otherwise."
    `(vterm-color-yellow ((t (:foreground ,nano-dark-popout))))
    `(vterm-color-magenta ((t (:foreground ,nano-dark-salient))))
 
+   `(scroll-bar ((t (:background ,nano-dark-background))))
+
    `(avy-lead-face-1 ((t (:foreground ,nano-dark-subtle))))
    `(avy-lead-face ((t (:foreground ,nano-dark-popout :weight bold))))
    `(avy-lead-face-0 ((t (:foreground ,nano-dark-salient :weight bold))))))
