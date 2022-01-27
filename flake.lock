@@ -3,27 +3,26 @@
     "doom-emacs": {
       "flake": false,
       "locked": {
-        "lastModified": 1641948934,
-        "narHash": "sha256-ZRtYsBXwEX9pPkqRHjOrLI8lHlIfNBW7amHKiV0nFE4=",
+        "lastModified": 1642277695,
+        "narHash": "sha256-RAxbJ1cYI0VUD8XJutTHYKFFE2e0OMGSj6d6DL+MSOM=",
         "owner": "hlissner",
         "repo": "doom-emacs",
-        "rev": "86034131c49d38922ccd49db1ac3defc6a53646f",
+        "rev": "c7753adbb301dcb647dc96d182c28b228551890e",
         "type": "github"
       },
       "original": {
         "owner": "hlissner",
-        "ref": "develop",
         "repo": "doom-emacs",
         "type": "github"
       }
     },
     "emacs": {
       "locked": {
-        "lastModified": 1641993471,
-        "narHash": "sha256-mWv8on5YLDlniS683Wo8kb0U7Bg3xl0B2vgu8mY6JR0=",
+        "lastModified": 1643193471,
+        "narHash": "sha256-LRp9AKw8AtEoWVXJj21n7hE7BDZE1lrW+2xTgs16aSM=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "7673ee506b16d9fa77740b783c779394d722074e",
+        "rev": "588aced1ae8ad4107d9705649c69a35e7919f409",
         "type": "github"
       },
       "original": {
@@ -34,11 +33,11 @@
     },
     "flake-utils": {
       "locked": {
-        "lastModified": 1638122382,
-        "narHash": "sha256-sQzZzAbvKEqN9s0bzWuYmRaA03v40gaJ4+iL1LXjaeI=",
+        "lastModified": 1642700792,
+        "narHash": "sha256-XqHrk7hFb+zBvRg6Ghl+AZDq03ov6OshJLiSWOoX5es=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "74f7e4319258e287b0f9cb95426c9853b282730b",
+        "rev": "846b2ae0fc4cc943637d3d1def4454213e203cba",
         "type": "github"
       },
       "original": {
@@ -49,11 +48,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1641909823,
-        "narHash": "sha256-Uxo+Wm6c/ijNhaJlYtFLJG9mh75FYZaBreMC2ZE0nEY=",
+        "lastModified": 1643119265,
+        "narHash": "sha256-mmDEctIkHSWcC/HRpeaw6QOe+DbNOSzc0wsXAHOZWwo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f0f67400bc49c44f305d6fe17698a2f1ce1c29a0",
+        "rev": "b05d2077ebe219f6a47825767f8bab5c6211d200",
         "type": "github"
       },
       "original": {

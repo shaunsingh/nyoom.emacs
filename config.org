@@ -1,6 +1,6 @@
-#+title: DOOM Emacs / N Λ N O
+#+title: DOOM Emacs
 #+property: header-args:emacs-lisp :exports code :comments none
-#+subtitle: Copyright (C) 2021 ─ N Λ N O, Shaurya Singh, Henrik Lissner
+#+subtitle: Copyright (C) 2021 ─ Shaurya Singh, Henrik Lissner
 #+author: Shaurya Singh
 #+description: A GNU Emacs configuration
 #+startup: fold
@@ -49,10 +49,6 @@ Issue is I don't like the looks of =doom emacs=
 1. Doom-modeline is right on top of minibuffer/echo area, the whole bottom area feels a bit too close.
 2. I don't like any of the light themes in doom-themes, except flatwhite but then I dislike the quirky highlighting
 3. Doom-modeline has too many segments, and too much highlighting. +light is a little better, but not that good.
-4. I prefer nano-emacs's theme, how it uses font weights and the more minimal syntax highlighting. The padding and visual tweaks it applies make the editor a little comfier, the default doom line spacing feels cramped
-The author wrote a paper on this as well: [[https://arxiv.org/pdf/2008.06030.pdf][On the design of text editors]], Check it out if you have the time!
-
-As such, this configuration is now a mix of the excellent =nano-emacs= and =doom-emacs=, best of both worlds!
 
 With Org, I've discovered the wonders of literate programming, and with the help
 of others I've switched more and more to just using Emacs (just replace
@@ -169,7 +165,7 @@ with pkgs;
 mkShell {
   buildInputs = [
     # use emacs29
-    emacsGit
+    # emacsGit
     # :completion vertico
     (ripgrep.override { withPCRE2 = true; })
     sqlite
@@ -186,11 +182,16 @@ mkShell {
     sdcv
     # :checkers grammar
     languagetool
+    # :lang clojure
+    clojure 
+    leiningen
+    clj-kondo
+    clojure-lsp
     # :lang nix
     nixfmt
     # :app mu4e
-    mu
-    isync
+    ## mu
+    ## isync
   ];
   shellHook = ''
     if [ ! -d $HOME/.config/emacs/.git ]; then
@@ -285,7 +286,7 @@ I reckon enabling half the modules Doom provides should do it.
 
 #+name: doom-ui
 #+begin_src emacs-lisp
-(:if IS-LINUX exwm)          ; everything in emacs, finally
+doom-dashboard               ; a nifty splash screen for Emacs
 (ligatures                   ; ligatures and symbols to make your code pnoretty again
  +extra)                     ; for those who dislike letters
 minimap                      ; show a map of the code on the side
@@ -334,15 +335,12 @@ syntax                                         ; tasing you for every semicolon 
 biblio                       ; Writes a PhD for you (citation needed)
 (debugger +lsp)              ; FIXME stepping through code, to help you add bugs
 direnv                       ; be direct about your environment
-;; editorconfig              ; let someone else argue about tabs vs spaces
 ein                          ; tame Jupyter notebooks with emacs
 (eval +overlay)              ; run code, run (also, repls)
 (lookup                      ; helps you navigate your code and documentation
  +dictionary                 ; dictionary/thesaurus is nice
  +docsets)                   ; ...or in Dash docsets locally
 (lsp +peek)                  ; Language Server Protocol
-(magit                       ; a git porcelain for Emacs
- +forge)                     ; interface with git forges
 pdf                          ; pdf enhancements
 rgb                          ; creating color strings
 #+end_src
@@ -361,8 +359,8 @@ associated file.
 #+begin_src emacs-lisp
 ;;agda                       ; types of types of types of types...
 ;;beancount                  ; mind the GAAP
-;;(cc +lsp)                  ; C/C++/Obj-C madness
-;;clojure                    ; java with a lisp
+(cc +lsp)                    ; C/C++/Obj-C madness
+(clojure +lsp)               ; java with a lisp
 ;;common-lisp                ; if you've seen one lisp, you've seen them all
 ;;coq                        ; proofs-as-programs
 ;;crystal                    ; ruby at the speed of c
@@ -432,7 +430,7 @@ sh                           ; she sells {ba,z,fi}sh shells on the C xor
 ;;solidity                   ; do you need a blockchain? No.
 ;;swift                      ; who asked for emoji variables?
 ;;terra                      ; Earth and Moon in alignment for performance.
-(web +lsp)                   ; the tubes
+;;(web +lsp)                 ; the tubes
 ;;yaml                       ; JSON, but readable
 ;;zig                        ; C, but simpler
 #+end_src
@@ -477,6 +475,9 @@ one place
 ;;looks
 <<looks>>
 
+;;carbon
+<<carbon>>
+
 ;;emacs additions
 <<emacs>>
 
@@ -497,6 +498,7 @@ tweaking org then
 (package! org-preview-html)
 (package! org-num :recipe (:local-repo "lisp/org-num"))
 (package! org-ol-tree :recipe (:host github :repo "Townk/org-ol-tree"))
+(package! org-bib-mode :recipe (:host github :repo "rougier/org-bib-mode"))
 (package! notebook-mode :recipe (:host github :repo "rougier/notebook-mode"))
 (package! org-pretty-table :recipe (:host github :repo "Fuco1/org-pretty-table"))
 (package! org-pandoc-import :recipe (:host github :repo "tecosaur/org-pandoc-import" :files ("*.el" "filters" "preprocessors")))
@@ -518,14 +520,19 @@ Making emacs look good is first priority, actually working in it is second
 #+begin_src emacs-lisp
 (package! focus)
 (package! dimmer)
-(package! nano-theme)
-(package! nano-agenda)
 (package! info-colors)
 (package! svg-tag-mode)
-(package! nano-modeline)
 (package! solaire-mode :disable t)
-(package! nano-splash :recipe (:local-repo "lisp/nano-splash"))
 (package! ox-chameleon :recipe (:host github :repo "tecosaur/ox-chameleon") :pin "5a1928b9c33cbeb0463cf794afe8cff4ab512ce7")
+#+end_src
+
+
+***** Carbon:
+Now for some IBM-ness
+#+name: carbon
+#+begin_src emacs-lisp
+(package! carbon-themes :recipe (:local-repo "lisp/carbon-themes"))
+(package! carbon-modeline :recipe (:local-repo "lisp/carbon-modeline"))
 #+end_src
 
 ***** Emacs Tweaks:
@@ -535,7 +542,6 @@ Emacs is missing just a few packages that I need to make it my OS
 ;; (package! meow)
 (package! lexic)
 (package! etrace :recipe (:host github :repo "aspiers/etrace"))
-(package! mu4e-dashboard :recipe (:host github :repo "rougier/mu4e-dashboard"))
 (package! flight-attendant.el :recipe (:local-repo "lisp/flight-attendant.el" :files ("*.el" "copilot")))
 #+end_src
 
@@ -596,18 +602,17 @@ Use ligatures from within vterm (and eshell), we do this by redefining the varia
 *** Fonts
 [[xkcd:590]]
 
-I like the apple fonts for programming, so I'll go with Liga SFMono Nerd Font. I
-prefer a rounder font for plain text, so I'll go with Fira Sans for that. I have a retina display as well, so lets keep the fonts light.
+Updated to just use the IBM Fonts, I'm trying it all out
 #+begin_src emacs-lisp
 ;;fonts
 (setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 16)
+      doom-variable-pitch-font (font-spec :family "IBM Plex Sans" :size 16)
       doom-unicode-font (font-spec :family "Liga SFMono Nerd Font")
-      doom-serif-font (font-spec :family "Fira Sans" :size 16 :weight 'medium))
+      doom-serif-font (font-spec :family "IBM Plex Sans" :size 16 :weight 'medium))
 #+end_src
 
-For mixed pitch, I would go with something comfier. I like Fira Sans once again for a minimalist feel, so lets go with that
+For mixed pitch, I would go with something comfier. I like IBM Plex Sans once again for a minimalist feel, so lets go with that
 #+begin_src emacs-lisp
 ;;mixed pitch modes
 (defvar mixed-pitch-modes '(org-mode LaTeX-mode markdown-mode gfm-mode Info-mode)
@@ -629,7 +634,7 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
     "A variable-pitch face with serifs."
     :group 'basic-faces)
   (setq mixed-pitch-set-height t)
-  (setq variable-pitch-serif-font (font-spec :family "Fira Sans" :size 16))
+  (setq variable-pitch-serif-font (font-spec :family "IBM Plex Sans" :size 16))
   (set-face-attribute 'variable-pitch-serif nil :font variable-pitch-serif-font)
   (defun mixed-pitch-serif-mode (&optional arg)
     "Change the default face of the current buffer to a serifed variable pitch, while keeping some faces fixed pitch."
@@ -1005,7 +1010,7 @@ We also want to use some doom-specific keybindings, so we can use the leader key
 #+end_src
 
 #+begin_src emacs-lisp
-;; (use-package meow
+;; (use-package! meow
 ;;   :hook (after-init . meow-global-mode)
 ;;   :config
 ;;   (meow-setup))
@@ -1065,8 +1070,6 @@ I'm trying out emails in emacs, should be nice. Related, check .mbsyncrc to
 setup your emails first
 
 #+begin_src emacs-lisp
-(use-package! mu4e-dashboard
-  :commands mu4e-dashboard-mode)
 (after! mu4e
   (setq mu4e-index-cleanup nil
         mu4e-index-lazy-check t
@@ -1189,6 +1192,107 @@ To make Emacs play a little nicer with window management, enable menu-bar-mode. 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
 #+end_src
 
+*** Dashboard
+Lets clean up the dashboard a bit, and add a cute message, whether that be some corporate BS, an developer excuse, or a fun (useless) fact.
+#+begin_src emacs-lisp
+(setq fancy-splash-image (expand-file-name "misc/splash-images/ibm.png" doom-private-dir)
+      +doom-dashboard-banner-padding '(0 . 0))
+
+(defvar splash-phrase-source-folder
+  (expand-file-name "misc/splash-phrases" doom-private-dir)
+  "A folder of text files with a fun phrase on each line.")
+
+(defvar splash-phrase-sources
+  (let* ((files (directory-files splash-phrase-source-folder nil "\\.txt\\'"))
+         (sets (delete-dups (mapcar
+                             (lambda (file)
+                               (replace-regexp-in-string "\\(?:-[0-9]+-\\w+\\)?\\.txt" "" file))
+                             files))))
+    (mapcar (lambda (sset)
+              (cons sset
+                    (delq nil (mapcar
+                               (lambda (file)
+                                 (when (string-match-p (regexp-quote sset) file)
+                                   file))
+                               files))))
+            sets))
+  "A list of cons giving the phrase set name, and a list of files which contain phrase components.")
+
+(defvar splash-phrase-set
+  (nth (random (length splash-phrase-sources)) (mapcar #'car splash-phrase-sources))
+  "The default phrase set. See `splash-phrase-sources'.")
+
+(defun splase-phrase-set-random-set ()
+  "Set a new random splash phrase set."
+  (interactive)
+  (setq splash-phrase-set
+        (nth (random (1- (length splash-phrase-sources)))
+             (cl-set-difference (mapcar #'car splash-phrase-sources) (list splash-phrase-set))))
+  (+doom-dashboard-reload t))
+
+(defvar splase-phrase--cache nil)
+
+(defun splash-phrase-get-from-file (file)
+  "Fetch a random line from FILE."
+  (let ((lines (or (cdr (assoc file splase-phrase--cache))
+                   (cdar (push (cons file
+                                     (with-temp-buffer
+                                       (insert-file-contents (expand-file-name file splash-phrase-source-folder))
+                                       (split-string (string-trim (buffer-string)) "\n")))
+                               splase-phrase--cache)))))
+    (nth (random (length lines)) lines)))
+
+(defun splash-phrase (&optional set)
+  "Construct a splash phrase from SET. See `splash-phrase-sources'."
+  (mapconcat
+   #'splash-phrase-get-from-file
+   (cdr (assoc (or set splash-phrase-set) splash-phrase-sources))
+   " "))
+
+(defun doom-dashboard-phrase ()
+  "Get a splash phrase, flow it over multiple lines as needed, and make fontify it."
+  (mapconcat
+   (lambda (line)
+     (+doom-dashboard--center
+      +doom-dashboard--width
+      (with-temp-buffer
+        (insert-text-button
+         line
+         'action
+         (lambda (_) (+doom-dashboard-reload t))
+         'face 'doom-dashboard-menu-title
+         'mouse-face 'doom-dashboard-menu-title
+         'help-echo "Random phrase"
+         'follow-link t)
+        (buffer-string))))
+   (split-string
+    (with-temp-buffer
+      (insert (splash-phrase))
+      (setq fill-column (min 70 (/ (* 2 (window-width)) 3)))
+      (fill-region (point-min) (point-max))
+      (buffer-string))
+    "\n")
+   "\n"))
+
+(defadvice! doom-dashboard-widget-loaded-with-phrase ()
+  :override #'doom-dashboard-widget-loaded
+  (setq line-spacing 0.2)
+  (insert
+   "\n\n"
+   (propertize
+    (+doom-dashboard--center
+     +doom-dashboard--width
+     (doom-display-benchmark-h 'return))
+    'face 'doom-dashboard-loaded)
+   "\n"
+   (doom-dashboard-phrase)
+   "\n"))
+
+;; remove useless dashboard info
+(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
+(setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
+#+end_src
+
 *** Info Colors
 This makes manual pages nicer to look at by adding variable pitch fontification
 and colouring.
@@ -1296,10 +1400,10 @@ Default doom scrolling is pretty slow, so lets improve on that with pixel-scroll
     (pixel-scroll-precision-mode))
 #+end_src
 
-*** Nano
-I prefer the nano look and feel over the default doom one. Lets integrate it with doom!
+*** Carbon
+Recently I just fell in love with [[https://www.ibm.com/design/][IBM Design]]. The colors are contrasty but still subtle and distinctly IBM. This is my attempt to recreate that, in emacs
 
-Doom themes collides with the themes provided by nano, so lets remove that
+First step is to add some padding, line height, and just make things comfier
 #+begin_src emacs-lisp
 (setq default-frame-alist
       (append (list
@@ -1313,69 +1417,39 @@ Doom themes collides with the themes provided by nano, so lets remove that
                '(menu-bar-lines . 0))))
 #+end_src
 
-Now we can load the nano modules themselves. 
+Now we can load the carbon modules themselves.
 #+begin_src emacs-lisp
-(defun shaunsingh/apply-nano-theme (appearance)
+(defun shaunsingh/apply-carbon-theme (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
   (mapc #'disable-theme custom-enabled-themes)
   (pcase appearance
-    ('light (nano-light))
-    ('dark (nano-dark))))
+    ('light (carbon/light-theme))
+    ('dark (carbon/dark-theme))))
 
-(use-package nano-theme
-  :hook (after-init . nano-light)
+(use-package! carbon-themes
+  :hook (after-init . carbon/dark-theme)
   :config
-  ;; If emacs has been built with system appearance detection
   ;; add a hook to change the theme to match the system
   (if (boundp 'ns-system-appearance-change-functions)
-      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-nano-theme))
-  ;; Now to add some missing faces
-  (custom-set-faces
-   `(flyspell-incorrect ((t (:underline (:color ,nano-light-salient :style line)))))
-   `(flyspell-duplicate ((t (:underline (:color ,nano-light-salient :style line)))))
+      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-carbon-theme))
+  ;; now for some settings
+  (setq carbon-set-evil-cursors t
+        carbon-set-italic-comments t
+        carbon-set-italic-keywords nil))
 
-   `(git-gutter:modified ((t (:foreground ,nano-light-salient))))
-   `(git-gutter-fr:added ((t (:foreground ,nano-light-popout))))
-   `(git-gutter-fr:modified ((t (:foreground ,nano-light-salient))))
-
-   `(lsp-ui-doc-url:added ((t (:background ,nano-light-highlight))))
-   `(lsp-ui-doc-background:modified ((t (:background ,nano-light-highlight))))
-
-   `(vterm-color-red ((t (:foreground ,nano-light-critical))))
-   `(vterm-color-blue ((t (:foreground ,nano-light-salient))))
-   `(vterm-color-green ((t (:foreground ,nano-light-popout))))
-   `(vterm-color-yellow ((t (:foreground ,nano-light-popout))))
-   `(vterm-color-magenta ((t (:foreground ,nano-light-salient))))
-
-   `(scroll-bar ((t (:background ,nano-light-background))))
-
-   `(avy-lead-face-1 ((t (:foreground ,nano-light-subtle))))
-   `(avy-lead-face ((t (:foreground ,nano-light-popout :weight bold))))
-   `(avy-lead-face-0 ((t (:foreground ,nano-light-salient :weight bold))))))
-
-(use-package! nano-modeline
-  :hook (after-init . nano-modeline-mode)
-  :config
-  (setq nano-modeline-position 'top))
-#+end_src
-
-And of course, =nano-agenda=
-#+begin_src emacs-lisp
-(use-package! nano-agenda
-  :commands nano-agenda)
-#+end_src
-
-Instead of doom's dashboard, lets use a modified version of nano's 
-#+begin_src emacs-lisp
-(use-package! nano-splash
-  :after nano-theme)
+(use-package! carbon-modeline
+  :hook (after-init . carbon-modeline-mode)
+  :init
+  (setq )
+  (setq carbon-modeline-position 'top
+        carbon-modeline-git-diff-mode-line t
+        carbon-modeline-visual-bell t))
 #+end_src
 
 *** Dimming
-Not really related to nano, but I think it would be nice to also dim inactive frames
 #+begin_src emacs-lisp
 ;; Dim inactive windows
-(use-package dimmer
+(use-package! dimmer
   :hook (after-init . dimmer-mode)
   :config
   (setq dimmer-fraction 0.5
@@ -1408,9 +1482,8 @@ Similar to that, I want to dim surrounding text using the focus package
 #+end_src
 
 *** Svg-Tag-Mode
-Although this isn't a part of =nano=, Its by the same author and fits pretty well, so lets add it here
 #+begin_src emacs-lisp
-(use-package svg-tag-mode
+(use-package! svg-tag-mode
   :commands svg-tag-mode
   :config
   (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
@@ -1876,7 +1949,8 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
           (t (format "https://youtu.be/%s" path)))))
 #+end_src
 
-Speaking of exports, lets make our html export use a snazzy css file, to match our theme
+** HTML export
+Inspired by Tecosaur's amazing org-css, I wanted to make my own, but with fewer features and slightly cleaner overall.
 #+begin_src emacs-lisp
 (defun org-inline-css-hook (exporter)
   "Insert custom inline css"
@@ -1884,7 +1958,7 @@ Speaking of exports, lets make our html export use a snazzy css file, to match o
     (let* ((dir (ignore-errors (file-name-directory (buffer-file-name))))
            (path (concat dir "style.css"))
            (homestyle (or (null dir) (null (file-exists-p path))))
-           (final (if homestyle "~/.config/doom/misc/nano-style.css" path)))
+           (final (if homestyle (expand-file-name "misc/org-css/style.css" doom-private-dir) path)))
       (setq org-html-head-include-default-style nil)
       (setq org-html-head (concat
                            "<style type=\"text/css\">\n"
@@ -1895,7 +1969,40 @@ Speaking of exports, lets make our html export use a snazzy css file, to match o
                            "/*]]>*/-->\n"
                            "</style>\n")))))
 
+(defun org-inline-js-hook (exporter)
+  "Insert custom inline css"
+  (when (eq exporter 'html)
+    (let* ((dir (ignore-errors (file-name-directory (buffer-file-name))))
+           (path (concat dir "style.js"))
+           (homestyle (or (null dir) (null (file-exists-p path))))
+           (final (if homestyle (expand-file-name "misc/org-css/style.js" doom-private-dir) path)))
+      (setq org-html-head-include-default-style nil)
+      (setq org-html-head (concat
+                          "<script type=\"text/javascript\">\n"
+                           "<!--/*--><![CDATA[/*><!--*/\n"
+                           (with-temp-buffer
+                             (insert-file-contents final)
+                             (buffer-string))
+                           "/*]]>*/-->\n"
+                           "</script>\n")))))
+
+(defun org-inline-html-hook (exporter)
+  "Insert custom inline css"
+  (when (eq exporter 'html)
+    (let* ((dir (ignore-errors (file-name-directory (buffer-file-name))))
+           (path (concat dir "style.html"))
+           (homestyle (or (null dir) (null (file-exists-p path))))
+           (final (if homestyle (expand-file-name "misc/org-css/style.html" doom-private-dir) path)))
+      (setq org-html-head-include-default-style nil)
+      (setq org-html-head (concat
+                           (with-temp-buffer
+                             (insert-file-contents final)
+                             (buffer-string))
+                           "\n")))))
+
 (add-hook 'org-export-before-processing-hook 'org-inline-css-hook)
+(add-hook 'org-export-before-processing-hook 'org-inline-js-hook)
+(add-hook 'org-export-before-processing-hook 'org-inline-html-hook)
 #+end_src
 
 If MathJax is used, we want to use version 3 instead of the default version 2.
@@ -1947,51 +2054,6 @@ And now to preview that export live
 I like to preview images inline too
 #+begin_src emacs-lisp
 (setq org-startup-with-inline-images t)
-#+end_src
-
-Its annoying having to format every single org source block one by one, so lets have emacs do it for us.
-#+begin_src emacs-lisp
-(defun edit-src-block (src fn language)
-  "Replace SRC org-element's value property with the result of FN.
-FN is a function that operates on org-element's value and returns a string.
-LANGUAGE is a string referring to one of orb-babel's supported languages.
-(https://orgmode.org/manual/Languages.html#Languages)"
-  (let ((src-language (org-element-property :language src))
-        (value (org-element-property :value src)))
-    (when (string= src-language language)
-      (let ((copy (org-element-copy src)))
-        (org-element-put-property copy :value
-                                  (funcall fn value))
-        (org-element-set-element src copy)))))
-
-(defun format-elisp-string (string)
-  "Indents elisp buffer string and reformats dangling parens."
-  (with-temp-buffer
-    (let ((inhibit-message t))
-      (emacs-lisp-mode)
-      (insert
-       (replace-regexp-in-string "[[:space:]]*
-[[:space:]]*)" ")" string))
-      (indent-region (point-min) (point-max))
-      (buffer-substring (point-min) (point-max)))))
-
-(defun format-elisp-src-blocks ()
-  "Format Elisp src blocks in the current org buffer"
-  (interactive)
-  (save-mark-and-excursion
-    (let ((AST (org-element-parse-buffer)))
-      (org-element-map AST 'src-block
-        (lambda (element)
-          (edit-src-block element #'format-elisp-string "emacs-lisp")))
-      (delete-region (point-min) (point-max))
-      (insert (org-element-interpret-data AST)))))
-#+end_src
-
-And now to just have org-mode do it every time we save
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook
-          (lambda ()
-            (add-hook 'after-save-hook #'format-elisp-src-blocks)))
 #+end_src
 
 *** Org-Roam
@@ -2540,6 +2602,14 @@ set palette defined ( 0 '%s',\
   (setq org-plot/gnuplot-term-extra #'org-plot/gnuplot-term-properties))
 #+end_src
 
+*** Org-Cite
+Now that the biblio module is available, lets do away with my hacky config and just use that instead.
+#+begin_src emacs-lisp
+(after! org
+  (setq! bibtex-completion-bibliography '("~/org/references.bib")
+         citar-bibliography '("~/org/references.bib")))
+#+end_src
+
 *** XKCD
 [[xkcd:446]]
 
@@ -2942,7 +3012,7 @@ Annoying having to gate these, so let's fix that
 *** PDF-Tools
 DocView gives me a headache, but pdf-tools can be improved, lets configure it a little more
 #+begin_src emacs-lisp
-(use-package pdf-view
+(use-package! pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
   :config
   (setq pdf-view-resize-factor 1.1)
@@ -3025,8 +3095,8 @@ I'm a big fan of Rougier's work beautifying emacs, and his latest attempt at imp
 *** Org-bib-mode
 Neat drag-and-drop literate bibliographies for org-mode. Disabled for now, due to an issue with use-package
 #+begin_src emacs-lisp
-;; (use-package! org-bib-mode
-;;   :hook (org-mode . org-bib-mode))
+(use-package! org-bib-mode
+  :commands org-bib-mode)
 #+end_src
 
 * Latex
@@ -3376,7 +3446,7 @@ There are also some obsolete entries in the default value, specifically
           ("" "hyperref" nil)
           ("" "firamath-otf" t)
           "\\setmonofont{Liga SFMono Nerd Font}"
-          "\\setmainfont{Fira Sans}")))
+          "\\setmainfont{IBM Plex Sans}")))
 #+end_src
 
 *** Cover page
@@ -3773,7 +3843,7 @@ Since have just gone to so much effort above let's make the most of it by making
 
 * Credits
 - Tecosaur - For all his help and the excellent Org, $\LaTeX$, and HTML export configs
-- Dr. Elken - For his EXWM Module and help on the DOOM Server
+- Dr. Elken - For his tectonic help on the DOOM Server
 - Henrik - For making Doom Emacs in the first place
 - Rougier - For his work on NANO Emacs.
 - Glarses - For the NK Cream sounds used in =selectric-mode=

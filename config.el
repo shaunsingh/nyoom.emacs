@@ -20,9 +20,9 @@
 ;;fonts
 (setq doom-font (font-spec :family "Liga SFMono Nerd Font" :size 15)
       doom-big-font (font-spec :family "Liga SFMono Nerd Font" :size 20)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 16)
+      doom-variable-pitch-font (font-spec :family "IBM Plex Sans" :size 16)
       doom-unicode-font (font-spec :family "Liga SFMono Nerd Font")
-      doom-serif-font (font-spec :family "Fira Sans" :size 16 :weight 'medium))
+      doom-serif-font (font-spec :family "IBM Plex Sans" :size 16 :weight 'medium))
 
 ;;mixed pitch modes
 (defvar mixed-pitch-modes '(org-mode LaTeX-mode markdown-mode gfm-mode Info-mode)
@@ -44,7 +44,7 @@ Also immediately enables `mixed-pitch-modes' if currently in one of the modes."
     "A variable-pitch face with serifs."
     :group 'basic-faces)
   (setq mixed-pitch-set-height t)
-  (setq variable-pitch-serif-font (font-spec :family "Fira Sans" :size 16))
+  (setq variable-pitch-serif-font (font-spec :family "IBM Plex Sans" :size 16))
   (set-face-attribute 'variable-pitch-serif nil :font variable-pitch-serif-font)
   (defun mixed-pitch-serif-mode (&optional arg)
     "Change the default face of the current buffer to a serifed variable pitch, while keeping some faces fixed pitch."
@@ -366,7 +366,7 @@ Return nil otherwise."
 ;;      :g "M-9"   #'+workspace/switch-to-8
 ;;      :g "M-0"   #'+workspace/switch-to-final))
 
-;; (use-package meow
+;; (use-package! meow
 ;;   :hook (after-init . meow-global-mode)
 ;;   :config
 ;;   (meow-setup))
@@ -401,8 +401,6 @@ Return nil otherwise."
         evil-move-cursor-back nil       ; Don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; Don't put overwritten text in the kill ring
 
-(use-package! mu4e-dashboard
-  :commands mu4e-dashboard-mode)
 (after! mu4e
   (setq mu4e-index-cleanup nil
         mu4e-index-lazy-check t
@@ -488,6 +486,103 @@ Return nil otherwise."
 
 (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode)
 
+(setq fancy-splash-image (expand-file-name "misc/splash-images/ibm.png" doom-private-dir)
+      +doom-dashboard-banner-padding '(0 . 0))
+
+(defvar splash-phrase-source-folder
+  (expand-file-name "misc/splash-phrases" doom-private-dir)
+  "A folder of text files with a fun phrase on each line.")
+
+(defvar splash-phrase-sources
+  (let* ((files (directory-files splash-phrase-source-folder nil "\\.txt\\'"))
+         (sets (delete-dups (mapcar
+                             (lambda (file)
+                               (replace-regexp-in-string "\\(?:-[0-9]+-\\w+\\)?\\.txt" "" file))
+                             files))))
+    (mapcar (lambda (sset)
+              (cons sset
+                    (delq nil (mapcar
+                               (lambda (file)
+                                 (when (string-match-p (regexp-quote sset) file)
+                                   file))
+                               files))))
+            sets))
+  "A list of cons giving the phrase set name, and a list of files which contain phrase components.")
+
+(defvar splash-phrase-set
+  (nth (random (length splash-phrase-sources)) (mapcar #'car splash-phrase-sources))
+  "The default phrase set. See `splash-phrase-sources'.")
+
+(defun splase-phrase-set-random-set ()
+  "Set a new random splash phrase set."
+  (interactive)
+  (setq splash-phrase-set
+        (nth (random (1- (length splash-phrase-sources)))
+             (cl-set-difference (mapcar #'car splash-phrase-sources) (list splash-phrase-set))))
+  (+doom-dashboard-reload t))
+
+(defvar splase-phrase--cache nil)
+
+(defun splash-phrase-get-from-file (file)
+  "Fetch a random line from FILE."
+  (let ((lines (or (cdr (assoc file splase-phrase--cache))
+                   (cdar (push (cons file
+                                     (with-temp-buffer
+                                       (insert-file-contents (expand-file-name file splash-phrase-source-folder))
+                                       (split-string (string-trim (buffer-string)) "\n")))
+                               splase-phrase--cache)))))
+    (nth (random (length lines)) lines)))
+
+(defun splash-phrase (&optional set)
+  "Construct a splash phrase from SET. See `splash-phrase-sources'."
+  (mapconcat
+   #'splash-phrase-get-from-file
+   (cdr (assoc (or set splash-phrase-set) splash-phrase-sources))
+   " "))
+
+(defun doom-dashboard-phrase ()
+  "Get a splash phrase, flow it over multiple lines as needed, and make fontify it."
+  (mapconcat
+   (lambda (line)
+     (+doom-dashboard--center
+      +doom-dashboard--width
+      (with-temp-buffer
+        (insert-text-button
+         line
+         'action
+         (lambda (_) (+doom-dashboard-reload t))
+         'face 'doom-dashboard-menu-title
+         'mouse-face 'doom-dashboard-menu-title
+         'help-echo "Random phrase"
+         'follow-link t)
+        (buffer-string))))
+   (split-string
+    (with-temp-buffer
+      (insert (splash-phrase))
+      (setq fill-column (min 70 (/ (* 2 (window-width)) 3)))
+      (fill-region (point-min) (point-max))
+      (buffer-string))
+    "\n")
+   "\n"))
+
+(defadvice! doom-dashboard-widget-loaded-with-phrase ()
+  :override #'doom-dashboard-widget-loaded
+  (setq line-spacing 0.2)
+  (insert
+   "\n\n"
+   (propertize
+    (+doom-dashboard--center
+     +doom-dashboard--width
+     (doom-display-benchmark-h 'return))
+    'face 'doom-dashboard-loaded)
+   "\n"
+   (doom-dashboard-phrase)
+   "\n"))
+
+;; remove useless dashboard info
+(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
+(setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
+
 (use-package! info-colors
   :commands (info-colors-fontify-node))
 
@@ -566,57 +661,34 @@ Return nil otherwise."
                '(tool-bar-lines . 0)
                '(menu-bar-lines . 0))))
 
-(defun shaunsingh/apply-nano-theme (appearance)
+(defun shaunsingh/apply-carbon-theme (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
   (mapc #'disable-theme custom-enabled-themes)
   (pcase appearance
-    ('light (nano-light))
-    ('dark (nano-dark))))
+    ('light (carbon/light-theme))
+    ('dark (carbon/dark-theme))))
 
-(use-package nano-theme
-  :hook (after-init . nano-light)
+(use-package! carbon-themes
+  :hook (after-init . carbon/dark-theme)
   :config
-  ;; If emacs has been built with system appearance detection
   ;; add a hook to change the theme to match the system
   (if (boundp 'ns-system-appearance-change-functions)
-      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-nano-theme))
-  ;; Now to add some missing faces
-  (custom-set-faces
-   `(flyspell-incorrect ((t (:underline (:color ,nano-light-salient :style line)))))
-   `(flyspell-duplicate ((t (:underline (:color ,nano-light-salient :style line)))))
+      (add-hook 'ns-system-appearance-change-functions #'shaunsingh/apply-carbon-theme))
+  ;; now for some settings
+  (setq carbon-set-evil-cursors t
+        carbon-set-italic-comments t
+        carbon-set-italic-keywords nil))
 
-   `(git-gutter:modified ((t (:foreground ,nano-light-salient))))
-   `(git-gutter-fr:added ((t (:foreground ,nano-light-popout))))
-   `(git-gutter-fr:modified ((t (:foreground ,nano-light-salient))))
-
-   `(lsp-ui-doc-url:added ((t (:background ,nano-light-highlight))))
-   `(lsp-ui-doc-background:modified ((t (:background ,nano-light-highlight))))
-
-   `(vterm-color-red ((t (:foreground ,nano-light-critical))))
-   `(vterm-color-blue ((t (:foreground ,nano-light-salient))))
-   `(vterm-color-green ((t (:foreground ,nano-light-popout))))
-   `(vterm-color-yellow ((t (:foreground ,nano-light-popout))))
-   `(vterm-color-magenta ((t (:foreground ,nano-light-salient))))
-
-   `(scroll-bar ((t (:background ,nano-light-background))))
-
-   `(avy-lead-face-1 ((t (:foreground ,nano-light-subtle))))
-   `(avy-lead-face ((t (:foreground ,nano-light-popout :weight bold))))
-   `(avy-lead-face-0 ((t (:foreground ,nano-light-salient :weight bold))))))
-
-(use-package! nano-modeline
-  :hook (after-init . nano-modeline-mode)
-  :config
-  (setq nano-modeline-position 'top))
-
-(use-package! nano-agenda
-  :commands nano-agenda)
-
-(use-package! nano-splash
-  :after nano-theme)
+(use-package! carbon-modeline
+  :hook (after-init . carbon-modeline-mode)
+  :init
+  (setq )
+  (setq carbon-modeline-position 'top
+        carbon-modeline-git-diff-mode-line t
+        carbon-modeline-visual-bell t))
 
 ;; Dim inactive windows
-(use-package dimmer
+(use-package! dimmer
   :hook (after-init . dimmer-mode)
   :config
   (setq dimmer-fraction 0.5
@@ -644,7 +716,7 @@ Return nil otherwise."
                       (latex-mode . lsp-folding-range)
                       (python-mode . lsp-folding-range))))
 
-(use-package svg-tag-mode
+(use-package! svg-tag-mode
   :commands svg-tag-mode
   :config
   (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
@@ -1048,7 +1120,7 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
     (let* ((dir (ignore-errors (file-name-directory (buffer-file-name))))
            (path (concat dir "style.css"))
            (homestyle (or (null dir) (null (file-exists-p path))))
-           (final (if homestyle "~/.config/doom/misc/nano-style.css" path)))
+           (final (if homestyle (expand-file-name "misc/org-css/style.css" doom-private-dir) path)))
       (setq org-html-head-include-default-style nil)
       (setq org-html-head (concat
                            "<style type=\"text/css\">\n"
@@ -1059,7 +1131,40 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
                            "/*]]>*/-->\n"
                            "</style>\n")))))
 
+(defun org-inline-js-hook (exporter)
+  "Insert custom inline css"
+  (when (eq exporter 'html)
+    (let* ((dir (ignore-errors (file-name-directory (buffer-file-name))))
+           (path (concat dir "style.js"))
+           (homestyle (or (null dir) (null (file-exists-p path))))
+           (final (if homestyle (expand-file-name "misc/org-css/style.js" doom-private-dir) path)))
+      (setq org-html-head-include-default-style nil)
+      (setq org-html-head (concat
+                          "<script type=\"text/javascript\">\n"
+                           "<!--/*--><![CDATA[/*><!--*/\n"
+                           (with-temp-buffer
+                             (insert-file-contents final)
+                             (buffer-string))
+                           "/*]]>*/-->\n"
+                           "</script>\n")))))
+
+(defun org-inline-html-hook (exporter)
+  "Insert custom inline css"
+  (when (eq exporter 'html)
+    (let* ((dir (ignore-errors (file-name-directory (buffer-file-name))))
+           (path (concat dir "style.html"))
+           (homestyle (or (null dir) (null (file-exists-p path))))
+           (final (if homestyle (expand-file-name "misc/org-css/style.html" doom-private-dir) path)))
+      (setq org-html-head-include-default-style nil)
+      (setq org-html-head (concat
+                           (with-temp-buffer
+                             (insert-file-contents final)
+                             (buffer-string))
+                           "\n")))))
+
 (add-hook 'org-export-before-processing-hook 'org-inline-css-hook)
+(add-hook 'org-export-before-processing-hook 'org-inline-js-hook)
+(add-hook 'org-export-before-processing-hook 'org-inline-html-hook)
 
 (after! ox-html
   (setq org-html-mathjax-options
@@ -1098,45 +1203,6 @@ allowfullscreen>%s</iframe>" path (or "" desc)))
         org-preview-html-viewer 'xwidget))
 
 (setq org-startup-with-inline-images t)
-
-(defun edit-src-block (src fn language)
-  "Replace SRC org-element's value property with the result of FN.
-FN is a function that operates on org-element's value and returns a string.
-LANGUAGE is a string referring to one of orb-babel's supported languages.
-(https://orgmode.org/manual/Languages.html#Languages)"
-  (let ((src-language (org-element-property :language src))
-        (value (org-element-property :value src)))
-    (when (string= src-language language)
-      (let ((copy (org-element-copy src)))
-        (org-element-put-property copy :value
-                                  (funcall fn value))
-        (org-element-set-element src copy)))))
-
-(defun format-elisp-string (string)
-  "Indents elisp buffer string and reformats dangling parens."
-  (with-temp-buffer
-    (let ((inhibit-message t))
-      (emacs-lisp-mode)
-      (insert
-       (replace-regexp-in-string "[[:space:]]*
-[[:space:]]*)" ")" string))
-      (indent-region (point-min) (point-max))
-      (buffer-substring (point-min) (point-max)))))
-
-(defun format-elisp-src-blocks ()
-  "Format Elisp src blocks in the current org buffer"
-  (interactive)
-  (save-mark-and-excursion
-    (let ((AST (org-element-parse-buffer)))
-      (org-element-map AST 'src-block
-        (lambda (element)
-          (edit-src-block element #'format-elisp-string "emacs-lisp")))
-      (delete-region (point-min) (point-max))
-      (insert (org-element-interpret-data AST)))))
-
-(add-hook 'org-mode-hook
-          (lambda ()
-            (add-hook 'after-save-hook #'format-elisp-src-blocks)))
 
 (use-package! websocket
   :after org-roam)
@@ -1597,6 +1663,10 @@ set palette defined ( 0 '%s',\
   (setq org-plot/gnuplot-script-preamble #'org-plot/generate-theme)
   (setq org-plot/gnuplot-term-extra #'org-plot/gnuplot-term-properties))
 
+(after! org
+  (setq! bibtex-completion-bibliography '("~/org/references.bib")
+         citar-bibliography '("~/org/references.bib")))
+
 (use-package! xkcd
   :commands (xkcd-get-json
              xkcd-download xkcd-get
@@ -1962,7 +2032,7 @@ SQL can be either the emacsql vector representation, or a string."
 
 (setq org-export-with-sub-superscripts '{})
 
-(use-package pdf-view
+(use-package! pdf-view
   :hook (pdf-tools-enabled . pdf-view-themed-minor-mode)
   :config
   (setq pdf-view-resize-factor 1.1)
@@ -2029,8 +2099,8 @@ SQL can be either the emacsql vector representation, or a string."
 (use-package! notebook
   :commands notebook-mode)
 
-;; (use-package! org-bib-mode
-;;   :hook (org-mode . org-bib-mode))
+(use-package! org-bib-mode
+  :commands org-bib-mode)
 
 (after! org
   (setq org-highlight-latex-and-related '(native script entities))
@@ -2320,7 +2390,7 @@ This is done according to `org-latex-feature-implementations'"
           ("" "hyperref" nil)
           ("" "firamath-otf" t)
           "\\setmonofont{Liga SFMono Nerd Font}"
-          "\\setmainfont{Fira Sans}")))
+          "\\setmainfont{IBM Plex Sans}")))
 
 (after! org
   (defvar org-latex-cover-page 'auto

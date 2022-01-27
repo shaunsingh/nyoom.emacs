@@ -9,7 +9,7 @@
        (vertico +icons)             ; the search engine of the future
 
        :ui
-       (:if IS-LINUX exwm)          ; everything in emacs, finally
+       doom-dashboard               ; a nifty splash screen for Emacs
        (ligatures                   ; ligatures and symbols to make your code pnoretty again
         +extra)                     ; for those who dislike letters
        minimap                      ; show a map of the code on the side
@@ -48,15 +48,12 @@
        biblio                       ; Writes a PhD for you (citation needed)
        (debugger +lsp)              ; FIXME stepping through code, to help you add bugs
        direnv                       ; be direct about your environment
-       ;; editorconfig              ; let someone else argue about tabs vs spaces
        ein                          ; tame Jupyter notebooks with emacs
        (eval +overlay)              ; run code, run (also, repls)
        (lookup                      ; helps you navigate your code and documentation
         +dictionary                 ; dictionary/thesaurus is nice
         +docsets)                   ; ...or in Dash docsets locally
        (lsp +peek)                  ; Language Server Protocol
-       (magit                       ; a git porcelain for Emacs
-        +forge)                     ; interface with git forges
        pdf                          ; pdf enhancements
        rgb                          ; creating color strings
 
@@ -66,8 +63,8 @@
        :lang
        ;;agda                       ; types of types of types of types...
        ;;beancount                  ; mind the GAAP
-       ;;(cc +lsp)                  ; C/C++/Obj-C madness
-       ;;clojure                    ; java with a lisp
+       (cc +lsp)                    ; C/C++/Obj-C madness
+       (clojure +lsp)               ; java with a lisp
        ;;common-lisp                ; if you've seen one lisp, you've seen them all
        ;;coq                        ; proofs-as-programs
        ;;crystal                    ; ruby at the speed of c
@@ -137,7 +134,7 @@
        ;;solidity                   ; do you need a blockchain? No.
        ;;swift                      ; who asked for emoji variables?
        ;;terra                      ; Earth and Moon in alignment for performance.
-       (web +lsp)                   ; the tubes
+       ;;(web +lsp)                 ; the tubes
        ;;yaml                       ; JSON, but readable
        ;;zig                        ; C, but simpler
 
