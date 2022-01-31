@@ -56,6 +56,7 @@
        (lsp +peek)                  ; Language Server Protocol
        pdf                          ; pdf enhancements
        rgb                          ; creating color strings
+       tree-sitter                  ; Syntax and Parsing sitting in a tree
 
        :os
        (:if IS-MAC macos)           ; improve compatibility with macOS
@@ -63,7 +64,7 @@
        :lang
        ;;agda                       ; types of types of types of types...
        ;;beancount                  ; mind the GAAP
-       (cc +lsp)                    ; C/C++/Obj-C madness
+       (cc +lsp +tree-sitter)       ; C/C++/Obj-C madness
        (clojure +lsp)               ; java with a lisp
        ;;common-lisp                ; if you've seen one lisp, you've seen them all
        ;;coq                        ; proofs-as-programs
@@ -119,17 +120,19 @@
        ;;purescript                 ; javascript, but functional
        (python                      ; beautiful is better than ugly
         +lsp
-        +pyright)
+        +pyright
+        +tree-sitter
+        +cython)
        ;;qt                         ; the 'cutest' gui framework ever
        ;;racket                     ; a DSL for DSLs
        ;;raku                       ; the artist formerly known as perl6
        ;;rest                       ; Emacs as a REST client
        ;;rst                        ; ReST in peace
        ;;(ruby +rails)              ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp)                  ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (rust +lsp +tree-sitter)     ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala                      ; java, but good
        ;;scheme                     ; a fully conniving family of lisps
-       sh                           ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +lsp +fish +tree-sitter) ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml                        ; no, the /other/ ML
        ;;solidity                   ; do you need a blockchain? No.
        ;;swift                      ; who asked for emoji variables?

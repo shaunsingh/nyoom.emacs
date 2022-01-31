@@ -1,4 +1,3 @@
-# [[file:config.org::*Notes for the unwary adventurer][Notes for the unwary adventurer:2]]
 { pkgs ? import <nixpkgs> {
   overlays = [
     (import (builtins.fetchTarball {
@@ -49,4 +48,3 @@ mkShell {
     fi
   '';
 }
-# Notes for the unwary adventurer:2 ends here
