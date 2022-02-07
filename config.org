@@ -395,7 +395,7 @@ emacs-lisp                   ; drown in parentheses
 ;;lean                       ; proof that mathematicians need help
 ;;factor                     ; for when scripts are stacked against you
 ;;ledger                     ; an accounting system in Emacs
-(lua +lsp)                   ; one-based indices? one-based indices
+(lua +lsp +fennel)           ; one-based indices? one-based indices
 ;;(markdown +grip)           ; writing docs for people to ignore
 ;;nim                        ; python + lisp at the speed of c
 nix                          ; I hereby declare "nix geht mehr!"
@@ -1183,8 +1183,8 @@ To make Emacs play a little nicer with window management, enable menu-bar-mode. 
 (cond
  ((string-equal system-type "darwin")
   (setq frame-resize-pixelwise  t
-        window-resize-pixelwise t)
-  (menu-bar-mode t)))
+        window-resize-pixelwise t
+        tool-bar-style 'both)))
 
 ;; Vertical window divider
 (after! frame
@@ -1329,7 +1329,7 @@ For the window title, I'd like to have just the buffer name, then if applicable 
         (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
-             (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
+             (format (if (buffer-modified-p)  " ◉ CΛRBON / %s" "  ●  CΛRBON / %s") project-name))))))
 #+end_src
 
 *** Etrace
@@ -1444,7 +1444,7 @@ Now we can load the carbon modules themselves.
   :hook (after-init . carbon-modeline-mode)
   :init
   (setq )
-  (setq carbon-modeline-position 'top
+  (setq carbon-modeline-position 'bottom
         carbon-modeline-git-diff-mode-line t
         carbon-modeline-visual-bell t))
 #+end_src

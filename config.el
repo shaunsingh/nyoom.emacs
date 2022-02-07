@@ -475,8 +475,8 @@ Return nil otherwise."
 (cond
  ((string-equal system-type "darwin")
   (setq frame-resize-pixelwise  t
-        window-resize-pixelwise t)
-  (menu-bar-mode t)))
+        window-resize-pixelwise t
+        tool-bar-style 'both)))
 
 ;; Vertical window divider
 (after! frame
@@ -600,7 +600,7 @@ Return nil otherwise."
         (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
-             (format (if (buffer-modified-p)  " ◉ N Λ N O / %s" "  ●  N Λ N O / %s") project-name))))))
+             (format (if (buffer-modified-p)  " ◉ CΛRBON / %s" "  ●  CΛRBON / %s") project-name))))))
 
 (defun shaunsingh/elcord-buffer-details-format ()
   "Return the buffer details string shown on discord."
@@ -683,7 +683,7 @@ Return nil otherwise."
   :hook (after-init . carbon-modeline-mode)
   :init
   (setq )
-  (setq carbon-modeline-position 'top
+  (setq carbon-modeline-position 'bottom
         carbon-modeline-git-diff-mode-line t
         carbon-modeline-visual-bell t))
 
