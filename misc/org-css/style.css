@@ -1,6 +1,6 @@
 @charset "UTF-8";
 @import url('https://fonts.googleapis.com/css?family=IBM Plex Sans:300,350,400');
-@import url('https://fonts.googleapis.com/css?family=IBM Plex Mono:300,340,380');
+@import url('https://fonts.googleapis.com/css?family=Roboto Mono:300,340,380');
 @import url('https://fonts.googleapis.com/css?family=IBM Plex Sans Condensed:300,350,400');
 
 body {
@@ -8,8 +8,8 @@ body {
     font-size: 16px;
     font-weight: 350;
     line-height: 1.35em;
-    background-color: #161616;
-    color: #FFFFFF;
+    background-color: #FFFFFF;
+    color: #37474F;
 }
 
 #content {
@@ -20,12 +20,12 @@ body {
 }
 
 b {
-    color: #4589ff;
+    color: #FFAB91;
     font-weight: 400;
 }
 
 a {
-    color: #be95ff;
+    color: #673AB7;
     font-weight: 400;
     text-decoration: none;
 }
@@ -59,12 +59,12 @@ p {
 }
 
 div.abstract {
-    background: #393939;
+    background: #ECEFF1;
     padding: .75em 1em .75em 1em;
     line-height: 1.25em;
     font-family: "IBM Plex Sans Condensed", sans-serif;
     padding-bottom: 0.25em;
-    border-bottom: 4px solid #6F6F6F;
+    border-bottom: 4px solid #673AB7;
 }
 div.abstract p {
     column-count: 1;
@@ -90,7 +90,7 @@ div.sidefig div.figure p:nth-of-type(1) {
 }
 div.sidefig div.figure p:nth-of-type(2) {
     font-size: 95%;
-    background-color: #393939;
+    background-color:#ECEFF1;
     padding: 1em;
 }
 div.sidefig div.figure img {
@@ -111,7 +111,7 @@ div.footpara {
 h2.footnotes {
     font-size: 16px;
     width: 50%;
-    border-bottom: 4px solid #6F6F6F;
+    border-bottom: 4px solid #90A4AE;
 }
 p.footpara {
     column-count: 1;
@@ -134,39 +134,39 @@ blockquote p {
     padding-top: 1em;
     padding-bottom: 1.5em;
     padding: 0.50em 1.00em 0.75em 1.00em;
-    background-color: #393939;
+    background-color: #FAFAFA;
     margin-bottom: 0.5em;
-    border-left: 4px solid #6F6F6F;
+    border-left: 4px solid #ECEFF1;
 }
 
 /* --- Source blocks ------------------------------------------------------- */
 code {
-    font-family: "IBM Plex Mono", sans-serif;
+    font-family: "Roboto Mono", sans-serif;
     font-weight: 300;
 }
 pre.example::before {
     display: block;
-    background-color: #fffff;
+    background-color: #37474F;
     content: "Output";
-    font-family: "IBM Plex Mono", sans-serif;
+    font-family: "Roboto Mono", sans-serif;
     font-weight: 400;
     padding-bottom: 0.25em;
 }
 
 pre.example {
     font-size: 95%;
-    background-color: #393939;
+    background-color: #FAFAFA;
     line-height: 1.4em;
-    font-family: "IBM Plex Mono", sans-serif;
+    font-family: "Roboto Mono", sans-serif;
     font-weight: 300;
     padding: 0.5em 1em 0.5em 1em;
-    border-left: 4px solid #6F6F6F;
+    border-left: 4px solid #90A4AE;
 }
 
 pre.src {
     font-size: 95%;
     line-height: 1.4em;
-    font-family: "IBM Plex Mono", sans-serif;
+    font-family: "Roboto Mono", sans-serif;
     font-weight: 300;
     padding: 0;
     margin: 0;
@@ -174,15 +174,15 @@ pre.src {
     white-space: pre-wrap;
 }
 div.org-src-container {
-    border-bottom: 4px solid #6F6F6F;
+    border-bottom: 4px solid #ECEFF1;
     padding: 0.50em 1.00em 0.75em 1.00em;
-    background-color: #393939;
+    background-color: #FAFAFA;
     margin-top: 0.25em;
     margin-bottom: 0.75em;
 }
 label.org-src-name {
     display: block;
-    font-family: "IBM Plex Mono", sans-serif;
+    font-family: "Roboto Mono", sans-serif;
     padding-bottom: .25em;
 }
 span.listing-number {
@@ -227,7 +227,7 @@ span.listing-number {
   #table-of-contents #text-table-of-contents > ul li.active > ul {
     display: inline-block; }
   #table-of-contents #text-table-of-contents > ul li.active > label a, #table-of-contents #text-table-of-contents > ul li.active > a {
-    color: #FAFAFA; }
+    color: #263238; }
   #table-of-contents #text-table-of-contents > ul li.active > input:not(:checked) ~ label::after {
     transform: rotate(90deg);
     top: 5px;
@@ -238,12 +238,12 @@ span.listing-number {
 /* top bar */
 .topnav {
   overflow: hidden;
-  background-color: #262626;
+  background-color: #FAFAFA;
 }
 
 .topnav a {
   float: left;
-  color: #FFFFFF;
+  color: #37474F;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -251,11 +251,11 @@ span.listing-number {
 }
 
 .topnav a:hover {
-  background-color: #525252;
-  color: #FFFFFF;
+  background-color: #ECEFF1;
+  color: #37474F;
 }
 
 .topnav a.active {
-  background-color: #262626;
-  color: #FFFFFF;
+  background-color: #FAFAFA;
+  color: #37474F;
 }

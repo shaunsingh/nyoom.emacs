@@ -9,7 +9,7 @@ with pkgs;
 mkShell {
   buildInputs = [
     # use emacs29
-    # emacsGit
+    emacsGit
     # :completion vertico
     (ripgrep.override { withPCRE2 = true; })
     sqlite
@@ -26,13 +26,6 @@ mkShell {
     sdcv
     # :checkers grammar
     languagetool
-    # :lang clojure
-    clojure 
-    leiningen
-    clj-kondo
-    clojure-lsp
-    # :lang nix
-    nixfmt
     # :app mu4e
     ## mu
     ## isync
